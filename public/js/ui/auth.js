@@ -182,16 +182,38 @@ const bindEmailAuthControls = (auth) => {
 
 const initAppCheck = () => {
   const siteKey = APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY.trim();
-  if (!siteKey || typeof firebase?.appCheck !== "function") return;
+  if (!siteKey || typeof firebase?.appCheck !== "function") {
+    AppState.set("appCheckStatus", siteKey ? "sdk-missing" : "disabled");
+    return;
+  }
   try {
+    if (typeof firebase.appCheck.ReCaptchaEnterpriseProvider !== "function") {
+      throw new Error("ReCaptchaEnterpriseProvider is unavailable");
+    }
     const provider = new firebase.appCheck.ReCaptchaEnterpriseProvider(siteKey);
     const appCheck = firebase.appCheck();
     appCheck.activate(provider, true);
     AppState.set("appCheck", appCheck);
-    AppState.set("appCheckReady", true);
+    AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "activated");
+    AppState.set("appCheckError", "");
+    appCheck.getToken(false)
+      .then((tokenResult) => {
+        const ok = !!tokenResult?.token;
+        AppState.set("appCheckReady", ok);
+        AppState.set("appCheckStatus", ok ? "token-ready" : "token-empty");
+      })
+      .catch((err) => {
+        AppState.set("appCheckReady", false);
+        AppState.set("appCheckStatus", "token-error");
+        AppState.set("appCheckError", err?.message || "App Check token unavailable");
+        console.warn("[FLG] App Check warmup failed:", err?.message);
+      });
   } catch (err) {
     AppState.set("appCheck", null);
     AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "init-error");
+    AppState.set("appCheckError", err?.message || "App Check init failed");
     console.warn("[FLG] App Check init failed:", err?.message);
   }
 };

@@ -8,9 +8,11 @@ globalThis.localStorage = {
 
 const {
   consumeSseLine,
+  getAppCheckToken,
   normalizeServerError,
   parseSsePayload,
 } = await import("../public/js/api.js");
+const { AppState } = await import("../public/js/state.js");
 
 describe("SSE helpers", () => {
   it("keeps partial data lines until the next chunk arrives", () => {
@@ -60,5 +62,22 @@ describe("SSE helpers", () => {
       code: "nested",
       message: "巢狀錯誤",
     });
+  });
+
+  it("retries App Check token retrieval with a forced refresh", async () => {
+    const calls = [];
+    AppState.set("appCheck", {
+      getToken: async (forceRefresh) => {
+        calls.push(forceRefresh);
+        return forceRefresh ? { token: "fresh-token" } : { token: "" };
+      },
+    });
+
+    const token = await getAppCheckToken();
+
+    assert.equal(token, "fresh-token");
+    assert.deepEqual(calls, [false, true]);
+    assert.equal(AppState.get("appCheckReady"), true);
+    assert.equal(AppState.get("appCheckStatus"), "token-ready-refresh");
   });
 });

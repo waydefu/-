@@ -58,14 +58,45 @@ export const parseSsePayload = (dataStr, onText) => {
   if (data.text) onText(data.text);
 };
 
-const getAppCheckToken = async () => {
+const readAppCheckToken = async (appCheck, forceRefresh) => {
+  const tokenResult = await appCheck.getToken(forceRefresh);
+  return tokenResult?.token || "";
+};
+
+export const getAppCheckToken = async () => {
   const appCheck = AppState.get("appCheck");
-  if (!appCheck) return "";
+  if (!appCheck) {
+    AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "not-initialized");
+    return "";
+  }
   try {
-    const tokenResult = await appCheck.getToken(false);
-    return tokenResult?.token || "";
+    const token = await readAppCheckToken(appCheck, false);
+    if (token) {
+      AppState.set("appCheckReady", true);
+      AppState.set("appCheckStatus", "token-ready");
+      AppState.set("appCheckError", "");
+      return token;
+    }
+    AppState.set("appCheckStatus", "token-empty");
   } catch (err) {
+    AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "token-error");
+    AppState.set("appCheckError", err?.message || "App Check token unavailable");
     console.warn("[FLG] App Check token unavailable:", err?.message);
+  }
+
+  try {
+    const token = await readAppCheckToken(appCheck, true);
+    AppState.set("appCheckReady", !!token);
+    AppState.set("appCheckStatus", token ? "token-ready-refresh" : "token-empty-refresh");
+    if (token) AppState.set("appCheckError", "");
+    return token;
+  } catch (err) {
+    AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "token-refresh-error");
+    AppState.set("appCheckError", err?.message || "App Check token refresh failed");
+    console.warn("[FLG] App Check token refresh failed:", err?.message);
     return "";
   }
 };
