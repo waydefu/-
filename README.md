@@ -189,7 +189,7 @@ npm.cmd run audit:functions
 - 已修正 SSE error handling：串流期間若後端送出 `data: { error }`，前端會正確中斷並顯示錯誤，不會被 JSON parse fallback 吞掉。
 - 已填入 App Check reCAPTCHA Enterprise public site key，仍維持 report-only，不強制阻擋請求。
 - 已新增 SSE helper 最小測試：覆蓋 chunk 邊界、`[DONE]`、串流錯誤 payload 與新舊後端錯誤格式。
-- 已抽出後端草稿驗證並新增最小測試：覆蓋空值、非字串、超長、結構性 system prompt 標記與正常小說對白誤殺防護。
+- 已抽出、測試並部署後端草稿驗證：覆蓋空值、非字串、超長、結構性 system prompt 標記與正常小說對白誤殺防護。
 
 ---
 
