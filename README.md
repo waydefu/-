@@ -1,0 +1,191 @@
+# Fantasy Lore Guardian (西幻設定守門人)
+
+AI 西幻單段文學級審查系統：Groq 推理 + Firebase Serverless。使用者貼上一段草稿後，系統以 SSE 串流回傳文學級重寫與精簡審查摘要。
+
+> 狀態：production 運行中。Groq API key 已完成輪替，production 由 Firebase Secret Manager 管理；Markdown 文件不保留任何 key、key prefix 或緊急輪替紀錄。
+
+---
+
+## 核心特色
+
+- **修改後全文**：保留原意與情節，提升文明感、歷史重量、空氣感、潛台詞、階級與宗教質地。
+- **精簡審查摘要**：指出核心問題引句、最缺的重量與最終裁定，摘要長度控制在重寫內容的四分之一內。
+- **五大審查面向**：西幻語感、角色存在感、世界真實性、情緒滲透、現代人格污染。
+- **即時禁詞提示**：`spellcheck.worker.js` 背景比對 `forbidden-words.json`，結果顯示在 `#spellList` chip 清單。
+- **SSE 串流與本機快取**：分析結果以 uid + SHA-256 key 隔離，LocalStorage 24 小時快取；草稿亦採 per-uid 儲存。
+- **雲端歷史同步**：Firebase Auth（Google popup + 訪客）+ Firestore，歷史資料依帳號隔離。
+
+---
+
+## 技術架構
+
+- **前端**：Vanilla JS ES Modules，無框架、無 build step，原生 CSS，Firebase JS SDK v10。
+- **登入體驗**：Three.js 登入背景、HUD、WebAudio ambience；WebGL 或音訊不可用時不影響主要功能。
+- **Service Worker**：舊版 PWA 快取已退役；`swkill.js` 與 `sw.js` 用於反註冊殘留 SW 與清除 Cache Storage，`sw-register.js` 保留作為舊入口的清理輔助。
+- **後端**：Firebase Cloud Functions v2 `analyzeV2`，Node 22，Cloud Run，TypeScript，Groq `llama-3.3-70b-versatile`，SSE 長連線。
+- **資料層**：Firebase Admin 驗 ID token；Firestore 儲存歷史紀錄；後端以 per-uid Firestore 文件做每日配額。
+- **金鑰**：`GROQ_API_KEY` 使用 Firebase Secret Manager 與 `defineSecret`，不寫入程式碼或文件。
+- **安全**：CSP `script-src` 無 `unsafe-inline`；CDN script 使用 `sha384` SRI；AI 回應以 DOMPurify 清理後渲染。
+
+---
+
+## 設計邊界
+
+Groq 免費 on-demand tier 的 TPM 約束會限制 prompt + max_tokens 總量。本版定位為單段深度審查：
+
+- 單次輸入上限：前端 1800 字，後端目前拒絕超過 2000 字的請求。
+- 不逐項對照外部《設定書》：依草稿內在邏輯與通用西幻文明法則審查。
+- 後端 prompt 不注入外部知識庫，以控制 token 成本並維持免費 tier 內的單段審查定位。
+
+---
+
+## 主要路徑
+
+- 前端入口：[public/index.html](public/index.html)
+- 前端主流程：[public/js/app.js](public/js/app.js)
+- API 串流：[public/js/api.js](public/js/api.js)
+- 前端設定：[public/js/config.js](public/js/config.js)
+- Cloud Function：[functions/src/index.ts](functions/src/index.ts)
+- 系統 prompt / CORS：[functions/src/config.ts](functions/src/config.ts)
+- Firestore rules：[firestore.rules](firestore.rules)
+
+---
+
+## 全專案優化方案
+
+以下是 production 狀態下的建議順序：先保護成本與資料，再收斂前後端契約，最後提升體驗與維護效率。
+
+### Phase 1：安全與成本防護
+
+- 修正後端配額信任邊界：`batchId` 目前由前端送出，後端不應以 client-provided id 作為免扣配額依據。
+- 導入 Firebase App Check，降低外部腳本直接呼叫 `analyzeV2` 的風險。
+- 收斂匿名使用策略：保留訪客體驗，但搭配 App Check、節流與更可靠的濫用偵測。
+- 強化 Firestore rules：將 `hasAll` 收緊為 `hasOnly`，限制多餘欄位，並檢查 `historyId == id`、`ts` 合理範圍與欄位長度。
+- 維持 Secret hygiene：文件、程式碼、issue、截圖都不保存 key、key prefix 或 Secret Manager 輸出。
+
+#### App Check 落地決策
+
+App Check 不需要另做登入頁。登入頁負責 Firebase Auth；App Check 是安全層，應在現有 Firebase 初始化流程中啟動，並保護後續 API / Firestore 請求。
+
+目前 `analyzeV2` 是 `onRequest + SSE`，不建議為了 App Check 改成 callable function，否則會破壞串流回應模型。建議採用 Firebase App Check 的 custom backend 模式：
+
+- 在 Firebase Console / Google Cloud 建立並註冊 Web reCAPTCHA Enterprise site key。
+- 在 `public/index.html` 載入 Firebase App Check compat SDK。
+- 在 `public/js/config.js` 保存 reCAPTCHA Enterprise site key（這是 public site key，不是 secret）。
+- 在 `public/js/ui/auth.js` 的 `initFirebase()` 中，於 `firebase.initializeApp()` 後啟動 `firebase.appCheck()`，並開啟 token auto-refresh。
+- 在 `public/js/api.js` 呼叫 `analyzeV2` 前取得 App Check token，放入 `X-Firebase-AppCheck` header。
+- 在 `functions/src/index.ts` 中，於 Auth、quota、Groq 呼叫前驗證 `X-Firebase-AppCheck`；驗證失敗直接回 `401`，不消耗 Groq。
+- 在 CORS preflight 的 `Access-Control-Allow-Headers` 加入 `X-Firebase-AppCheck`。
+
+Rollout 建議：
+
+- 第一階段：前端送 token，後端只記錄 token 缺失/驗證失敗，不阻擋，觀察 production 使用者。
+- 第二階段：確認 App Check metrics 與錯誤率正常後，再強制拒絕未驗證請求。
+- 本機開發：使用 App Check debug token，避免 localhost / emulator 開發被 reCAPTCHA 卡住。
+- UI 原則：App Check 對使用者應不可見，不新增獨立頁面；若未來另做登入頁，應視為 UI / 效能架構決策，而不是 App Check 的必要條件。
+
+### Phase 2：前後端契約收斂
+
+- 統一輸入限制：前端目前是 1800 字，後端硬限制目前是 2000 字，建議統一成同一個明確規格。
+- 統一 timeout 策略：前端 90 秒 abort，Cloud Function 540 秒；需決定是縮短後端、延長前端，或補上「後端仍可能繼續跑」的 UI 狀態。
+- 統一錯誤格式：後端回 `{ code, message }`，前端依 `code` 對應顯示文案，避免解析錯誤字串。
+- 對齊 config 命名：`public/js/config.js` 與 `functions/src/index.ts` 的限制值、錯誤碼、配額語意要保持一致。
+
+### Phase 3：測試與維護
+
+- 建立 root-level `package.json`，集中提供 `check`、`build:functions`、`check:frontend`、`audit:functions` 等命令。
+- 加最小測試集：Firestore rules、SSE parser、quota transaction、input validation。
+- 將 README 的常用檢查擴成固定維護流程，避免每次人工記命令。
+- 定期追蹤 `npm audit` low-severity 依賴鏈，但不要直接套用 breaking `--force` 修復。
+
+### Phase 4：UI 設計與體驗
+
+設計方向應延續目前 Fantasy Lore Guardian 的原 UI：黑暗西幻、琥珀金 HUD、守門人儀式感、Three.js 登入背景與工具型主介面。不採用冷藍 cyber 帳密卡、陌生品牌名或與現有世界觀無關的科技登入頁。
+
+#### 登入頁動態流程規劃
+
+登入頁可以借鑑 SAO 式「登入即進入另一個世界」的節奏，但要轉譯成 Fantasy Lore Guardian 的守門人系統，不直接使用 `Sword Art Online`、`Aincrad`、角色名稱、原作歡迎字樣或角色創建流程。角色素體、捏臉、外觀參數調整整段跳過，避免登入頁膨脹成遊戲角色系統。
+
+- 待機狀態：沿用目前參考圖方向，中央是琥珀金儀式核心與環狀 HUD，左右維持 `SYSTEM STATUS`、`REAL TIME SYNC`、`SYSTEM ANALYSIS`、`DEVICE INFO`、`CORE LOAD`、`CONSOLE LOG` 等半透明面板。登入按鈕置中，畫面看起來像黑暗西幻版 tactical arcane interface。
+- 中央認證面板：Email / Password 註冊與登入應嵌入中央動畫核心內，作為主要體驗。待機時顯示「建立守門人通行證 / 已有通行證」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
+- 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；每完成一欄，周圍 HUD 可短暫亮起對應狀態，例如 `IDENTITY`、`MAIL LINK`、`PASS SEAL`。送出後才呼叫 Firebase Auth 建帳，成功後進入完整 warp。
+- 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後進入短版認證掃描，再依實際 Auth 結果決定成功轉場或顯示錯誤。
+- 旁側身份入口：Google 登入不要放在主按鈕位置，改放右側或下方的次要 HUD 模組，例如 `EXTERNAL IDENTITY`。訪客登入可放在同一模組下方，標示為 `GUEST ACCESS`，降低視覺優先級但保留可用路徑。
+- 認證觸發：使用者點擊 Google、訪客或未來 Email / Password 登入後，登入按鈕鎖定，中央核心由一點亮光啟動，HUD 開始顯示 `AUTH REQUEST`、`TOKEN CHECK`、`SECURE CHANNEL`。不要做假帳密自動填入動畫，以免和真實驗證狀態混淆。
+- 光纖隧道：驗證成功後才進入 LINK START warp。視角從中央光點高速穿入由金色光纖、符文線、資料粒子與環形軌道組成的隧道；主色仍是黑、琥珀、金，淡藍或白光只作為少量高亮，不改成冷藍 cyber 風。
+- 系統自檢：穿梭期間用半透明 HUD 快速跑狀態列，不宣稱真實五感同步；改用符合本網站的項目，例如 `DISPLAY`、`AUDIO`、`AUTH TOKEN`、`APP CHECK`、`FIRESTORE SYNC`、`ENCRYPTION`、`STREAM CHANNEL`，成功顯示 `[ OK ]`，未導入項目顯示 `[ PENDING ]` 或不出現。
+- 登入確認：隧道盡頭以短促白光覆蓋，接著浮現自有文案，例如 `GUARDIAN ACCESS CONNECTED`、`WELCOME, LORE KEEPER` 或 `FANTASY LORE GUARDIAN ONLINE`。白光需限制亮度與時間，避免手機上刺眼或造成轉場白屏誤判。
+- 降臨主工具：白光退去後不是角色創建，而是主工具頁逐步渲染：導覽列、草稿輸入、分析面板、歷史面板依序淡入；語意是「進入守門人工作台」，不是「進入遊戲世界」。
+- 失敗與取消：驗證失敗不播放完整 warp，只在登入卡片內以低亮度紅琥珀提示錯誤，保留重試按鈕；使用者取消 Google popup 時不顯示錯誤，回到待機狀態。
+- 低效能與可及性：`prefers-reduced-motion`、WebGL 不可用、手機低效能時跳過隧道與白光，只保留簡短 HUD 掃描與淡入；所有動態都不得阻斷鍵盤 focus trap、aria-live 與登入錯誤提示。
+
+- 主介面定位應維持工具型：讓輸入、分析、歷史、帳號狀態一眼可掃，不做 landing page 或大型說明頁。
+- 登入頁保留強風格，但要收斂成「西幻守門人系統」：保留 `#loginScreen`、`#loginGl`、HUD、ambient、LINK START warp；只優化層級、文案、按鈕與表單密度，不重做成另一套視覺語言。
+- 色彩沿用深黑、焦褐、琥珀金、羊皮紙文字與微紅警示；藍色或冷色只可作為極少量輔助狀態，不作為主視覺。
+- 登入卡片應像魔法終端或守門人認證面板：保留盾牌 / 守門人品牌訊號、角標、細線分隔、光暈與低對比 HUD；避免厚重霓虹框、大面積藍色漸層、過亮科技背景。
+- 若新增 Email / Password 帳密登入，應整合在中央動畫認證面板內：使用「登入 / 註冊」切換，欄位樣式沿用琥珀玻璃輸入框；Google 登入與訪客登入移到旁側次要 HUD 模組，不刪除既有可用路徑。
+- 註冊流程只收必要欄位：顯示名稱、email、密碼、確認密碼；登入流程只收 email 與密碼。密碼規則與錯誤提示需短、清楚、貼近現有語氣。
+- 登入文案維持專案語感，例如「進入守門人系統」、「註冊後同步審查歷史」、「訪客模式不保證跨裝置保存」；不要使用範例圖中的外部品牌或不相關口號。
+- 主工具進入後要降低視覺噪音：登入頁可以有儀式感，但工作區應偏安靜、清晰、可長時間閱讀與修改草稿。
+- 統一狀態文案：loading 步驟需對齊實際後端流程，避免出現「載入世界資料庫」這類已不符合實作的提示。
+- 強化結果閱讀：分析結果可考慮分區顯示「修改後全文」與「審查摘要」，並提供清楚的複製、重新分析、回到輸入位置。
+- 優化歷史面板：讓目前選中項、同步狀態、刪除確認、空狀態更一致，避免小螢幕上文字擠壓。
+- 行動裝置檢查：測試登入動畫、textarea 高度、鍵盤彈出、歷史下拉、結果閱讀在手機上的可用性；登入框不得被 HUD、鍵盤或安全區遮住。
+- 效能防護：Three.js 登入背景維持 lazy import，並確認 WebGL cleanup、reduced-motion、低階手機 fallback 都穩定。
+- 可及性：保留 keyboard flow、focus trap、aria-live；新增或調整互動元件時同步檢查 focus、label、對比與文字溢出。
+
+### Phase 5：部署與觀測
+
+- 增加 structured logging：記錄 request id、uid hash、latency、status、quota result，不記錄草稿內容。
+- 補部署後驗證清單：Hosting 載入、Google 登入、訪客登入、SSE 首字輸出、Firestore 歷史同步、CSP 無錯誤、舊 SW 已清除。
+- 保留最小 rollback 路徑：functions 與 hosting 分開部署，避免 UI 與後端契約同時失配時難以回復。
+
+---
+
+## 部署
+
+本機 C 槽空間不足時，請在 PowerShell 同一段命令內指定 F 槽 cache/tmp：
+
+```powershell
+$env:npm_config_cache="F:\npm-cache"; $env:TEMP="F:\tmp"; $env:TMP="F:\tmp"; $env:FUNCTIONS_DISCOVERY_TIMEOUT="120"
+Set-Location "F:\瀏覽器下載\小說網站"
+firebase deploy --only functions
+firebase deploy --only hosting
+```
+
+Functions deploy 會透過 `firebase.json` 的 predeploy 自動執行 `npm --prefix "$RESOURCE_DIR" run build`。
+
+常用檢查：
+
+```powershell
+functions\node_modules\.bin\tsc.cmd --noEmit --project functions\tsconfig.json
+functions\node_modules\.bin\tsc.cmd --project jsconfig.json --noEmit
+```
+
+---
+
+## 維護注意
+
+- 不要在 Markdown、程式碼、截圖或 issue 內記錄任何 API key、key prefix 或 Secret Manager 輸出。
+- 若重新部署 Functions 後 URL 改變，需同步更新 `public/js/config.js` 的 `API_CONFIG.FUNCTIONS_URL` 與 `public/index.html` 的 CSP `connect-src`。
+- 後續優化依「全專案優化方案」順序推進，優先處理安全、成本與資料規則，再做 UI 與體驗調整。
+
+---
+
+## 死碼清理紀錄
+
+已移除目前入口不使用的維護噪音：
+
+- 根目錄舊版單檔前端 `script.js`。
+- 沒有對應 `package.json` 的根目錄 `package-lock.json`。
+- 未接入後端 prompt 的 `functions/src/knowledgeData.ts` 與其舊編譯輸出。
+- 未可達的前端長稿分段流程與 `CHUNK_SIZE` 設定；目前只保留單段審查路徑。
+
+保留 `swkill.js`、`sw.js` 與 `sw-register.js` 作為舊 Service Worker / Cache Storage 的退場清理機制。
+
+---
+
+## 授權與宣告
+
+- 作者：Fantasy Lore Guardian Team
+- All rights reserved.

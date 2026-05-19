@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+functions/node_modules/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+
+# Environment secrets
+.env
+.env.local
+.env.*.local
+functions/.env
+functions/.env.local
+
+# Build output
+functions/lib/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local assistant settings
+.claude/settings.local.json
+.clinerules
+.cursorrules

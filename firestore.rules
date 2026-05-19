@@ -1,0 +1,34 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // users/{uid}/history/{id} — 僅本人可讀寫；草稿 ≤ 8KB、結果 ≤ 80KB
+    match /users/{userId}/history/{historyId} {
+      allow read: if isOwner(userId);
+      allow delete: if isOwner(userId);
+      allow create, update: if isOwner(userId) && validHistoryDoc();
+
+      function isOwner(uid) {
+        return request.auth != null && request.auth.uid == uid;
+      }
+
+      function validHistoryDoc() {
+        let d = request.resource.data;
+        return d.keys().hasAll(['id', 'ts', 'draft', 'result', 'preview'])
+          && d.id is string
+          && d.draft is string
+          && d.result is string
+          && d.preview is string
+          && d.ts is number
+          && d.draft.size() <= 8192
+          && d.result.size() <= 81920
+          && d.preview.size() <= 200;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="description" content="西幻設定守門人 — 自動檢查西幻小說的世界觀、語彙、時代感與設定衝突。" />
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'sha256-UK9O+rbB3KhDsGQrE55qyNAJCpV7WHc47zV2U5f4bE4=' https://www.gstatic.com https://cdn.jsdelivr.net https://apis.google.com; style-src 'self' https://fonts.googleapis.com 'unsafe-inline'; font-src https://fonts.gstatic.com; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://firestore.googleapis.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://www.googleapis.com https://script.google.com wss://*.firebaseio.com https://*.cloudfunctions.net https://*.run.app https://www.gstatic.com https://cdn.jsdelivr.net; img-src 'self' https: data: blob:; frame-src 'self' https://accounts.google.com https://*.firebaseapp.com https://*.googleusercontent.com; base-uri 'self'; object-src 'none'; form-action 'self';" />
+<title>西幻設定守門人 · Fantasy Lore Guardian</title>
+<!-- 快取死結破解器：必須最早、帶版本 query（全新 URL → 任何舊快取必 miss → 保證執行最新）。
+     反註冊殘留 SW + 清光 Cache Storage + 一次性硬重載，根除「修好又冒出 / 必須開無痕」。 -->
+<script src="/swkill.js?v=10"></script>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%9B%A1%3C/text%3E%3C/svg%3E" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700;900&family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<!-- importmap：解 three/addons 內部裸 import 'three'。CSP 無 'unsafe-inline'
+     → 已在 script-src 加此 script 文字內容的 sha256 hash 精準授權。
+     此字串若改一個字元，CSP 的 sha256 必須同步重算，否則整個 importmap 被擋。 -->
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<link rel="stylesheet" href="style.css" fetchpriority="high" />
+<link rel="modulepreload" href="js/app.js?v=25" />
+<link rel="modulepreload" href="js/config.js" />
+<link rel="modulepreload" href="js/dom.js" />
+<link rel="modulepreload" href="js/state.js" />
+<link rel="modulepreload" href="js/cache.js" />
+<link rel="modulepreload" href="js/api.js" />
+<link rel="modulepreload" href="js/utils.js" />
+<link rel="modulepreload" href="js/ui/toast.js" />
+<link rel="modulepreload" href="js/ui/clipboard.js" />
+<link rel="modulepreload" href="js/ui/spell.js" />
+<link rel="modulepreload" href="js/ui/hud.js" />
+<link rel="modulepreload" href="js/ui/result.js" />
+<link rel="modulepreload" href="js/ui/dropdown.js" />
+<link rel="modulepreload" href="js/ui/firestore.js" />
+<link rel="modulepreload" href="js/ui/history.js" />
+<link rel="modulepreload" href="js/ui/draft.js" />
+<link rel="modulepreload" href="js/ui/auth.js" />
+<link rel="modulepreload" href="js/ui/sfx.js" />
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer crossorigin="anonymous" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer crossorigin="anonymous" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer crossorigin="anonymous" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC"></script>
+</head>
+
+<body>
+
+<div id="srAnnouncer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
+
+<!-- ════ LOGIN SCREEN ════ -->
+<div id="loginScreen" aria-label="登入" role="dialog" aria-modal="true" aria-hidden="true">
+  <canvas id="loginGl" aria-hidden="true"></canvas>
+  <div class="login-hud" aria-hidden="true">
+    <span class="lh-corner tl"></span><span class="lh-corner tr"></span>
+    <span class="lh-corner bl"></span><span class="lh-corner br"></span>
+
+    <div class="lh-topbar">
+      <div class="lh-brand">NEXCORE SYSTEM <i>v4.0.72</i><br><small>TACTICAL ARCANE INTERFACE</small></div>
+      <div class="lh-tag">{ FIG // GUARDIAN INTERFACE }</div>
+      <div class="lh-secure">SECURE CONNECTION ESTABLISHED <span class="lh-blink">●</span></div>
+    </div>
+
+    <div class="lh-col lh-colL">
+      <div class="lh-panel">
+        <div class="lh-ph">SYSTEM STATUS</div>
+        <div class="lh-row"><span>CORE STATUS</span><b class="ok">NORMAL</b></div>
+        <div class="lh-row"><span>NETWORK</span><b class="ok">SECURE</b></div>
+        <div class="lh-row"><span>AI MODULE</span><b class="ok">ACTIVE</b></div>
+        <div class="lh-row"><span>ENCRYPTION</span><b>AES-256</b></div>
+        <div class="lh-row"><span>FIREWALL</span><b class="ok">ONLINE</b></div>
+      </div>
+      <div class="lh-panel">
+        <div class="lh-ph">REAL TIME SYNC <em>LOCAL</em></div>
+        <div class="lh-row"><span>DATE</span><b id="lh-date">—</b></div>
+        <div class="lh-row"><span>TIME</span><b id="lh-time">—</b></div>
+        <div class="lh-row"><span>TIMESTAMP</span><b id="lh-ts">—</b></div>
+        <div class="lh-row"><span>UTC</span><b id="lh-utc">—</b></div>
+      </div>
+      <div class="lh-panel">
+        <div class="lh-ph">LOCATION DATA <em>FALLBACK</em></div>
+        <div class="lh-row"><span>REGION</span><b id="lh-region">—</b></div>
+        <div class="lh-row"><span>DISTRICT</span><b id="lh-district">—</b></div>
+        <div class="lh-row"><span>LATITUDE</span><b id="lh-lat">—</b></div>
+        <div class="lh-row"><span>LONGITUDE</span><b id="lh-long">—</b></div>
+        <div class="lh-row"><span>TZ OFFSET</span><b id="lh-tz">—</b></div>
+      </div>
+    </div>
+
+    <div class="lh-col lh-colR">
+      <div class="lh-panel">
+        <div class="lh-ph">SYSTEM ANALYSIS</div>
+        <div class="lh-row"><span>PLATFORM</span><b id="lh-platform">—</b></div>
+        <div class="lh-row"><span>CORES</span><b id="lh-cores">—</b></div>
+        <div class="lh-row"><span>ARCHITECTURE</span><b id="lh-arch">—</b></div>
+        <div class="lh-row"><span>LANGUAGE</span><b id="lh-lang">—</b></div>
+        <div class="lh-row"><span>USER AGENT</span><b id="lh-ua">—</b></div>
+      </div>
+      <div class="lh-panel">
+        <div class="lh-ph">DEVICE INFO</div>
+        <div class="lh-row"><span>SCREEN W</span><b id="lh-sw">—</b></div>
+        <div class="lh-row"><span>SCREEN H</span><b id="lh-sh">—</b></div>
+        <div class="lh-row"><span>WINDOW W</span><b id="lh-ww">—</b></div>
+        <div class="lh-row"><span>WINDOW H</span><b id="lh-wh">—</b></div>
+        <div class="lh-row"><span>PIXEL RATIO</span><b id="lh-dpr">—</b></div>
+      </div>
+      <div class="lh-panel">
+        <div class="lh-ph">CORE LOAD ANALYSIS</div>
+        <canvas id="lh-bars" class="lh-canvas" width="220" height="90"></canvas>
+      </div>
+      <div class="lh-panel">
+        <div class="lh-ph">DATA STREAM //</div>
+        <canvas id="lh-spark" class="lh-canvas lh-canvas-sm" width="220" height="46"></canvas>
+      </div>
+    </div>
+
+    <div class="lh-console">
+      <div class="lh-ph">CONSOLE LOG //</div>
+      <div id="lh-log"></div>
+    </div>
+
+    <div class="lh-botbar">
+      <span>SYS.STATUS <b class="ok">NORMAL</b></span><i>·</i>
+      <span>ENC <b>AES-256</b></span><i>·</i>
+      <span>SECURITY LEVEL <b class="ok">HIGH</b></span><i>·</i>
+      <span id="lh-clock">—</span><i>·</i>
+      <span>西幻設定守門人 ALL SYSTEMS OPERATIONAL</span>
+    </div>
+    <button id="lh-mute" class="lh-mute" type="button" aria-label="切換環境音效">♪ AUDIO</button>
+  </div>
+  <div class="login-box">
+    <div class="login-corners">
+      <div class="lc tl"></div><div class="lc tr"></div>
+      <div class="lc bl"></div><div class="lc br"></div>
+    </div>
+    <div class="login-logo" aria-hidden="true">🛡️</div>
+    <div class="login-title">Fantasy Lore Guardian</div>
+    <div class="login-subtitle">SYSTEM ACCESS — AUTHENTICATION REQUIRED</div>
+    <div class="login-divider"></div>
+    <button class="login-btn btn-google" id="loginGoogleBtn" aria-label="使用 Google 帳號登入">
+      <div class="google-icon" aria-hidden="true"></div>
+      <span>使用 Google 登入</span>
+    </button>
+    <button class="login-btn btn-guest" id="loginGuestBtn" aria-label="以訪客身份進入">
+      <span class="guest-icon" aria-hidden="true">👤</span>
+      <span>以訪客身份進入</span>
+    </button>
+    <div class="login-err" id="loginErr" role="alert" aria-live="polite"></div>
+    <div class="login-clock" id="loginClock" aria-live="off"></div>
+  </div>
+</div>
+
+<!-- 開場 overlay 已退役：登入體驗改由 #loginScreen 內的 #loginGl
+     （Three.js LINK START，見 js/ui/loginfx.js）負責 -->
+
+<div class="bg-glow bg1" aria-hidden="true"></div>
+<div class="bg-glow bg2" aria-hidden="true"></div>
+
+<div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
+
+<!-- ════ TOP NAVBAR ════ -->
+<nav class="topnav" aria-label="主導覽列">
+  <a class="nav-brand" href="#" aria-label="Fantasy Lore Guardian 首頁">
+    <div class="brand-icon" aria-hidden="true">🛡️</div>
+    <span class="brand-name">Fantasy Lore Guardian</span>
+  </a>
+
+  <div class="nav-sep" aria-hidden="true"></div>
+
+  <div class="hist-wrap" id="histWrap">
+    <button class="hist-trigger" id="histTrigger"
+      aria-haspopup="true" aria-expanded="false" aria-controls="histPanel"
+      aria-label="開啟歷史紀錄">
+      <span class="hist-icon" aria-hidden="true">📜</span>
+      <span class="hist-label">歷史</span>
+      <span class="hist-badge" id="histBadge" aria-label="共 0 筆紀錄">0</span>
+      <span class="hist-chevron" aria-hidden="true">▾</span>
+    </button>
+
+    <div class="hist-panel" id="histPanel" role="region" aria-label="歷史紀錄面板">
+      <div class="panel-header">
+        <span class="panel-title">歷史紀錄</span>
+        <span class="panel-sync" id="panelSync" aria-live="polite" aria-atomic="true"></span>
+      </div>
+      <div class="panel-actions" id="panelActions">
+        <button class="pa-del" id="paDelBtn" aria-label="刪除已選取紀錄">刪除所選</button>
+        <button class="pa-clear" id="paClearBtn" aria-label="清除所有歷史紀錄">全部清除</button>
+      </div>
+      <div class="confirm-row" id="confirmClearAll" role="alertdialog" aria-label="確認清除">
+        <span class="confirm-label-txt">確定清除全部？</span>
+        <button class="confirm-yes" id="confirmClearYes">確定</button>
+        <button class="confirm-no"  id="confirmClearNo">取消</button>
+      </div>
+      <div class="confirm-row" id="confirmDelSel" role="alertdialog" aria-label="確認刪除">
+        <span class="confirm-label-txt" id="confirmDelLabel">確定刪除？</span>
+        <button class="confirm-yes" id="confirmDelYes">確定</button>
+        <button class="confirm-no"  id="confirmDelNo">取消</button>
+      </div>
+      <div class="panel-list" id="historyList" role="list" aria-label="歷史紀錄列表">
+        <div class="panel-empty" id="historyEmpty">尚無紀錄<br>完成分析後顯示於此</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="nav-spacer" aria-hidden="true"></div>
+
+  <div class="nav-right">
+    <div class="user-wrap" id="userWrap">
+      <button class="user-trigger" id="userTrigger"
+        aria-haspopup="true" aria-expanded="false" aria-controls="userPanel"
+        aria-label="帳號選單">
+        <span class="login-compact"><span class="google-dot" aria-hidden="true"></span><span class="login-txt">登入</span></span>
+        <span class="user-chevron" aria-hidden="true">▾</span>
+      </button>
+      <div class="user-panel" id="userPanel" role="region" aria-label="帳號面板"></div>
+    </div>
+    <span class="nav-beta" aria-label="測試版">Beta</span>
+  </div>
+</nav>
+
+<!-- ════ MAIN ════ -->
+<div class="main-area">
+<div class="wrapper">
+
+  <main id="main-content" class="container">
+    <div class="title">
+      <span class="title-icon" role="img" aria-label="城堡">🏰</span>
+      <h1>西幻設定守門人</h1>
+      <p>自動審閱世界觀、語彙、時代感與設定衝突，讓你的西幻故事更加嚴謹。</p>
+    </div>
+
+    <label for="draftInput" class="section-label">輸入草稿</label>
+    <div class="card">
+      <div class="textarea-wrap">
+        <textarea id="draftInput" maxlength="1800"
+          placeholder="貼上單一段落（約 1800 字內）進行文學級深度審查…
+
+例如：
+亞德里安在旅店歇腳，
+窗外的魔法塔正散發淡紫色光芒，
+壁爐裡的火已燒短了一截…"
+          aria-describedby="charCount spellWarn"></textarea>
+        <span id="spellWarn" class="spell-warn" aria-live="polite"></span>
+        <span id="charCount" aria-live="off">0 / 1,800</span>
+      </div>
+      <div id="spellList" class="spell-list" aria-live="polite"></div>
+      <div class="button-group">
+        <button class="main-btn" id="checkBtn" disabled aria-busy="false">📜&nbsp; 召喚守門人審閱</button>
+        <button class="clear-btn" id="clearBtn" aria-label="清空草稿">✕&nbsp; 清空</button>
+        <button type="button" class="focus-mode-btn" id="focusModeBtn" aria-pressed="false" aria-label="進入專注模式">🎯 專注</button>
+      </div>
+    </div>
+
+    <p class="section-label" id="resultLabel">分析結果</p>
+    <div id="result" role="region" aria-labelledby="resultLabel">
+      <span style="color:var(--text-4)">✦ 輸入草稿後按下「檢查」即可開始分析…</span>
+    </div>
+    <p class="kbd-hint">
+      快捷鍵：<kbd aria-label="按鍵 Control">Ctrl</kbd> + <kbd aria-label="按鍵 Enter">Enter</kbd> 送出
+    </p>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <p class="footer-copy">&copy;&nbsp;<span id="year"></span>&nbsp;<strong>Fantasy Lore Guardian</strong>.&nbsp;All rights reserved.</p>
+      <p class="footer-contact">聯絡我們 <span aria-hidden="true" style="color:var(--text-4);margin:0 6px;opacity:.5">·</span> <a href="mailto:wayde.fu@gmail.com">wayde.fu@gmail.com</a></p>
+      <div class="footer-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+  </footer>
+
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer crossorigin="anonymous" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js" defer crossorigin="anonymous" integrity="sha384-nszIONF2FGC59kn+pPFaRa6WUNGwsZgXZiJxJwQbym+TzcH7smolUviLgpPbNx7V"></script>
+<script type="module" src="js/app.js?v=25"></script>
+</body>
+</html>
