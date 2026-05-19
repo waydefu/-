@@ -79,7 +79,7 @@ App Check 不需要另做登入頁。登入頁負責 Firebase Auth；App Check �
 
 Rollout 建議：
 
-- 第一階段：前端送 token，後端只記錄 token 缺失/驗證失敗，不阻擋，觀察 production 使用者。
+- 第一階段：App Check 基礎管線已接好；`APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY` 為空時不啟用。填入 site key 後，前端會送 token，後端會驗證並記錄缺失/失敗，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
 - 第二階段：確認 App Check metrics 與錯誤率正常後，再強制拒絕未驗證請求。
 - 本機開發：使用 App Check debug token，避免 localhost / emulator 開發被 reCAPTCHA 卡住。
 - UI 原則：App Check 對使用者應不可見，不新增獨立頁面；若未來另做登入頁，應視為 UI / 效能架構決策，而不是 App Check 的必要條件。
@@ -182,6 +182,7 @@ npm.cmd run audit:functions
 - 已統一輸入上限：前端、HTML 與後端都以 1800 字為單段審查限制。
 - 2026-05-19 已部署 Firebase：`functions`、`hosting`、`firestore.rules` 皆已發布；Hosting URL 為 `https://project-7276420283723642146.web.app`，Function URL 維持 `https://analyzev2-yxfwrism4q-uc.a.run.app`。
 - 已統一 HTTP 錯誤格式並部署：後端改回 `{ code, message }`，前端可解析新格式並相容舊 `{ error }`。
+- 已加入並部署 App Check report-only 管線：前端支援 reCAPTCHA Enterprise site key、送出 `X-Firebase-AppCheck`，後端可驗證並記錄但尚未強制阻擋。
 
 ---
 

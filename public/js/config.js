@@ -17,6 +17,11 @@ export const FIREBASE_CONFIG = {
   measurementId:     "G-9YZ5B0DNBK",
 };
 
+/** Firebase App Check is staged: blank site key keeps it disabled. */
+export const APP_CHECK_CONFIG = {
+  RECAPTCHA_ENTERPRISE_SITE_KEY: "",
+};
+
 /**
  * API endpoint and network timeout settings.
  *

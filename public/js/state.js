@@ -5,6 +5,8 @@ export const AppState = (() => {
 const state = {
 db: null,
 fbAuth: null,
+appCheck: null,
+appCheckReady: false,
 firebaseReady: false,
 firestoreReady: false,
 currentUser: null,

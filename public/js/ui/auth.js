@@ -1,6 +1,6 @@
 // @ts-check
 
-import { FIREBASE_CONFIG, MSG } from '../config.js';
+import { APP_CHECK_CONFIG, FIREBASE_CONFIG, MSG } from '../config.js';
 import { el } from '../dom.js';
 import { AppState } from '../state.js';
 import { showToast } from './toast.js';
@@ -58,6 +58,22 @@ let _loginFocusTrapHandler = null;
 
 const setLoginErr = (msg = "") => {
   if (el.loginErr) el.loginErr.textContent = msg;
+};
+
+const initAppCheck = () => {
+  const siteKey = APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY.trim();
+  if (!siteKey || typeof firebase?.appCheck !== "function") return;
+  try {
+    const provider = new firebase.appCheck.ReCaptchaEnterpriseProvider(siteKey);
+    const appCheck = firebase.appCheck();
+    appCheck.activate(provider, true);
+    AppState.set("appCheck", appCheck);
+    AppState.set("appCheckReady", true);
+  } catch (err) {
+    AppState.set("appCheck", null);
+    AppState.set("appCheckReady", false);
+    console.warn("[FLG] App Check init failed:", err?.message);
+  }
 };
 
 const getLoginFocusables = () => {
@@ -308,6 +324,7 @@ export const initFirebase = () => {
       return;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
+    initAppCheck();
     const firestore = firebase.firestore();
     const auth = firebase.auth();
     AppState.set("db", firestore);

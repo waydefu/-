@@ -43,6 +43,18 @@ const makeApiError = (status, code, message) => {
   return err;
 };
 
+const getAppCheckToken = async () => {
+  const appCheck = AppState.get("appCheck");
+  if (!appCheck) return "";
+  try {
+    const tokenResult = await appCheck.getToken(false);
+    return tokenResult?.token || "";
+  } catch (err) {
+    console.warn("[FLG] App Check token unavailable:", err?.message);
+    return "";
+  }
+};
+
 // ── Core fetcher ──────────────────────────────────────────────
 
 /**
@@ -62,12 +74,16 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
   if (cached) return { result: cached, fromCache: true };
 
   const token = user ? await user.getIdToken() : "";
+  const appCheckToken = await getAppCheckToken();
+  const headers = {
+    "Content-Type":  "application/json",
+    "Authorization": `Bearer ${token}`,
+  };
+  if (appCheckToken) headers["X-Firebase-AppCheck"] = appCheckToken;
+
   const res = await fetch(API_CONFIG.FUNCTIONS_URL, {
     method:  "POST",
-    headers: {
-      "Content-Type":  "application/json",
-      "Authorization": `Bearer ${token}`,
-    },
+    headers,
     body:   JSON.stringify({ text: draft }),
     signal,
   });

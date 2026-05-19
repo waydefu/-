@@ -12,6 +12,7 @@ admin.initializeApp();
 const DAILY_LIMIT_ANON   = 5;
 const DAILY_LIMIT_AUTHED = 30;
 const MAX_DRAFT_CHARS = 1800;
+const ENFORCE_APP_CHECK = false;
 
 async function checkAndIncrementQuota(uid: string, isAnonymous: boolean, quotaEventId: string): Promise<void> {
   const limit = isAnonymous ? DAILY_LIMIT_ANON : DAILY_LIMIT_AUTHED;
@@ -67,6 +68,21 @@ function sendError(req: any, res: any, status: number, code: string, message: st
   res.status(status).json({ code, message });
 }
 
+async function verifyAppCheck(req: any): Promise<boolean> {
+  const token = req.headers["x-firebase-appcheck"] as string | undefined;
+  if (!token) {
+    console.warn("[FLG] App Check token missing");
+    return false;
+  }
+  try {
+    await admin.appCheck().verifyToken(token);
+    return true;
+  } catch (err: any) {
+    console.warn("[FLG] App Check token invalid", err?.message);
+    return false;
+  }
+}
+
 // ── Prompt injection guard ───────────────────────────────────
 function looksLikeInjection(text: string): boolean {
   // 本系統輸入即小說對白，「忽略前述指令」這類自然語句會出現在正常創作中，
@@ -90,7 +106,7 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   if (req.method === "OPTIONS") {
     applyCors(req, res);
     res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
-    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Firebase-AppCheck");
     res.set("Access-Control-Max-Age", "3600");
     res.status(204).send("");
     return;
@@ -98,6 +114,12 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
 
   if (req.method !== "POST") {
     sendError(req, res, 405, "method-not-allowed", "Method Not Allowed");
+    return;
+  }
+
+  const appCheckOk = await verifyAppCheck(req);
+  if (ENFORCE_APP_CHECK && !appCheckOk) {
+    sendError(req, res, 401, "app-check-failed", "App Check 驗證失敗，請重新整理後再試。");
     return;
   }
 
