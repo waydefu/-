@@ -185,6 +185,7 @@ npm.cmd run audit:functions
 - 已加入並部署 App Check report-only 管線：前端支援 reCAPTCHA Enterprise site key、送出 `X-Firebase-AppCheck`，後端可驗證並記錄但尚未強制阻擋。
 - 已調整並部署 timeout 與 loading 文案：前端分析等待改為 180 秒，進度文案改為安全連線、Groq 串流審閱、整理重寫與摘要。
 - 已調整 App Check 與 Functions logging：site key 未啟用時不刷 missing-token log，Functions 改用 structured logging，記錄 request id、uid hash、latency 與狀態，不記錄草稿內容。
+- 已修正 SSE error handling：串流期間若後端送出 `data: { error }`，前端會正確中斷並顯示錯誤，不會被 JSON parse fallback 吞掉。
 
 ---
 

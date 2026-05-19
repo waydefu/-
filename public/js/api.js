@@ -43,6 +43,21 @@ const makeApiError = (status, code, message) => {
   return err;
 };
 
+const isApiError = (err) => {
+  const e = /** @type {any} */ (err);
+  return !!(e?.code || e?.userMessage || e?.status);
+};
+
+const parseSsePayload = (dataStr, onText) => {
+  if (dataStr === "[DONE]") return;
+  const data = JSON.parse(dataStr);
+  if (data.error) {
+    const serverError = normalizeServerError(data, "Stream interrupted");
+    throw makeApiError(200, serverError.code || "stream-interrupted", `AI 分析中斷：${serverError.message}`);
+  }
+  if (data.text) onText(data.text);
+};
+
 const getAppCheckToken = async () => {
   const appCheck = AppState.get("appCheck");
   if (!appCheck) return "";
@@ -109,19 +124,13 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
     if (done) break;
     sseBuffer += decoder.decode(value, { stream: true });
     sseBuffer = consumeSseLine(sseBuffer, (dataStr) => {
-      if (dataStr === "[DONE]") return;
       try {
-        const data = JSON.parse(dataStr);
-        if (data.error) {
-          const serverError = normalizeServerError(data, "Stream interrupted");
-          throw makeApiError(200, serverError.code || "stream-interrupted", `AI 分析中斷：${serverError.message}`);
-        }
-        if (data.text) {
-          result += data.text;
+        parseSsePayload(dataStr, (text) => {
+          result += text;
           if (onChunk) onChunk(result);
-        }
+        });
       } catch (e) {
-        if (/** @type {any} */ (e)?.message?.startsWith("AI 分析中斷")) throw e;
+        if (isApiError(e)) throw e;
         // Ignore JSON parse errors on truly partial lines (will be retried in next read)
       }
     });
@@ -132,9 +141,14 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
     const dataStr = sseBuffer.slice(6).trim();
     if (dataStr && dataStr !== "[DONE]") {
       try {
-        const data = JSON.parse(dataStr);
-        if (data.text) { result += data.text; if (onChunk) onChunk(result); }
-      } catch { /* partial — safe to ignore */ }
+        parseSsePayload(dataStr, (text) => {
+          result += text;
+          if (onChunk) onChunk(result);
+        });
+      } catch (e) {
+        if (isApiError(e)) throw e;
+        /* partial — safe to ignore */
+      }
     }
   }
 
