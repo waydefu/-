@@ -31,7 +31,7 @@ export const APP_CHECK_CONFIG = {
  */
 export const API_CONFIG = {
   FUNCTIONS_URL:       "https://analyzev2-yxfwrism4q-uc.a.run.app",
-  FETCH_TIMEOUT_MS:    90000,
+  FETCH_TIMEOUT_MS:    180000,
   FIRESTORE_TIMEOUT_MS: 5000,
 };
 
@@ -78,7 +78,7 @@ export const MSG = {
   SYNC_SAVE_ERR:  "⚠ 儲存失敗",
   OFFLINE_TOAST:  "雲端資料載入失敗，顯示本機暫存紀錄。",
   SAVE_ERR_TOAST: "雲端儲存失敗（{code}），本機紀錄仍保留。",
-  TIMEOUT:        "請求逾時（超過 90 秒），請稍後再試。",
+  TIMEOUT:        "請求逾時（超過 180 秒），請稍後再試。",
   FETCH_FAIL:     "無法連線至分析服務，請確認網路後重試。",
   NO_FIREBASE:    "驗證服務尚未就緒，請稍後再試。",
   POPUP_CLOSED:   "auth/popup-closed-by-user",

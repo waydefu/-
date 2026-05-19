@@ -87,7 +87,7 @@ Rollout 建議：
 ### Phase 2：前後端契約收斂
 
 - 統一輸入限制：已將前端 `LIMITS.MAX_INPUT_CHARS`、HTML `maxlength` 與後端 `MAX_DRAFT_CHARS` 對齊為 1800 字。
-- 統一 timeout 策略：前端 90 秒 abort，Cloud Function 540 秒；需決定是縮短後端、延長前端，或補上「後端仍可能繼續跑」的 UI 狀態。
+- 統一 timeout 策略：前端 UX timeout 已調整為 180 秒；Cloud Function 保留 540 秒作為 server hard cap，避免長串流被平台過早截斷。
 - 統一錯誤格式：後端 HTTP 錯誤已回 `{ code, message }`，前端保留舊 `{ error }` 相容解析並優先顯示 `message`。
 - 對齊 config 命名：`public/js/config.js` 與 `functions/src/index.ts` 的限制值、錯誤碼、配額語意要保持一致。
 
@@ -183,6 +183,7 @@ npm.cmd run audit:functions
 - 2026-05-19 已部署 Firebase：`functions`、`hosting`、`firestore.rules` 皆已發布；Hosting URL 為 `https://project-7276420283723642146.web.app`，Function URL 維持 `https://analyzev2-yxfwrism4q-uc.a.run.app`。
 - 已統一 HTTP 錯誤格式並部署：後端改回 `{ code, message }`，前端可解析新格式並相容舊 `{ error }`。
 - 已加入並部署 App Check report-only 管線：前端支援 reCAPTCHA Enterprise site key、送出 `X-Firebase-AppCheck`，後端可驗證並記錄但尚未強制阻擋。
+- 已調整並部署 timeout 與 loading 文案：前端分析等待改為 180 秒，進度文案改為安全連線、Groq 串流審閱、整理重寫與摘要。
 
 ---
 

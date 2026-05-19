@@ -101,11 +101,11 @@ export const setLoading = () => {
 <div class="progress-bar"></div>
 </div>
 <div class="analysis-steps">
-<div class="step active" id="step1"><span class="step-icon" aria-hidden="true">⏳</span><span>載入世界資料庫…</span></div>
-<div class="step" id="step2"><span class="step-icon" aria-hidden="true">⏳</span><span>Groq 分析草稿…</span></div>
-<div class="step" id="step3"><span class="step-icon" aria-hidden="true">⏳</span><span>產生五版修改…</span></div>
+<div class="step active" id="step1"><span class="step-icon" aria-hidden="true">⏳</span><span>建立安全分析連線…</span></div>
+<div class="step" id="step2"><span class="step-icon" aria-hidden="true">⏳</span><span>Groq 串流審閱草稿…</span></div>
+<div class="step" id="step3"><span class="step-icon" aria-hidden="true">⏳</span><span>整理重寫與審查摘要…</span></div>
 </div>
-<p class="wait-note">⏱ AI 引擎啟動中，預計 <span>3–5 秒</span> 後開始輸出</p>
+<p class="wait-note">⏱ AI 引擎啟動中，通常數秒後開始輸出；長段落可能需要更久</p>
 <div class="skeleton-wrap" style="margin-top:18px" aria-hidden="true">
 <div class="skeleton-line long"></div>
 <div class="skeleton-line mid"></div>
