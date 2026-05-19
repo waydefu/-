@@ -94,7 +94,7 @@ Rollout 建議：
 ### Phase 3：測試與維護
 
 - 建立 root-level `package.json`：已集中提供 `check`、`build:functions`、`check:frontend`、`check:functions`、`audit:functions` 等命令。
-- 加最小測試集：SSE parser 與 input validation 已補；後續再補 Firestore rules、quota transaction。
+- 加最小測試集：SSE parser、input validation 與 Firestore rules contract 已補；後續再補 quota transaction。
 - 將 README 的常用檢查擴成固定維護流程，避免每次人工記命令。
 - 定期追蹤 `npm audit` low-severity 依賴鏈，但不要直接套用 breaking `--force` 修復。
 
@@ -128,8 +128,8 @@ Rollout 建議：
 - 登入文案維持專案語感，例如「進入守門人系統」、「註冊後同步審查歷史」、「訪客模式不保證跨裝置保存」；不要使用範例圖中的外部品牌或不相關口號。
 - 主工具進入後要降低視覺噪音：登入頁可以有儀式感，但工作區應偏安靜、清晰、可長時間閱讀與修改草稿。
 - 統一狀態文案：loading 步驟需對齊實際後端流程，避免出現「載入世界資料庫」這類已不符合實作的提示。
-- 強化結果閱讀：分析結果可考慮分區顯示「修改後全文」與「審查摘要」，並提供清楚的複製、重新分析、回到輸入位置。
-- 優化歷史面板：讓目前選中項、同步狀態、刪除確認、空狀態更一致，避免小螢幕上文字擠壓。
+- 強化結果閱讀：已分區顯示「修改後全文」與「審查摘要」，並提供完整複製、分區複製、重新分析、回到輸入位置。
+- 優化歷史面板：已強化目前選中項、單筆刪除確認、批次刪除確認與手機文字擠壓處理。
 - 行動裝置檢查：測試登入動畫、textarea 高度、鍵盤彈出、歷史下拉、結果閱讀在手機上的可用性；登入框不得被 HUD、鍵盤或安全區遮住。
 - 效能防護：Three.js 登入背景維持 lazy import，並確認 WebGL cleanup、reduced-motion、低階手機 fallback 都穩定。
 - 可及性：保留 keyboard flow、focus trap、aria-live；新增或調整互動元件時同步檢查 focus、label、對比與文字溢出。
@@ -190,6 +190,9 @@ npm.cmd run audit:functions
 - 已填入 App Check reCAPTCHA Enterprise public site key，仍維持 report-only，不強制阻擋請求。
 - 已新增 SSE helper 最小測試：覆蓋 chunk 邊界、`[DONE]`、串流錯誤 payload 與新舊後端錯誤格式。
 - 已抽出、測試並部署後端草稿驗證：覆蓋空值、非字串、超長、結構性 system prompt 標記與正常小說對白誤殺防護。
+- 已新增 Firestore rules contract 最小測試：覆蓋 owner-only、固定欄位、id/ts 範圍、草稿/結果/preview 長度與 default deny；官方 emulator 套件安裝因本機 npm 逾時，先採零依賴測試鎖住規則意圖。
+- 已優化歷史面板：目前載入項會顯示「目前」標記與更明確的 active 狀態；單筆刪除改為二次確認；手機版調整確認列、按鈕與長文字換行。
+- 已優化結果閱讀：分析結果分成「修改後全文」與「審查摘要」兩塊，新增完整/分區複製、回到輸入與重新分析操作，並補 result parser 測試。
 
 ---
 

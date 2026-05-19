@@ -14,6 +14,8 @@ import {
 } from './firestore.js';
 import { updateCharCount } from './draft.js';
 
+let pendingDeleteId = "";
+
 const updateBadge = () => {
   const n = historyData.length;
   if (!el.histBadge) return;
@@ -43,6 +45,7 @@ const showPanelActions = (visible) => {
 
 /* ── History event delegation (initialized once in boot) ── */
 const handleHistItemClick = (id) => {
+  pendingDeleteId = "";
   const found = historyData.find((h) => h.id === id);
   if (!found) return;
   AppState.set("activeId", found.id);
@@ -57,6 +60,12 @@ const handleHistItemClick = (id) => {
 };
 
 const handleHistItemDelete = async (id) => {
+  if (pendingDeleteId !== id) {
+    pendingDeleteId = id;
+    renderHistory();
+    return;
+  }
+  pendingDeleteId = "";
   const idx = historyData.findIndex((h) => h.id === id);
   if (idx > -1) historyData.splice(idx, 1);
   if (AppState.get("activeId") === id) AppState.set("activeId", null);
@@ -99,6 +108,9 @@ export const initHistoryDelegation = () => {
       e.preventDefault();
       const id = item.dataset.histId;
       if (id) handleHistItemClick(id);
+    } else if (e.key === "Escape" && pendingDeleteId) {
+      pendingDeleteId = "";
+      renderHistory();
     }
   });
 };
@@ -120,10 +132,13 @@ export const renderHistory = () => {
     const itemEl = document.createElement("div");
     const curActiveId = AppState.get("activeId");
     const analyzing = AppState.get("isAnalyzing");
-    itemEl.className = `hist-item${item.id === curActiveId ? " active" : ""}${selectedIds.has(item.id) ? " selected" : ""}${analyzing ? " disabled" : ""}`;
+    const active = item.id === curActiveId;
+    const confirming = pendingDeleteId === item.id;
+    itemEl.className = `hist-item${active ? " active" : ""}${selectedIds.has(item.id) ? " selected" : ""}${confirming ? " confirming" : ""}${analyzing ? " disabled" : ""}`;
     itemEl.setAttribute("role", "listitem");
     itemEl.setAttribute("tabindex", analyzing ? "-1" : "0");
     itemEl.setAttribute("aria-label", `${formatDate(item.ts)}: ${(item.preview || "").substring(0, 30)}`);
+    if (active) itemEl.setAttribute("aria-current", "true");
     itemEl.dataset.histId = item.id;
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -139,6 +154,12 @@ export const renderHistory = () => {
     const timeEl = document.createElement("div");
     timeEl.className = "hi-time";
     timeEl.textContent = formatDate(item.ts);
+    if (active) {
+      const activeMark = document.createElement("span");
+      activeMark.className = "hi-active-mark";
+      activeMark.textContent = "目前";
+      timeEl.appendChild(activeMark);
+    }
     const previewEl = document.createElement("div");
     previewEl.className = "hi-preview";
     previewEl.textContent = item.preview || "";
@@ -146,8 +167,8 @@ export const renderHistory = () => {
     body.appendChild(previewEl);
     const delBtn = document.createElement("button");
     delBtn.className = "hi-del";
-    delBtn.setAttribute("aria-label", `刪除：${(item.preview || "").substring(0, 20)}`);
-    delBtn.textContent = "✕";
+    delBtn.setAttribute("aria-label", confirming ? "再次確認刪除此紀錄" : `刪除：${(item.preview || "").substring(0, 20)}`);
+    delBtn.textContent = confirming ? "確定" : "✕";
     itemEl.appendChild(cb);
     itemEl.appendChild(dot);
     itemEl.appendChild(body);

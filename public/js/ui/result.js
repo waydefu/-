@@ -4,6 +4,7 @@ import { $, el } from '../dom.js';
 import { escapeHtml } from '../utils.js';
 import { announce, showToast } from './toast.js';
 import { copyToClipboard } from './clipboard.js';
+import { splitAnalysisSections } from './result-parser.js';
 
 /** 重置分析結果面板為初始提示。登出/換帳號時呼叫，杜絕上一位的
  *  分析內容殘留畫面被下一位看到（privacy）。 */
@@ -36,8 +37,8 @@ const renderMarkdown = (md) => {
   });
 };
 
-const bindCopyBtn = (rawText) => {
-  const btn = $("copyBtn");
+const bindCopyBtn = (id, rawText, label = "分析結果") => {
+  const btn = $(id);
   if (!btn) return;
   btn.addEventListener("click", async () => {
     const ok = await copyToClipboard(rawText);
@@ -45,17 +46,31 @@ const bindCopyBtn = (rawText) => {
       btn.textContent = "✅ 已複製";
       btn.classList.add("copied");
       btn.setAttribute("aria-label", "已複製到剪貼簿");
-      announce("分析結果已複製到剪貼簿");
+      announce(`${label}已複製到剪貼簿`);
       setTimeout(() => {
-        btn.textContent = "📋 複製";
+        btn.textContent = btn.dataset.label || "📋 複製";
         btn.classList.remove("copied");
-        btn.setAttribute("aria-label", "複製分析結果");
+        btn.setAttribute("aria-label", `複製${label}`);
       }, 2000);
     } else {
       showToast("剪貼簿寫入失敗，請手動選取複製", "error", 3000);
       btn.textContent = "❌ 失敗";
-      setTimeout(() => { btn.textContent = "📋 複製"; }, 2000);
+      setTimeout(() => { btn.textContent = btn.dataset.label || "📋 複製"; }, 2000);
     }
+  });
+};
+
+const bindResultActions = (rawText, sections) => {
+  bindCopyBtn("copyAllBtn", rawText, "完整分析結果");
+  if (sections.rewrite) bindCopyBtn("copyRewriteBtn", sections.rewrite, "修改後全文");
+  if (sections.summary) bindCopyBtn("copySummaryBtn", sections.summary, "審查摘要");
+
+  $("backToDraftBtn")?.addEventListener("click", () => {
+    el.draftInput?.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.draftInput?.focus();
+  });
+  $("reanalyzeBtn")?.addEventListener("click", () => {
+    document.dispatchEvent(new CustomEvent("flg:reanalyze"));
   });
 };
 
@@ -70,25 +85,49 @@ export const setError = (msg) => {
 };
 
 /** Build the result area skeleton (status bar + empty body div). */
-export const setResultShell = (label) => {
+export const setResultShell = (label, showActions = false) => {
   if (!el.result) return;
   el.result.innerHTML = `
 <div class="status-bar">
 <div class="status-left"><span class="status-text">${label}</span></div>
-<button class="copy-btn" id="copyBtn" aria-label="複製分析結果">📋 複製</button>
+${showActions ? `<div class="result-actions" aria-label="分析結果操作">
+<button class="copy-btn" id="copyAllBtn" data-label="📋 全部" aria-label="複製完整分析結果">📋 全部</button>
+<button class="copy-btn" id="backToDraftBtn" aria-label="回到草稿輸入區">↥ 輸入</button>
+<button class="copy-btn" id="reanalyzeBtn" aria-label="重新分析目前草稿">↻ 重析</button>
+</div>` : ""}
 </div>
 <div class="result-body"></div>`;
 };
+
+const renderSection = ({ title, eyebrow, text, copyId }) => `
+<section class="result-section">
+<div class="result-section-head">
+<div>
+<span class="result-eyebrow">${eyebrow}</span>
+<h3>${title}</h3>
+</div>
+<button class="copy-btn result-section-copy" id="${copyId}" data-label="📋 複製" aria-label="複製${title}">📋 複製</button>
+</div>
+<div class="result-section-body">${renderMarkdown(text)}</div>
+</section>`;
 
 /** Full result render: rebuilds shell, parses markdown, binds copy. */
 export const setResult = (rawText, isHistory = false) => {
   if (!el.result) return;
   const label = isHistory ? "✅ 分析完成（歷史紀錄）" : "✅ 分析完成";
-  setResultShell(label);
+  setResultShell(label, true);
   announce(isHistory ? "已載入歷史分析紀錄" : "守門人審閱完成，分析結果已顯示");
   const body = el.result.querySelector(".result-body");
-  if (body) body.innerHTML = renderMarkdown(rawText);
-  bindCopyBtn(rawText);
+  const sections = splitAnalysisSections(rawText);
+  if (body) {
+    body.innerHTML = sections.fallback
+      ? `<section class="result-section"><div class="result-section-head"><div><span class="result-eyebrow">FULL RESPONSE</span><h3>分析結果</h3></div></div><div class="result-section-body">${renderMarkdown(sections.fallback)}</div></section>`
+      : [
+        renderSection({ title: "修改後全文", eyebrow: "REWRITE", text: sections.rewrite, copyId: "copyRewriteBtn" }),
+        renderSection({ title: "審查摘要", eyebrow: "REVIEW", text: sections.summary, copyId: "copySummaryBtn" }),
+      ].join("");
+  }
+  bindResultActions(rawText, sections);
 };
 
 export const setLoading = () => {

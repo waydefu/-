@@ -150,6 +150,9 @@ const initEventListeners = () => {
     if (e.key === "Escape") closeAll();
   });
   el.checkBtn?.addEventListener("click", checkText);
+  document.addEventListener("flg:reanalyze", () => {
+    if (!AppState.get("isAnalyzing")) checkText();
+  });
   el.clearBtn?.addEventListener("click", clearText);
   el.focusModeBtn?.addEventListener("click", () => {
     const on = document.body.classList.toggle("focus-mode");
