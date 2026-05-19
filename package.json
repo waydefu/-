@@ -1,0 +1,12 @@
+{
+  "name": "fantasy-lore-guardian",
+  "private": true,
+  "scripts": {
+    "build": "npm run build:functions",
+    "build:functions": "npm --prefix functions run build",
+    "check": "npm run check:frontend && npm run check:functions",
+    "check:frontend": "npm --prefix functions exec tsc -- --project jsconfig.json --noEmit",
+    "check:functions": "npm --prefix functions run build -- --noEmit",
+    "audit:functions": "npm --prefix functions audit"
+  }
+}

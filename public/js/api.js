@@ -40,15 +40,13 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
   if (cached) return { result: cached, fromCache: true };
 
   const token = user ? await user.getIdToken() : "";
-  const batchId = crypto?.randomUUID?.() ?? `b-${Date.now()}-${Math.random().toString(16).slice(2)}`;
-
   const res = await fetch(API_CONFIG.FUNCTIONS_URL, {
     method:  "POST",
     headers: {
       "Content-Type":  "application/json",
       "Authorization": `Bearer ${token}`,
     },
-    body:   JSON.stringify({ text: draft, batchId }),
+    body:   JSON.stringify({ text: draft }),
     signal,
   });
 

@@ -11,8 +11,9 @@ admin.initializeApp();
 // ── Per-uid daily quota ───────────────────────────────────────
 const DAILY_LIMIT_ANON   = 5;
 const DAILY_LIMIT_AUTHED = 30;
+const MAX_DRAFT_CHARS = 1800;
 
-async function checkAndIncrementQuota(uid: string, isAnonymous: boolean, batchId: string): Promise<void> {
+async function checkAndIncrementQuota(uid: string, isAnonymous: boolean, quotaEventId: string): Promise<void> {
   const limit = isAnonymous ? DAILY_LIMIT_ANON : DAILY_LIMIT_AUTHED;
   const today = new Date().toISOString().slice(0, 10);
   const ref = admin.firestore().doc(`quota/${uid}`);
@@ -23,18 +24,18 @@ async function checkAndIncrementQuota(uid: string, isAnonymous: boolean, batchId
     const sameDay = d?.date === today;
     const count = sameDay ? (d?.count || 0) : 0;
     const batches: Record<string, boolean> = sameDay ? (d?.batches || {}) : {};
-    // 同一篇（batchId）的後續分塊：已扣過配額，放行不重扣
-    if (batches[batchId]) return;
+    // quotaEventId is generated server-side per accepted analysis request.
+    if (batches[quotaEventId]) return;
     if (count >= limit) {
       throw Object.assign(new Error("QUOTA_EXCEEDED"), { code: "quota-exceeded" });
     }
-    batches[batchId] = true;
+    batches[quotaEventId] = true;
     tx.set(ref, { date: today, count: count + 1, batches });
   });
 }
 
-// Groq 失敗時退還該 batch 已扣的 1 次（冪等：未扣或已退則 no-op）
-async function refundQuota(uid: string, batchId: string): Promise<void> {
+// Groq 失敗時退還該 request 已扣的 1 次（冪等：未扣或已退則 no-op）
+async function refundQuota(uid: string, quotaEventId: string): Promise<void> {
   const today = new Date().toISOString().slice(0, 10);
   const ref = admin.firestore().doc(`quota/${uid}`);
   await admin.firestore().runTransaction(async (tx) => {
@@ -42,8 +43,8 @@ async function refundQuota(uid: string, batchId: string): Promise<void> {
     const d = snap.data();
     if (!d || d.date !== today) return;
     const batches: Record<string, boolean> = d.batches || {};
-    if (!batches[batchId]) return;
-    delete batches[batchId];
+    if (!batches[quotaEventId]) return;
+    delete batches[quotaEventId];
     tx.set(ref, { date: today, count: Math.max(0, (d.count || 0) - 1), batches });
   });
 }
@@ -112,11 +113,29 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
     return;
   }
 
-  // ── Quota（整篇一組 batchId；分塊是內部實作，不重複計次）──
+  // ── Input validation ──
+  const draft = (req.body?.text as string) || "";
+  if (!draft.trim()) {
+    applyCors(req, res);
+    res.status(400).json({ error: "Bad Request: Missing text" });
+    return;
+  }
+  if (draft.length > MAX_DRAFT_CHARS) {
+    applyCors(req, res);
+    res.status(400).json({ error: `單段審查上限 ${MAX_DRAFT_CHARS} 字，請縮短或分段送審（目前 ${draft.length} 字）。` });
+    return;
+  }
+  if (looksLikeInjection(draft)) {
+    applyCors(req, res);
+    res.status(400).json({ error: "Bad Request: Invalid format detected." });
+    return;
+  }
+
+  // ── Quota ──
   const isAnonymous = decodedToken.firebase?.sign_in_provider === "anonymous";
-  const batchId = ((req.body?.batchId as string) || "").trim() || `single-${decodedToken.uid}-${Date.now()}`;
+  const quotaEventId = admin.firestore().collection("_quotaEvents").doc().id;
   try {
-    await checkAndIncrementQuota(decodedToken.uid, isAnonymous, batchId);
+    await checkAndIncrementQuota(decodedToken.uid, isAnonymous, quotaEventId);
   } catch (err: any) {
     applyCors(req, res);
     if (err.code === "quota-exceeded") {
@@ -126,24 +145,6 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
       console.error("[FLG] quota error", err);
       res.status(500).json({ error: "配額系統異常，請稍後再試。" });
     }
-    return;
-  }
-
-  // ── Input validation ──
-  const draft = (req.body?.text as string) || "";
-  if (!draft.trim()) {
-    applyCors(req, res);
-    res.status(400).json({ error: "Bad Request: Missing text" });
-    return;
-  }
-  if (draft.length > 2000) {
-    applyCors(req, res);
-    res.status(400).json({ error: `單段審查上限 1800 字，請縮短或分段送審（目前 ${draft.length} 字）。` });
-    return;
-  }
-  if (looksLikeInjection(draft)) {
-    applyCors(req, res);
-    res.status(400).json({ error: "Bad Request: Invalid format detected." });
     return;
   }
 
@@ -179,7 +180,7 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
     });
   } catch (apiErr: any) {
     console.error("[FLG] Groq API error", apiErr?.message);
-    await refundQuota(decodedToken.uid, batchId);
+    await refundQuota(decodedToken.uid, quotaEventId);
     applyCors(req, res);
     res.status(503).json({ error: `分析服務暫時不可用：${apiErr?.message || "API Error"}` });
     return;

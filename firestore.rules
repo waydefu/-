@@ -3,7 +3,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // users/{uid}/history/{id} — 僅本人可讀寫；草稿 ≤ 8KB、結果 ≤ 80KB
+    // users/{uid}/history/{id} — 僅本人可讀寫；草稿 <= 8KB、結果 <= 80KB
     match /users/{userId}/history/{historyId} {
       allow read: if isOwner(userId);
       allow delete: if isOwner(userId);
@@ -15,12 +15,18 @@ service cloud.firestore {
 
       function validHistoryDoc() {
         let d = request.resource.data;
-        return d.keys().hasAll(['id', 'ts', 'draft', 'result', 'preview'])
+        return d.keys().hasOnly(['id', 'ts', 'draft', 'result', 'preview'])
           && d.id is string
+          && d.id == historyId
+          && d.id.matches('^[A-Za-z0-9_-]{8,80}$')
           && d.draft is string
           && d.result is string
           && d.preview is string
           && d.ts is number
+          && d.ts >= 1700000000000
+          && d.ts <= 4102444800000
+          && d.draft.size() > 0
+          && d.result.size() > 0
           && d.draft.size() <= 8192
           && d.result.size() <= 81920
           && d.preview.size() <= 200;

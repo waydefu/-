@@ -33,7 +33,7 @@ AI 西幻單段文學級審查系統：Groq 推理 + Firebase Serverless。使�
 
 Groq 免費 on-demand tier 的 TPM 約束會限制 prompt + max_tokens 總量。本版定位為單段深度審查：
 
-- 單次輸入上限：前端 1800 字，後端目前拒絕超過 2000 字的請求。
+- 單次輸入上限：前後端皆為 1800 字。
 - 不逐項對照外部《設定書》：依草稿內在邏輯與通用西幻文明法則審查。
 - 後端 prompt 不注入外部知識庫，以控制 token 成本並維持免費 tier 內的單段審查定位。
 
@@ -57,10 +57,10 @@ Groq 免費 on-demand tier 的 TPM 約束會限制 prompt + max_tokens 總量。
 
 ### Phase 1：安全與成本防護
 
-- 修正後端配額信任邊界：`batchId` 目前由前端送出，後端不應以 client-provided id 作為免扣配額依據。
+- 修正後端配額信任邊界：已移除前端提供 `batchId` 的免扣配額路徑，後端改以 server-generated quota event 計次與退還。
 - 導入 Firebase App Check，降低外部腳本直接呼叫 `analyzeV2` 的風險。
 - 收斂匿名使用策略：保留訪客體驗，但搭配 App Check、節流與更可靠的濫用偵測。
-- 強化 Firestore rules：將 `hasAll` 收緊為 `hasOnly`，限制多餘欄位，並檢查 `historyId == id`、`ts` 合理範圍與欄位長度。
+- 強化 Firestore rules：已將 `hasAll` 收緊為 `hasOnly`，限制多餘欄位，並檢查 `historyId == id`、`id` 格式、`ts` 合理範圍與欄位長度。
 - 維持 Secret hygiene：文件、程式碼、issue、截圖都不保存 key、key prefix 或 Secret Manager 輸出。
 
 #### App Check 落地決策
@@ -86,14 +86,14 @@ Rollout 建議：
 
 ### Phase 2：前後端契約收斂
 
-- 統一輸入限制：前端目前是 1800 字，後端硬限制目前是 2000 字，建議統一成同一個明確規格。
+- 統一輸入限制：已將前端 `LIMITS.MAX_INPUT_CHARS`、HTML `maxlength` 與後端 `MAX_DRAFT_CHARS` 對齊為 1800 字。
 - 統一 timeout 策略：前端 90 秒 abort，Cloud Function 540 秒；需決定是縮短後端、延長前端，或補上「後端仍可能繼續跑」的 UI 狀態。
 - 統一錯誤格式：後端回 `{ code, message }`，前端依 `code` 對應顯示文案，避免解析錯誤字串。
 - 對齊 config 命名：`public/js/config.js` 與 `functions/src/index.ts` 的限制值、錯誤碼、配額語意要保持一致。
 
 ### Phase 3：測試與維護
 
-- 建立 root-level `package.json`，集中提供 `check`、`build:functions`、`check:frontend`、`audit:functions` 等命令。
+- 建立 root-level `package.json`：已集中提供 `check`、`build:functions`、`check:frontend`、`check:functions`、`audit:functions` 等命令。
 - 加最小測試集：Firestore rules、SSE parser、quota transaction、input validation。
 - 將 README 的常用檢查擴成固定維護流程，避免每次人工記命令。
 - 定期追蹤 `npm audit` low-severity 依賴鏈，但不要直接套用 breaking `--force` 修復。
@@ -158,8 +158,9 @@ Functions deploy 會透過 `firebase.json` 的 predeploy 自動執行 `npm --pre
 常用檢查：
 
 ```powershell
-functions\node_modules\.bin\tsc.cmd --noEmit --project functions\tsconfig.json
-functions\node_modules\.bin\tsc.cmd --project jsconfig.json --noEmit
+npm.cmd run check
+npm.cmd run build:functions
+npm.cmd run audit:functions
 ```
 
 ---
@@ -169,6 +170,17 @@ functions\node_modules\.bin\tsc.cmd --project jsconfig.json --noEmit
 - 不要在 Markdown、程式碼、截圖或 issue 內記錄任何 API key、key prefix 或 Secret Manager 輸出。
 - 若重新部署 Functions 後 URL 改變，需同步更新 `public/js/config.js` 的 `API_CONFIG.FUNCTIONS_URL` 與 `public/index.html` 的 CSP `connect-src`。
 - 後續優化依「全專案優化方案」順序推進，優先處理安全、成本與資料規則，再做 UI 與體驗調整。
+
+---
+
+## 優化紀錄
+
+- 已初始化本機 Git baseline，可用 `git status`、`git diff`、`git restore <path>` 檢查與復原。
+- 已新增 root-level `package.json`，統一前端 JS 與 Functions TypeScript 檢查命令。
+- 已強化 Firestore history rules：只允許固定欄位、文件 id 必須等於資料內 `id`、限制 id 格式、時間戳與字串長度。
+- 已修正配額信任邊界：分析請求不再接受前端 `batchId` 作為免扣依據，輸入驗證也移到扣配額之前。
+- 已統一輸入上限：前端、HTML 與後端都以 1800 字為單段審查限制。
+- 2026-05-19 已部署 Firebase：`functions`、`hosting`、`firestore.rules` 皆已發布；Hosting URL 為 `https://project-7276420283723642146.web.app`，Function URL 維持 `https://analyzev2-yxfwrism4q-uc.a.run.app`。
 
 ---
 
