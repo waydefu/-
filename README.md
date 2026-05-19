@@ -94,7 +94,7 @@ Rollout 建議：
 ### Phase 3：測試與維護
 
 - 建立 root-level `package.json`：已集中提供 `check`、`build:functions`、`check:frontend`、`check:functions`、`audit:functions` 等命令。
-- 加最小測試集：SSE parser 已補；後續再補 Firestore rules、quota transaction、input validation。
+- 加最小測試集：SSE parser 與 input validation 已補；後續再補 Firestore rules、quota transaction。
 - 將 README 的常用檢查擴成固定維護流程，避免每次人工記命令。
 - 定期追蹤 `npm audit` low-severity 依賴鏈，但不要直接套用 breaking `--force` 修復。
 
@@ -189,6 +189,7 @@ npm.cmd run audit:functions
 - 已修正 SSE error handling：串流期間若後端送出 `data: { error }`，前端會正確中斷並顯示錯誤，不會被 JSON parse fallback 吞掉。
 - 已填入 App Check reCAPTCHA Enterprise public site key，仍維持 report-only，不強制阻擋請求。
 - 已新增 SSE helper 最小測試：覆蓋 chunk 邊界、`[DONE]`、串流錯誤 payload 與新舊後端錯誤格式。
+- 已抽出後端草稿驗證並新增最小測試：覆蓋空值、非字串、超長、結構性 system prompt 標記與正常小說對白誤殺防護。
 
 ---
 

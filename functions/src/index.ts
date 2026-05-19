@@ -4,6 +4,7 @@ import * as admin from "firebase-admin";
 import { createHash } from "crypto";
 import Groq from "groq-sdk";
 import { SYSTEM_PROMPT, ALLOWED_ORIGINS } from "./config";
+import { validateDraftInput } from "./validation";
 
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 
@@ -12,7 +13,6 @@ admin.initializeApp();
 // ── Per-uid daily quota ───────────────────────────────────────
 const DAILY_LIMIT_ANON   = 5;
 const DAILY_LIMIT_AUTHED = 30;
-const MAX_DRAFT_CHARS = 1800;
 const ENFORCE_APP_CHECK = false;
 const LOG_MISSING_APP_CHECK = false;
 
@@ -106,23 +106,6 @@ async function verifyAppCheck(req: any, requestId: string): Promise<AppCheckStat
   }
 }
 
-// ── Prompt injection guard ───────────────────────────────────
-function looksLikeInjection(text: string): boolean {
-  // 本系統輸入即小說對白，「忽略前述指令」這類自然語句會出現在正常創作中，
-  // 攔它會誤殺草稿。故只攔「結構性提示劫持標記」（明顯非小說的技術標記，中英文涵蓋）；
-  // 真正的注入防線是 SYSTEM_PROMPT 開頭隔離聲明 + userPrompt 的 DRAFT 邊界。
-  const patterns = [
-    /\[\s*system\s*\]/i,
-    /\[\s*系統\s*\]/,
-    /<<\s*sys\s*>>/i,
-    /<\|\s*(?:im_start|im_end|system|endoftext)\s*\|>/i,
-    /```\s*system/i,
-    /(?:^|\n)\s*system\s*[:：]/i,
-    /(?:^|\n)\s*系統\s*(?:提示|指令)\s*[:：]/,
-  ];
-  return patterns.some((p) => p.test(text));
-}
-
 // ── Main handler ─────────────────────────────────────────────
 const analyzeHandler = async (req: any, res: any): Promise<void> => {
   const requestId = getRequestId(req);
@@ -170,22 +153,14 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   const uidHash = hashUid(decodedToken.uid);
 
   // ── Input validation ──
-  const draft = (req.body?.text as string) || "";
-  if (!draft.trim()) {
-    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "missing-text", appCheckStatus });
-    sendError(req, res, 400, "missing-text", "請先輸入要審查的草稿。");
+  const draftValidation = validateDraftInput(req.body?.text);
+  if (!draftValidation.ok) {
+    const len = typeof req.body?.text === "string" ? req.body.text.length : 0;
+    logEvent("request_rejected", { requestId, uidHash, status: 400, code: draftValidation.code, len, appCheckStatus });
+    sendError(req, res, 400, draftValidation.code, draftValidation.message);
     return;
   }
-  if (draft.length > MAX_DRAFT_CHARS) {
-    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "draft-too-long", len: draft.length, appCheckStatus });
-    sendError(req, res, 400, "draft-too-long", `單段審查上限 ${MAX_DRAFT_CHARS} 字，請縮短或分段送審（目前 ${draft.length} 字）。`);
-    return;
-  }
-  if (looksLikeInjection(draft)) {
-    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "invalid-format", len: draft.length, appCheckStatus });
-    sendError(req, res, 400, "invalid-format", "草稿格式含有系統提示標記，請移除後再試。");
-    return;
-  }
+  const draft = draftValidation.draft;
 
   // ── Quota ──
   const isAnonymous = decodedToken.firebase?.sign_in_provider === "anonymous";
