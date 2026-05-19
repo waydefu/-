@@ -117,7 +117,7 @@ const checkText = async () => {
     await addHistory(draft, result);
   } catch (err) {
     if (reqId !== AppState.get("currentReqId")) return;
-    let msg = err?.message || "未知錯誤，請稍後再試。";
+    let msg = err?.userMessage || err?.message || "未知錯誤，請稍後再試。";
     if (err?.name === "AbortError") msg = MSG.TIMEOUT;
     else if (msg.includes("Failed to fetch") || msg.includes("NetworkError")) msg = MSG.FETCH_FAIL;
     setError(msg);

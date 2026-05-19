@@ -88,7 +88,7 @@ Rollout 建議：
 
 - 統一輸入限制：已將前端 `LIMITS.MAX_INPUT_CHARS`、HTML `maxlength` 與後端 `MAX_DRAFT_CHARS` 對齊為 1800 字。
 - 統一 timeout 策略：前端 90 秒 abort，Cloud Function 540 秒；需決定是縮短後端、延長前端，或補上「後端仍可能繼續跑」的 UI 狀態。
-- 統一錯誤格式：後端回 `{ code, message }`，前端依 `code` 對應顯示文案，避免解析錯誤字串。
+- 統一錯誤格式：後端 HTTP 錯誤已回 `{ code, message }`，前端保留舊 `{ error }` 相容解析並優先顯示 `message`。
 - 對齊 config 命名：`public/js/config.js` 與 `functions/src/index.ts` 的限制值、錯誤碼、配額語意要保持一致。
 
 ### Phase 3：測試與維護
@@ -181,6 +181,7 @@ npm.cmd run audit:functions
 - 已修正配額信任邊界：分析請求不再接受前端 `batchId` 作為免扣依據，輸入驗證也移到扣配額之前。
 - 已統一輸入上限：前端、HTML 與後端都以 1800 字為單段審查限制。
 - 2026-05-19 已部署 Firebase：`functions`、`hosting`、`firestore.rules` 皆已發布；Hosting URL 為 `https://project-7276420283723642146.web.app`，Function URL 維持 `https://analyzev2-yxfwrism4q-uc.a.run.app`。
+- 已統一 HTTP 錯誤格式並部署：後端改回 `{ code, message }`，前端可解析新格式並相容舊 `{ error }`。
 
 ---
 

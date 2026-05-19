@@ -21,6 +21,28 @@ function consumeSseLine(buffer, onData) {
   return remaining;
 }
 
+const normalizeServerError = (body, fallback = "") => {
+  if (!body) return { code: "", message: fallback };
+  if (typeof body === "string") return { code: "", message: body || fallback };
+  if (typeof body.error === "string") return { code: body.code || "", message: body.error || fallback };
+  if (body.error && typeof body.error === "object") {
+    return {
+      code: body.error.code || body.code || "",
+      message: body.error.message || body.message || fallback,
+    };
+  }
+  return { code: body.code || "", message: body.message || fallback };
+};
+
+const makeApiError = (status, code, message) => {
+  /** @type {Error & { status?: number, code?: string, userMessage?: string }} */
+  const err = new Error(`伺服器錯誤：HTTP ${status}${message ? " — " + message : ""}`);
+  err.status = status;
+  err.code = code || "";
+  err.userMessage = message || "";
+  return err;
+};
+
 // ── Core fetcher ──────────────────────────────────────────────
 
 /**
@@ -51,14 +73,14 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
   });
 
   if (!res.ok) {
-    let errMsg = "";
+    let serverError = { code: "", message: "" };
     try {
       const body = await res.json();
-      errMsg = body.error || "";
+      serverError = normalizeServerError(body);
     } catch {
-      errMsg = await res.text().catch(() => "");
+      serverError = normalizeServerError(await res.text().catch(() => ""));
     }
-    throw new Error(`伺服器錯誤：HTTP ${res.status}${errMsg ? " — " + errMsg : ""}`);
+    throw makeApiError(res.status, serverError.code, serverError.message);
   }
 
   const reader = res.body.getReader();
@@ -74,7 +96,10 @@ export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
       if (dataStr === "[DONE]") return;
       try {
         const data = JSON.parse(dataStr);
-        if (data.error) throw new Error(`AI 分析中斷：${data.error}`);
+        if (data.error) {
+          const serverError = normalizeServerError(data, "Stream interrupted");
+          throw makeApiError(200, serverError.code || "stream-interrupted", `AI 分析中斷：${serverError.message}`);
+        }
         if (data.text) {
           result += data.text;
           if (onChunk) onChunk(result);

@@ -62,6 +62,11 @@ function applyCors(req: any, res: any): void {
   res.set("Vary", "Origin");
 }
 
+function sendError(req: any, res: any, status: number, code: string, message: string): void {
+  applyCors(req, res);
+  res.status(status).json({ code, message });
+}
+
 // ── Prompt injection guard ───────────────────────────────────
 function looksLikeInjection(text: string): boolean {
   // 本系統輸入即小說對白，「忽略前述指令」這類自然語句會出現在正常創作中，
@@ -92,15 +97,14 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   }
 
   if (req.method !== "POST") {
-    res.status(405).send("Method Not Allowed");
+    sendError(req, res, 405, "method-not-allowed", "Method Not Allowed");
     return;
   }
 
   // ── Auth ──
   const authHeader = req.headers.authorization as string | undefined;
   if (!authHeader?.startsWith("Bearer ")) {
-    applyCors(req, res);
-    res.status(401).json({ error: "Unauthorized" });
+    sendError(req, res, 401, "unauthorized", "請先登入後再使用。");
     return;
   }
   const idToken = authHeader.split("Bearer ")[1];
@@ -108,26 +112,22 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   try {
     decodedToken = await admin.auth().verifyIdToken(idToken);
   } catch {
-    applyCors(req, res);
-    res.status(403).json({ error: "Forbidden: Invalid Token" });
+    sendError(req, res, 403, "invalid-token", "登入狀態已失效，請重新登入。");
     return;
   }
 
   // ── Input validation ──
   const draft = (req.body?.text as string) || "";
   if (!draft.trim()) {
-    applyCors(req, res);
-    res.status(400).json({ error: "Bad Request: Missing text" });
+    sendError(req, res, 400, "missing-text", "請先輸入要審查的草稿。");
     return;
   }
   if (draft.length > MAX_DRAFT_CHARS) {
-    applyCors(req, res);
-    res.status(400).json({ error: `單段審查上限 ${MAX_DRAFT_CHARS} 字，請縮短或分段送審（目前 ${draft.length} 字）。` });
+    sendError(req, res, 400, "draft-too-long", `單段審查上限 ${MAX_DRAFT_CHARS} 字，請縮短或分段送審（目前 ${draft.length} 字）。`);
     return;
   }
   if (looksLikeInjection(draft)) {
-    applyCors(req, res);
-    res.status(400).json({ error: "Bad Request: Invalid format detected." });
+    sendError(req, res, 400, "invalid-format", "草稿格式含有系統提示標記，請移除後再試。");
     return;
   }
 
@@ -137,13 +137,12 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   try {
     await checkAndIncrementQuota(decodedToken.uid, isAnonymous, quotaEventId);
   } catch (err: any) {
-    applyCors(req, res);
     if (err.code === "quota-exceeded") {
       const label = isAnonymous ? "訪客每日上限 5 次" : "每日上限 30 次";
-      res.status(429).json({ error: `每日使用上限已達（${label}），請明日再試。` });
+      sendError(req, res, 429, "quota-exceeded", `每日使用上限已達（${label}），請明日再試。`);
     } else {
       console.error("[FLG] quota error", err);
-      res.status(500).json({ error: "配額系統異常，請稍後再試。" });
+      sendError(req, res, 500, "quota-error", "配額系統異常，請稍後再試。");
     }
     return;
   }
@@ -181,8 +180,7 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   } catch (apiErr: any) {
     console.error("[FLG] Groq API error", apiErr?.message);
     await refundQuota(decodedToken.uid, quotaEventId);
-    applyCors(req, res);
-    res.status(503).json({ error: `分析服務暫時不可用：${apiErr?.message || "API Error"}` });
+    sendError(req, res, 503, "ai-unavailable", `分析服務暫時不可用：${apiErr?.message || "API Error"}`);
     return;
   }
 
@@ -208,7 +206,12 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
     console.log("[FLG] Done", { uid: decodedToken.uid, ms: Date.now() - startTime });
   } catch (streamErr: any) {
     console.error("[FLG] Stream error", streamErr?.message);
-    res.write(`data: ${JSON.stringify({ error: streamErr?.message || "Stream interrupted" })}\n\n`);
+    res.write(`data: ${JSON.stringify({
+      error: {
+        code: "stream-interrupted",
+        message: streamErr?.message || "Stream interrupted",
+      },
+    })}\n\n`);
     res.write("data: [DONE]\n\n");
   }
   res.end();
