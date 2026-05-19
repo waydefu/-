@@ -12,7 +12,7 @@ import { analysisCache } from './cache.js';
  * @param {(data: string) => void} onData
  * @returns {string} remaining unparsed buffer tail
  */
-function consumeSseLine(buffer, onData) {
+export function consumeSseLine(buffer, onData) {
   const lines = buffer.split("\n");
   const remaining = lines.pop() ?? ""; // last item may be incomplete
   for (const line of lines) {
@@ -21,7 +21,7 @@ function consumeSseLine(buffer, onData) {
   return remaining;
 }
 
-const normalizeServerError = (body, fallback = "") => {
+export const normalizeServerError = (body, fallback = "") => {
   if (!body) return { code: "", message: fallback };
   if (typeof body === "string") return { code: "", message: body || fallback };
   if (typeof body.error === "string") return { code: body.code || "", message: body.error || fallback };
@@ -34,7 +34,7 @@ const normalizeServerError = (body, fallback = "") => {
   return { code: body.code || "", message: body.message || fallback };
 };
 
-const makeApiError = (status, code, message) => {
+export const makeApiError = (status, code, message) => {
   /** @type {Error & { status?: number, code?: string, userMessage?: string }} */
   const err = new Error(`伺服器錯誤：HTTP ${status}${message ? " — " + message : ""}`);
   err.status = status;
@@ -43,12 +43,12 @@ const makeApiError = (status, code, message) => {
   return err;
 };
 
-const isApiError = (err) => {
+export const isApiError = (err) => {
   const e = /** @type {any} */ (err);
   return !!(e?.code || e?.userMessage || e?.status);
 };
 
-const parseSsePayload = (dataStr, onText) => {
+export const parseSsePayload = (dataStr, onText) => {
   if (dataStr === "[DONE]") return;
   const data = JSON.parse(dataStr);
   if (data.error) {

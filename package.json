@@ -1,12 +1,14 @@
 {
   "name": "fantasy-lore-guardian",
   "private": true,
+  "type": "module",
   "scripts": {
     "build": "npm run build:functions",
     "build:functions": "npm --prefix functions run build",
     "check": "npm run check:frontend && npm run check:functions",
     "check:frontend": "npm --prefix functions exec tsc -- --project jsconfig.json --noEmit",
     "check:functions": "npm --prefix functions run build -- --noEmit",
+    "test": "node --test tests/*.test.mjs",
     "audit:functions": "npm --prefix functions audit"
   }
 }
