@@ -19,7 +19,7 @@ export const FIREBASE_CONFIG = {
 
 /** Firebase App Check is staged: blank site key keeps it disabled. */
 export const APP_CHECK_CONFIG = {
-  RECAPTCHA_ENTERPRISE_SITE_KEY: "",
+  RECAPTCHA_ENTERPRISE_SITE_KEY: "6LedZPIsAAAAABlAQUZHEgY6wcohTTucKOWbTWp2",
 };
 
 /**

@@ -79,7 +79,7 @@ App Check 不需要另做登入頁。登入頁負責 Firebase Auth；App Check �
 
 Rollout 建議：
 
-- 第一階段：App Check 基礎管線已接好；`APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY` 為空時不啟用。填入 site key 後，前端會送 token，後端會驗證並記錄缺失/失敗，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
+- 第一階段：App Check 基礎管線已接好；`APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY` 已填入 public site key。前端會送 token，後端會驗證並記錄缺失/失敗，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
 - 第二階段：確認 App Check metrics 與錯誤率正常後，再強制拒絕未驗證請求。
 - 本機開發：使用 App Check debug token，避免 localhost / emulator 開發被 reCAPTCHA 卡住。
 - UI 原則：App Check 對使用者應不可見，不新增獨立頁面；若未來另做登入頁，應視為 UI / 效能架構決策，而不是 App Check 的必要條件。
@@ -186,6 +186,7 @@ npm.cmd run audit:functions
 - 已調整並部署 timeout 與 loading 文案：前端分析等待改為 180 秒，進度文案改為安全連線、Groq 串流審閱、整理重寫與摘要。
 - 已調整 App Check 與 Functions logging：site key 未啟用時不刷 missing-token log，Functions 改用 structured logging，記錄 request id、uid hash、latency 與狀態，不記錄草稿內容。
 - 已修正 SSE error handling：串流期間若後端送出 `data: { error }`，前端會正確中斷並顯示錯誤，不會被 JSON parse fallback 吞掉。
+- 已填入 App Check reCAPTCHA Enterprise public site key，仍維持 report-only，不強制阻擋請求。
 
 ---
 
