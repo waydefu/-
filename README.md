@@ -160,8 +160,58 @@ Functions deploy 會透過 `firebase.json` 的 predeploy 自動執行 `npm --pre
 ```powershell
 npm.cmd run check
 npm.cmd test
+npm.cmd run smoke:hosting
 npm.cmd run build:functions
 npm.cmd run audit:functions
+```
+
+---
+
+## 登入後煙霧測試
+
+每次改登入頁、Auth、Hosting 或 Functions 後，先跑自動 smoke，再做一次人工登入後檢查：
+
+```powershell
+npm.cmd run smoke:hosting
+```
+
+自動 smoke 覆蓋：
+
+- Hosting 首頁 200。
+- 首頁載入目前 `js/app.js?v=27`。
+- Email/Password 登入表單存在。
+- `EXTERNAL IDENTITY` Google / 訪客入口存在。
+- App Check SDK 與 public site key 存在。
+- `result-parser.js` 已部署。
+- 未登入 POST `analyzeV2` 會回標準 `401 { code, message }`，不碰 Groq。
+
+人工登入後 smoke checklist：
+
+- Email 註冊成功，導覽列顯示 displayName。
+- Email 登入成功，帳號面板顯示 email 或 email 前綴。
+- Google 登入成功。
+- 訪客登入成功，帳號面板顯示訪客模式。
+- 登出後結果面板不殘留上一個帳號的分析內容，密碼欄位已清空。
+- 送出一段短草稿後，SSE 有開始輸出，結果分成「修改後全文」與「審查摘要」。
+- 歷史紀錄會新增並同步；換帳號後歷史不互相污染。
+- 手機寬度下登入面板、鍵盤、歷史面板與結果操作按鈕不擠壓。
+
+## App Check 強制模式前置
+
+目前 App Check 仍維持 report-only：前端會嘗試送 `X-Firebase-AppCheck`，後端會驗證並把 `appCheckStatus` 寫進 structured logs，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
+
+最近一次 log 觀察仍有實際分析請求顯示 `appCheckStatus: 'missing'`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。切強制前必須先確認：
+
+- production 網址 `https://project-7276420283723642146.web.app` 的 reCAPTCHA Enterprise domain 設定正確。
+- 使用 Email、Google、訪客三種登入後各送一次短草稿，Functions log 的 `analysis_start` / `analysis_done` 都是 `appCheckStatus: 'valid'`。
+- 沒有新的 `app_check_invalid` 警告。
+- 手機與桌機都能拿到 App Check token。
+- App Check metrics 顯示合法流量穩定後，再改 `functions/src/index.ts` 的 `ENFORCE_APP_CHECK = true` 並部署 Functions。
+
+查 log 可用：
+
+```powershell
+firebase functions:log --only analyzeV2 -n 80
 ```
 
 ---
@@ -196,6 +246,7 @@ npm.cmd run audit:functions
 - 已優化結果閱讀：分析結果分成「修改後全文」與「審查摘要」兩塊，新增完整/分區複製、回到輸入與重新分析操作，並補 result parser 測試。
 - 已新增 Email/Password 登入與註冊 UI：中央帳密面板支援登入/註冊切換、顯示名稱、密碼確認與本地錯誤提示；Google / 訪客登入移到 `EXTERNAL IDENTITY` 次要模組。需確認 Firebase Console 已啟用 Email/Password provider。
 - 已收斂登入後帳號顯示：Email/Password、Google、訪客共用通用帳號文案；Email 帳號會優先顯示 displayName，否則顯示 email 前綴，登出/重回登入頁會清空密碼欄位。
+- 已新增 Hosting smoke 腳本與登入後人工 smoke checklist；App Check 強制模式前置也已整理，目前因 log 仍出現 `appCheckStatus: 'missing'`，暫不切強制。
 
 ---
 

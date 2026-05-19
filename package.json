@@ -9,6 +9,7 @@
     "check:frontend": "npm --prefix functions exec tsc -- --project jsconfig.json --noEmit",
     "check:functions": "npm --prefix functions run build -- --noEmit",
     "test": "npm run build:functions && node --test tests/*.test.mjs",
+    "smoke:hosting": "node scripts/smoke-hosting.mjs",
     "audit:functions": "npm --prefix functions audit"
   }
 }
