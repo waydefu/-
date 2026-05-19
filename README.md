@@ -94,7 +94,7 @@ Rollout 建議：
 ### Phase 3：測試與維護
 
 - 建立 root-level `package.json`：已集中提供 `check`、`build:functions`、`check:frontend`、`check:functions`、`audit:functions` 等命令。
-- 加最小測試集：SSE parser、input validation 與 Firestore rules contract 已補；後續再補 quota transaction。
+- 加最小測試集：SSE parser、input validation、Firestore rules contract 與 quota transaction 已補。
 - 將 README 的常用檢查擴成固定維護流程，避免每次人工記命令。
 - 定期追蹤 `npm audit` low-severity 依賴鏈，但不要直接套用 breaking `--force` 修復。
 
@@ -191,6 +191,7 @@ npm.cmd run audit:functions
 - 已新增 SSE helper 最小測試：覆蓋 chunk 邊界、`[DONE]`、串流錯誤 payload 與新舊後端錯誤格式。
 - 已抽出、測試並部署後端草稿驗證：覆蓋空值、非字串、超長、結構性 system prompt 標記與正常小說對白誤殺防護。
 - 已新增 Firestore rules contract 最小測試：覆蓋 owner-only、固定欄位、id/ts 範圍、草稿/結果/preview 長度與 default deny；官方 emulator 套件安裝因本機 npm 逾時，先採零依賴測試鎖住規則意圖。
+- 已抽出 quota transaction helper 並新增最小測試：覆蓋每日重置、server-generated event id 冪等扣款、匿名/登入每日上限、Groq 失敗退還與退還冪等。
 - 已優化歷史面板：目前載入項會顯示「目前」標記與更明確的 active 狀態；單筆刪除改為二次確認；手機版調整確認列、按鈕與長文字換行。
 - 已優化結果閱讀：分析結果分成「修改後全文」與「審查摘要」兩塊，新增完整/分區複製、回到輸入與重新分析操作，並補 result parser 測試。
 
