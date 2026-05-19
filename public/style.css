@@ -970,6 +970,20 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   pointer-events: none;
 }
 #loginScreen .login-box { position: relative; z-index: 2; }
+.login-box {
+  width: min(760px, calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 32px));
+  overflow-y: auto;
+  padding: clamp(22px, 4vw, 32px);
+  border: 1px solid rgba(232, 160, 32, 0.24);
+  border-radius: 18px;
+  background:
+    linear-gradient(160deg, rgba(25, 13, 3, 0.88), rgba(5, 3, 1, 0.82)),
+    radial-gradient(circle at 50% 0%, rgba(232, 160, 32, 0.13), transparent 58%);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.72), inset 0 1px 0 rgba(255, 230, 150, 0.08);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+}
 
 /* LINK START warp 期間：登入鈕＋HUD 漸消散（化為粒子感），不擋特效；
    #loginGl（3D 畫布）不受影響＝特效全程可見。→ Operational Mode */
@@ -1182,7 +1196,7 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   color: rgba(232, 160, 32, 0.55);
   letter-spacing: 0.18em;
   text-align: center;
-  margin-bottom: 36px;
+  margin-bottom: 22px;
 }
 
 .login-corners { position: absolute; inset: -18px; pointer-events: none; }
@@ -1192,7 +1206,79 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 .lc.bl { bottom: 0; left: 0;  border-width: 0 0 1px 1px; }
 .lc.br { bottom: 0; right: 0; border-width: 0 1px 1px 0; }
 
-.login-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(232, 160, 32, 0.3), transparent); margin-bottom: 28px; }
+.login-divider { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, rgba(232, 160, 32, 0.3), transparent); margin-bottom: 20px; }
+.login-auth-grid {
+  display: grid;
+  grid-template-columns: minmax(280px, 1fr) 220px;
+  gap: 14px;
+  align-items: stretch;
+}
+.credential-panel,
+.external-identity {
+  border: 1px solid rgba(232, 160, 32, 0.18);
+  border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18);
+  padding: 14px;
+}
+.auth-mode-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.auth-mode {
+  min-height: 34px;
+  border: 1px solid rgba(232, 160, 32, 0.16);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-4);
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.auth-mode.active {
+  color: var(--ink);
+  background: linear-gradient(135deg, #f0c766, #a87218);
+  border-color: rgba(232, 200, 109, 0.62);
+  box-shadow: 0 0 18px rgba(232, 160, 32, 0.18);
+}
+.auth-field {
+  display: grid;
+  gap: 5px;
+  margin-bottom: 10px;
+}
+.auth-field span,
+.external-title {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 11px;
+  color: rgba(232, 160, 32, 0.58);
+  letter-spacing: 0.12em;
+  font-weight: 800;
+}
+.auth-field input {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid rgba(232, 160, 32, 0.2);
+  border-radius: 9px;
+  background: rgba(0, 0, 0, 0.36);
+  color: var(--text-1);
+  padding: 10px 12px;
+  font: inherit;
+  outline: none;
+}
+.auth-field input:focus {
+  border-color: rgba(232, 200, 109, 0.62);
+  box-shadow: 0 0 0 2px rgba(232, 160, 32, 0.16);
+}
+.auth-name-field,
+.auth-confirm-field { display: none; }
+.credential-panel.signup-mode .auth-name-field,
+.credential-panel.signup-mode .auth-confirm-field { display: grid; }
+.external-title {
+  margin-bottom: 12px;
+  text-align: center;
+}
 
 .login-btn {
   display: flex;
@@ -1221,6 +1307,14 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   pointer-events: none;
 }
 .login-btn:active { transform: scale(0.97); }
+.btn-email {
+  margin-top: 4px;
+  background: linear-gradient(135deg, #e8c86d, #a87218 55%, #6f3f08);
+  color: var(--ink);
+  border: 1px solid rgba(255, 220, 120, 0.48);
+  box-shadow: 0 8px 28px rgba(160, 100, 10, 0.32), inset 0 1px 0 rgba(255, 240, 190, 0.28);
+}
+.btn-email:hover { transform: translateY(-1px); box-shadow: 0 12px 32px rgba(180, 120, 20, 0.42); }
 
 .btn-google {
   background: rgba(255, 255, 255, 0.07);
@@ -1238,6 +1332,12 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   font-size: 14px;
 }
 .btn-guest:hover { background: rgba(232, 160, 32, 0.15); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(232, 160, 32, 0.3); transform: translateY(-1px); }
+.guest-note {
+  color: var(--text-4);
+  font-size: 11px;
+  line-height: 1.6;
+  text-align: center;
+}
 
 .google-icon {
   width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
@@ -1245,13 +1345,13 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 }
 .guest-icon { font-size: 18px; flex-shrink: 0; font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif; }
 
-.login-err { font-size: 12px; color: var(--red-soft); text-align: center; margin-top: -4px; min-height: 18px; letter-spacing: 0.03em; }
+.login-err { font-size: 12px; color: var(--red-soft); text-align: center; margin-top: 10px; min-height: 18px; letter-spacing: 0.03em; }
 .login-clock {
   font-family: 'Share Tech Mono', monospace;
   font-size: clamp(10px, 2.8vw, 12px);
   color: rgba(232, 160, 32, 0.35);
   letter-spacing: 0.12em;
-  margin-top: 28px;
+  margin-top: 18px;
   text-align: center;
 }
 
@@ -2242,6 +2342,13 @@ body.focus-mode .wrapper {
   .result-actions { width: 100%; justify-content: stretch; }
   .result-actions .copy-btn { flex: 1 1 88px; padding-inline: 8px; }
   .result-section-head { align-items: flex-start; }
+  .login-box {
+    width: calc(100vw - 24px);
+    max-height: calc(100dvh - 24px);
+    padding: 18px;
+  }
+  .login-auth-grid { grid-template-columns: 1fr; }
+  .external-identity { padding: 12px; }
 }
 
 @media (max-width: 480px) {

@@ -55,9 +55,112 @@ const startLoginBg = async () => {
 
 let _loginFocusReturn = null;
 let _loginFocusTrapHandler = null;
+let _emailAuthMode = "login";
+let _emailAuthBound = false;
 
 const setLoginErr = (msg = "") => {
   if (el.loginErr) el.loginErr.textContent = msg;
+};
+
+const setEmailAuthMode = (mode) => {
+  _emailAuthMode = mode === "signup" ? "signup" : "login";
+  const signup = _emailAuthMode === "signup";
+  el.loginModeLogin?.classList.toggle("active", !signup);
+  el.loginModeSignup?.classList.toggle("active", signup);
+  el.loginModeLogin?.setAttribute("aria-pressed", signup ? "false" : "true");
+  el.loginModeSignup?.setAttribute("aria-pressed", signup ? "true" : "false");
+  el.emailAuthForm?.classList.toggle("signup-mode", signup);
+  if (el.loginPassword) {
+    el.loginPassword.setAttribute("autocomplete", signup ? "new-password" : "current-password");
+  }
+  if (el.loginEmailSubmit) {
+    el.loginEmailSubmit.textContent = signup ? "建立守門人通行證" : "進入守門人系統";
+  }
+};
+
+const getEmailAuthMessage = (err) => {
+  const code = err?.code || "";
+  const messages = {
+    "auth/email-already-in-use": "這個 Email 已建立通行證，請切換到登入。",
+    "auth/invalid-email": "Email 格式不正確。",
+    "auth/missing-password": "請輸入密碼。",
+    "auth/weak-password": "密碼至少需要 6 位。",
+    "auth/wrong-password": "Email 或密碼不正確。",
+    "auth/invalid-credential": "Email 或密碼不正確。",
+    "auth/user-not-found": "找不到這個通行證，請先註冊。",
+    "auth/operation-not-allowed": "Firebase Email/Password 登入尚未啟用，請先到 Console 開啟。",
+    "auth/too-many-requests": "嘗試次數過多，請稍後再試。",
+  };
+  return messages[code] || `帳密驗證失敗：${err?.message || "未知錯誤"}`;
+};
+
+const setCredentialBusy = (busy) => {
+  [el.loginEmailSubmit, el.loginModeLogin, el.loginModeSignup, el.loginGoogleBtn, el.loginGuestBtn].forEach((node) => {
+    if (!node) return;
+    node.disabled = busy;
+    node.style.opacity = busy ? "0.6" : "";
+  });
+};
+
+const submitEmailAuth = async (auth) => {
+  if (!auth) { setLoginErr(MSG.NO_FIREBASE); return; }
+  const email = el.loginEmail?.value?.trim() || "";
+  const password = el.loginPassword?.value || "";
+  const displayName = el.loginDisplayName?.value?.trim() || "";
+  const confirm = el.loginPasswordConfirm?.value || "";
+  const signup = _emailAuthMode === "signup";
+
+  if (!email || !password) {
+    setLoginErr("請輸入 Email 與密碼。");
+    return;
+  }
+  if (signup && !displayName) {
+    setLoginErr("請輸入顯示名稱。");
+    el.loginDisplayName?.focus();
+    return;
+  }
+  if (signup && password !== confirm) {
+    setLoginErr("兩次密碼不一致。");
+    el.loginPasswordConfirm?.focus();
+    return;
+  }
+
+  setLoginErr("");
+  setCredentialBusy(true);
+  try {
+    playBootChime();
+    if (signup) {
+      const credential = await auth.createUserWithEmailAndPassword(email, password);
+      if (displayName && credential.user?.updateProfile) {
+        await credential.user.updateProfile({ displayName });
+      }
+    } else {
+      await auth.signInWithEmailAndPassword(email, password);
+    }
+  } catch (err) {
+    setCredentialBusy(false);
+    setLoginErr(getEmailAuthMessage(err));
+  }
+};
+
+const bindEmailAuthControls = (auth) => {
+  if (_emailAuthBound) return;
+  _emailAuthBound = true;
+  setEmailAuthMode("login");
+  el.loginModeLogin?.addEventListener("click", () => {
+    setLoginErr("");
+    setEmailAuthMode("login");
+    el.loginEmail?.focus();
+  });
+  el.loginModeSignup?.addEventListener("click", () => {
+    setLoginErr("");
+    setEmailAuthMode("signup");
+    el.loginDisplayName?.focus();
+  });
+  el.emailAuthForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    submitEmailAuth(auth);
+  });
 };
 
 const initAppCheck = () => {
@@ -331,6 +434,7 @@ export const initFirebase = () => {
     AppState.set("fbAuth", auth);
     AppState.set("firebaseReady", true);
     AppState.set("firestoreReady", true);
+    bindEmailAuthControls(auth);
     // 完成 redirect 登入返回流程；成功的 user 由下方 onAuthStateChanged 接手，這裡只報錯
     auth.getRedirectResult().catch((err) => {
       console.warn("[FLG] redirect sign-in failed:", err?.code, err?.message);
@@ -385,6 +489,8 @@ export const initFirebase = () => {
         // 復原登入按鈕：登入時被設 disabled，登出回登入畫面必須重新可用
         if (el.loginGoogleBtn) { el.loginGoogleBtn.disabled = false; el.loginGoogleBtn.style.opacity = ""; }
         if (el.loginGuestBtn) { el.loginGuestBtn.disabled = false; el.loginGuestBtn.style.opacity = ""; }
+        setCredentialBusy(false);
+        setLoginErr("");
         setLoginScreenVisible(true);
         startLoginBg();
       }

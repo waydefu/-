@@ -107,10 +107,10 @@ Rollout 建議：
 登入頁可以借鑑 SAO 式「登入即進入另一個世界」的節奏，但要轉譯成 Fantasy Lore Guardian 的守門人系統，不直接使用 `Sword Art Online`、`Aincrad`、角色名稱、原作歡迎字樣或角色創建流程。角色素體、捏臉、外觀參數調整整段跳過，避免登入頁膨脹成遊戲角色系統。
 
 - 待機狀態：沿用目前參考圖方向，中央是琥珀金儀式核心與環狀 HUD，左右維持 `SYSTEM STATUS`、`REAL TIME SYNC`、`SYSTEM ANALYSIS`、`DEVICE INFO`、`CORE LOAD`、`CONSOLE LOG` 等半透明面板。登入按鈕置中，畫面看起來像黑暗西幻版 tactical arcane interface。
-- 中央認證面板：Email / Password 註冊與登入應嵌入中央動畫核心內，作為主要體驗。待機時顯示「建立守門人通行證 / 已有通行證」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
-- 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；每完成一欄，周圍 HUD 可短暫亮起對應狀態，例如 `IDENTITY`、`MAIL LINK`、`PASS SEAL`。送出後才呼叫 Firebase Auth 建帳，成功後進入完整 warp。
-- 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後進入短版認證掃描，再依實際 Auth 結果決定成功轉場或顯示錯誤。
-- 旁側身份入口：Google 登入不要放在主按鈕位置，改放右側或下方的次要 HUD 模組，例如 `EXTERNAL IDENTITY`。訪客登入可放在同一模組下方，標示為 `GUEST ACCESS`，降低視覺優先級但保留可用路徑。
+- 中央認證面板：Email / Password 註冊與登入已嵌入中央動畫核心內，作為主要體驗。待機時顯示「登入 / 註冊」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
+- 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；送出後呼叫 Firebase Auth 建帳，成功後進入完整 warp。
+- 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後依實際 Auth 結果決定成功轉場或顯示錯誤。
+- 旁側身份入口：Google 登入已移到次要 HUD 模組 `EXTERNAL IDENTITY`；訪客登入保留在同一模組下方，降低視覺優先級但保留可用路徑。
 - 認證觸發：使用者點擊 Google、訪客或未來 Email / Password 登入後，登入按鈕鎖定，中央核心由一點亮光啟動，HUD 開始顯示 `AUTH REQUEST`、`TOKEN CHECK`、`SECURE CHANNEL`。不要做假帳密自動填入動畫，以免和真實驗證狀態混淆。
 - 光纖隧道：驗證成功後才進入 LINK START warp。視角從中央光點高速穿入由金色光纖、符文線、資料粒子與環形軌道組成的隧道；主色仍是黑、琥珀、金，淡藍或白光只作為少量高亮，不改成冷藍 cyber 風。
 - 系統自檢：穿梭期間用半透明 HUD 快速跑狀態列，不宣稱真實五感同步；改用符合本網站的項目，例如 `DISPLAY`、`AUDIO`、`AUTH TOKEN`、`APP CHECK`、`FIRESTORE SYNC`、`ENCRYPTION`、`STREAM CHANNEL`，成功顯示 `[ OK ]`，未導入項目顯示 `[ PENDING ]` 或不出現。
@@ -123,7 +123,7 @@ Rollout 建議：
 - 登入頁保留強風格，但要收斂成「西幻守門人系統」：保留 `#loginScreen`、`#loginGl`、HUD、ambient、LINK START warp；只優化層級、文案、按鈕與表單密度，不重做成另一套視覺語言。
 - 色彩沿用深黑、焦褐、琥珀金、羊皮紙文字與微紅警示；藍色或冷色只可作為極少量輔助狀態，不作為主視覺。
 - 登入卡片應像魔法終端或守門人認證面板：保留盾牌 / 守門人品牌訊號、角標、細線分隔、光暈與低對比 HUD；避免厚重霓虹框、大面積藍色漸層、過亮科技背景。
-- 若新增 Email / Password 帳密登入，應整合在中央動畫認證面板內：使用「登入 / 註冊」切換，欄位樣式沿用琥珀玻璃輸入框；Google 登入與訪客登入移到旁側次要 HUD 模組，不刪除既有可用路徑。
+- Email / Password 帳密登入已整合在中央動畫認證面板內：使用「登入 / 註冊」切換，欄位樣式沿用琥珀玻璃輸入框；Google 登入與訪客登入移到旁側次要 HUD 模組，不刪除既有可用路徑。若 production 顯示 `auth/operation-not-allowed`，需在 Firebase Console 啟用 Email/Password sign-in provider。
 - 註冊流程只收必要欄位：顯示名稱、email、密碼、確認密碼；登入流程只收 email 與密碼。密碼規則與錯誤提示需短、清楚、貼近現有語氣。
 - 登入文案維持專案語感，例如「進入守門人系統」、「註冊後同步審查歷史」、「訪客模式不保證跨裝置保存」；不要使用範例圖中的外部品牌或不相關口號。
 - 主工具進入後要降低視覺噪音：登入頁可以有儀式感，但工作區應偏安靜、清晰、可長時間閱讀與修改草稿。
@@ -194,6 +194,7 @@ npm.cmd run audit:functions
 - 已抽出 quota transaction helper 並新增最小測試：覆蓋每日重置、server-generated event id 冪等扣款、匿名/登入每日上限、Groq 失敗退還與退還冪等。
 - 已優化歷史面板：目前載入項會顯示「目前」標記與更明確的 active 狀態；單筆刪除改為二次確認；手機版調整確認列、按鈕與長文字換行。
 - 已優化結果閱讀：分析結果分成「修改後全文」與「審查摘要」兩塊，新增完整/分區複製、回到輸入與重新分析操作，並補 result parser 測試。
+- 已新增 Email/Password 登入與註冊 UI：中央帳密面板支援登入/註冊切換、顯示名稱、密碼確認與本地錯誤提示；Google / 訪客登入移到 `EXTERNAL IDENTITY` 次要模組。需確認 Firebase Console 已啟用 Email/Password provider。
 
 ---
 
