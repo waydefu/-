@@ -136,7 +136,7 @@ Rollout 建議：
 
 ### Phase 5：部署與觀測
 
-- 增加 structured logging：記錄 request id、uid hash、latency、status、quota result，不記錄草稿內容。
+- 增加 structured logging：已記錄 request id、uid hash、latency、status、quota result，不記錄草稿內容或原始 uid。
 - 補部署後驗證清單：Hosting 載入、Google 登入、訪客登入、SSE 首字輸出、Firestore 歷史同步、CSP 無錯誤、舊 SW 已清除。
 - 保留最小 rollback 路徑：functions 與 hosting 分開部署，避免 UI 與後端契約同時失配時難以回復。
 
@@ -184,6 +184,7 @@ npm.cmd run audit:functions
 - 已統一 HTTP 錯誤格式並部署：後端改回 `{ code, message }`，前端可解析新格式並相容舊 `{ error }`。
 - 已加入並部署 App Check report-only 管線：前端支援 reCAPTCHA Enterprise site key、送出 `X-Firebase-AppCheck`，後端可驗證並記錄但尚未強制阻擋。
 - 已調整並部署 timeout 與 loading 文案：前端分析等待改為 180 秒，進度文案改為安全連線、Groq 串流審閱、整理重寫與摘要。
+- 已調整 App Check 與 Functions logging：site key 未啟用時不刷 missing-token log，Functions 改用 structured logging，記錄 request id、uid hash、latency 與狀態，不記錄草稿內容。
 
 ---
 

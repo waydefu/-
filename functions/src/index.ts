@@ -1,6 +1,7 @@
 import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
+import { createHash } from "crypto";
 import Groq from "groq-sdk";
 import { SYSTEM_PROMPT, ALLOWED_ORIGINS } from "./config";
 
@@ -13,6 +14,9 @@ const DAILY_LIMIT_ANON   = 5;
 const DAILY_LIMIT_AUTHED = 30;
 const MAX_DRAFT_CHARS = 1800;
 const ENFORCE_APP_CHECK = false;
+const LOG_MISSING_APP_CHECK = false;
+
+type AppCheckStatus = "missing" | "valid" | "invalid";
 
 async function checkAndIncrementQuota(uid: string, isAnonymous: boolean, quotaEventId: string): Promise<void> {
   const limit = isAnonymous ? DAILY_LIMIT_ANON : DAILY_LIMIT_AUTHED;
@@ -68,18 +72,37 @@ function sendError(req: any, res: any, status: number, code: string, message: st
   res.status(status).json({ code, message });
 }
 
-async function verifyAppCheck(req: any): Promise<boolean> {
+function getRequestId(req: any): string {
+  const trace = req.headers?.["x-cloud-trace-context"] as string | undefined;
+  return trace?.split("/")?.[0] || admin.firestore().collection("_requestIds").doc().id;
+}
+
+function hashUid(uid: string): string {
+  return createHash("sha256").update(uid).digest("hex").slice(0, 16);
+}
+
+function logEvent(event: string, data: Record<string, unknown> = {}): void {
+  console.log("[FLG]", { event, ...data });
+}
+
+function warnEvent(event: string, data: Record<string, unknown> = {}): void {
+  console.warn("[FLG]", { event, ...data });
+}
+
+async function verifyAppCheck(req: any, requestId: string): Promise<AppCheckStatus> {
   const token = req.headers["x-firebase-appcheck"] as string | undefined;
   if (!token) {
-    console.warn("[FLG] App Check token missing");
-    return false;
+    if (LOG_MISSING_APP_CHECK || ENFORCE_APP_CHECK) {
+      warnEvent("app_check_missing", { requestId });
+    }
+    return "missing";
   }
   try {
     await admin.appCheck().verifyToken(token);
-    return true;
+    return "valid";
   } catch (err: any) {
-    console.warn("[FLG] App Check token invalid", err?.message);
-    return false;
+    warnEvent("app_check_invalid", { requestId, message: err?.message });
+    return "invalid";
   }
 }
 
@@ -102,6 +125,9 @@ function looksLikeInjection(text: string): boolean {
 
 // ── Main handler ─────────────────────────────────────────────
 const analyzeHandler = async (req: any, res: any): Promise<void> => {
+  const requestId = getRequestId(req);
+  const requestStartedAt = Date.now();
+
   // Preflight
   if (req.method === "OPTIONS") {
     applyCors(req, res);
@@ -113,12 +139,14 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   }
 
   if (req.method !== "POST") {
+    logEvent("request_rejected", { requestId, status: 405, code: "method-not-allowed" });
     sendError(req, res, 405, "method-not-allowed", "Method Not Allowed");
     return;
   }
 
-  const appCheckOk = await verifyAppCheck(req);
-  if (ENFORCE_APP_CHECK && !appCheckOk) {
+  const appCheckStatus = await verifyAppCheck(req, requestId);
+  if (ENFORCE_APP_CHECK && appCheckStatus !== "valid") {
+    logEvent("request_rejected", { requestId, status: 401, code: "app-check-failed", appCheckStatus });
     sendError(req, res, 401, "app-check-failed", "App Check 驗證失敗，請重新整理後再試。");
     return;
   }
@@ -126,6 +154,7 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   // ── Auth ──
   const authHeader = req.headers.authorization as string | undefined;
   if (!authHeader?.startsWith("Bearer ")) {
+    logEvent("request_rejected", { requestId, status: 401, code: "unauthorized", appCheckStatus });
     sendError(req, res, 401, "unauthorized", "請先登入後再使用。");
     return;
   }
@@ -134,21 +163,26 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   try {
     decodedToken = await admin.auth().verifyIdToken(idToken);
   } catch {
+    logEvent("request_rejected", { requestId, status: 403, code: "invalid-token", appCheckStatus });
     sendError(req, res, 403, "invalid-token", "登入狀態已失效，請重新登入。");
     return;
   }
+  const uidHash = hashUid(decodedToken.uid);
 
   // ── Input validation ──
   const draft = (req.body?.text as string) || "";
   if (!draft.trim()) {
+    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "missing-text", appCheckStatus });
     sendError(req, res, 400, "missing-text", "請先輸入要審查的草稿。");
     return;
   }
   if (draft.length > MAX_DRAFT_CHARS) {
+    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "draft-too-long", len: draft.length, appCheckStatus });
     sendError(req, res, 400, "draft-too-long", `單段審查上限 ${MAX_DRAFT_CHARS} 字，請縮短或分段送審（目前 ${draft.length} 字）。`);
     return;
   }
   if (looksLikeInjection(draft)) {
+    logEvent("request_rejected", { requestId, uidHash, status: 400, code: "invalid-format", len: draft.length, appCheckStatus });
     sendError(req, res, 400, "invalid-format", "草稿格式含有系統提示標記，請移除後再試。");
     return;
   }
@@ -161,16 +195,17 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   } catch (err: any) {
     if (err.code === "quota-exceeded") {
       const label = isAnonymous ? "訪客每日上限 5 次" : "每日上限 30 次";
+      logEvent("request_rejected", { requestId, uidHash, status: 429, code: "quota-exceeded", anon: isAnonymous, appCheckStatus });
       sendError(req, res, 429, "quota-exceeded", `每日使用上限已達（${label}），請明日再試。`);
     } else {
-      console.error("[FLG] quota error", err);
+      warnEvent("quota_error", { requestId, uidHash, message: err?.message });
       sendError(req, res, 500, "quota-error", "配額系統異常，請稍後再試。");
     }
     return;
   }
 
   // ── Build prompt（閹割 v1：不帶 KB，單篇單版）──
-  console.log("[FLG] Analysis start", { uid: decodedToken.uid, len: draft.length, anon: isAnonymous });
+  logEvent("analysis_start", { requestId, uidHash, len: draft.length, anon: isAnonymous, appCheckStatus });
 
   const userPrompt = [
     "<<<DRAFT_BEGIN>>>",
@@ -200,7 +235,7 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
       stream: true,
     });
   } catch (apiErr: any) {
-    console.error("[FLG] Groq API error", apiErr?.message);
+    warnEvent("groq_error", { requestId, uidHash, ms: Date.now() - requestStartedAt, message: apiErr?.message });
     await refundQuota(decodedToken.uid, quotaEventId);
     sendError(req, res, 503, "ai-unavailable", `分析服務暫時不可用：${apiErr?.message || "API Error"}`);
     return;
@@ -225,9 +260,9 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
       if (content) res.write(`data: ${JSON.stringify({ text: content })}\n\n`);
     }
     res.write("data: [DONE]\n\n");
-    console.log("[FLG] Done", { uid: decodedToken.uid, ms: Date.now() - startTime });
+    logEvent("analysis_done", { requestId, uidHash, ms: Date.now() - startTime, totalMs: Date.now() - requestStartedAt, appCheckStatus });
   } catch (streamErr: any) {
-    console.error("[FLG] Stream error", streamErr?.message);
+    warnEvent("stream_error", { requestId, uidHash, ms: Date.now() - requestStartedAt, message: streamErr?.message });
     res.write(`data: ${JSON.stringify({
       error: {
         code: "stream-interrupted",
