@@ -195,6 +195,7 @@ npm.cmd run audit:functions
 - 已優化歷史面板：目前載入項會顯示「目前」標記與更明確的 active 狀態；單筆刪除改為二次確認；手機版調整確認列、按鈕與長文字換行。
 - 已優化結果閱讀：分析結果分成「修改後全文」與「審查摘要」兩塊，新增完整/分區複製、回到輸入與重新分析操作，並補 result parser 測試。
 - 已新增 Email/Password 登入與註冊 UI：中央帳密面板支援登入/註冊切換、顯示名稱、密碼確認與本地錯誤提示；Google / 訪客登入移到 `EXTERNAL IDENTITY` 次要模組。需確認 Firebase Console 已啟用 Email/Password provider。
+- 已收斂登入後帳號顯示：Email/Password、Google、訪客共用通用帳號文案；Email 帳號會優先顯示 displayName，否則顯示 email 前綴，登出/重回登入頁會清空密碼欄位。
 
 ---
 

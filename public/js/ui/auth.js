@@ -62,6 +62,19 @@ const setLoginErr = (msg = "") => {
   if (el.loginErr) el.loginErr.textContent = msg;
 };
 
+const getUserDisplayName = (user) => {
+  if (!user) return "使用者";
+  if (user.displayName) return user.displayName;
+  if (user.isAnonymous) return "訪客";
+  if (user.email) return user.email.split("@")[0] || "使用者";
+  return "使用者";
+};
+
+const clearCredentialSecrets = () => {
+  if (el.loginPassword) el.loginPassword.value = "";
+  if (el.loginPasswordConfirm) el.loginPasswordConfirm.value = "";
+};
+
 const setEmailAuthMode = (mode) => {
   _emailAuthMode = mode === "signup" ? "signup" : "login";
   const signup = _emailAuthMode === "signup";
@@ -133,10 +146,14 @@ const submitEmailAuth = async (auth) => {
       const credential = await auth.createUserWithEmailAndPassword(email, password);
       if (displayName && credential.user?.updateProfile) {
         await credential.user.updateProfile({ displayName });
+        AppState.set("currentUser", credential.user);
+        renderUserTrigger();
+        renderUserPanel();
       }
     } else {
       await auth.signInWithEmailAndPassword(email, password);
     }
+    clearCredentialSecrets();
   } catch (err) {
     setCredentialBusy(false);
     setLoginErr(getEmailAuthMessage(err));
@@ -259,10 +276,10 @@ const renderUserTrigger = () => {
     wrap.appendChild(dot);
     wrap.appendChild(txt);
     el.userTrigger.appendChild(wrap);
-    el.userTrigger.setAttribute("aria-label", "登入 Google 帳號");
+    el.userTrigger.setAttribute("aria-label", "登入帳號");
   } else {
     const user = AppState.get("currentUser");
-    const name = user.displayName || "使用者";
+    const name = getUserDisplayName(user);
     const photo = user.photoURL;
     let av;
     if (photo) {
@@ -294,7 +311,7 @@ const renderUserPanel = () => {
   if (!AppState.get("firebaseReady")) return;
   const panelUser = AppState.get("currentUser");
   if (panelUser) {
-    const name = panelUser.displayName || "使用者";
+    const name = getUserDisplayName(panelUser);
     const info = document.createElement("div");
     info.className = "up-info";
     const n = document.createElement("div");
@@ -302,13 +319,13 @@ const renderUserPanel = () => {
     n.textContent = name;
     const e = document.createElement("div");
     e.className = "up-email";
-    e.textContent = panelUser.email || "";
+    e.textContent = panelUser.email || (panelUser.isAnonymous ? "訪客模式" : "");
     info.appendChild(n);
     info.appendChild(e);
     const logoutBtn = document.createElement("button");
     logoutBtn.className = "up-action";
     logoutBtn.textContent = "登出";
-    logoutBtn.setAttribute("aria-label", "登出 Google 帳號");
+    logoutBtn.setAttribute("aria-label", "登出帳號");
     logoutBtn.addEventListener("click", () => {
       if (logoutBtn.dataset.confirming) {
         AppState.get("fbAuth")?.signOut();
@@ -490,6 +507,7 @@ export const initFirebase = () => {
         if (el.loginGoogleBtn) { el.loginGoogleBtn.disabled = false; el.loginGoogleBtn.style.opacity = ""; }
         if (el.loginGuestBtn) { el.loginGuestBtn.disabled = false; el.loginGuestBtn.style.opacity = ""; }
         setCredentialBusy(false);
+        clearCredentialSecrets();
         setLoginErr("");
         setLoginScreenVisible(true);
         startLoginBg();
