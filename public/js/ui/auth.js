@@ -108,6 +108,7 @@ const getEmailAuthMessage = (err) => {
 };
 
 const setCredentialBusy = (busy) => {
+  el.loginScreen?.classList.toggle("auth-pending", busy);
   [el.loginEmailSubmit, el.loginModeLogin, el.loginModeSignup, el.loginGoogleBtn, el.loginGuestBtn].forEach((node) => {
     if (!node) return;
     node.disabled = busy;
@@ -424,6 +425,7 @@ export const handleGoogleLogin = async () => {
     el.loginGoogleBtn.disabled = true;
     el.loginGoogleBtn.style.opacity = "0.6";
   }
+  el.loginScreen?.classList.add("auth-pending");
   try {
     await googleSignIn(auth);
   } catch (err) {
@@ -433,6 +435,7 @@ export const handleGoogleLogin = async () => {
       el.loginGoogleBtn.disabled = false;
       el.loginGoogleBtn.style.opacity = "";
     }
+    el.loginScreen?.classList.remove("auth-pending");
   }
 };
 
@@ -445,6 +448,7 @@ export const handleGuestLogin = async () => {
     el.loginGuestBtn.disabled = true;
     el.loginGuestBtn.style.opacity = "0.6";
   }
+  el.loginScreen?.classList.add("auth-pending");
   try {
     await auth.signInAnonymously();
   } catch (err) {
@@ -453,6 +457,7 @@ export const handleGuestLogin = async () => {
       el.loginGuestBtn.disabled = false;
       el.loginGuestBtn.style.opacity = "";
     }
+    el.loginScreen?.classList.remove("auth-pending");
   }
 };
 
@@ -503,7 +508,7 @@ export const initFirebase = () => {
           el.loginScreen?.classList.add("fade-out");
           setTimeout(() => {
             el.loginScreen?.classList.add("gone");
-            el.loginScreen?.classList.remove("show", "fade-out");
+            el.loginScreen?.classList.remove("show", "fade-out", "auth-pending");
             setLoginScreenVisible(false, false);
             el.draftInput?.focus({ preventScroll: true });
             stopLoginFx();   // 此刻畫面已 display:none，context 丟失不可見
@@ -523,7 +528,7 @@ export const initFirebase = () => {
         resetResultPanel(); // 登出即清掉畫面上的分析內容
         setSessionUid(null);
         renderHistory();
-        el.loginScreen?.classList.remove("gone", "fade-out", "warping");
+        el.loginScreen?.classList.remove("gone", "fade-out", "warping", "auth-pending");
         el.loginScreen?.classList.add("show");
         // 復原登入按鈕：登入時被設 disabled，登出回登入畫面必須重新可用
         if (el.loginGoogleBtn) { el.loginGoogleBtn.disabled = false; el.loginGoogleBtn.style.opacity = ""; }

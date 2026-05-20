@@ -108,6 +108,7 @@ Rollout 建議：
 
 - 待機狀態：沿用目前參考圖方向，中央是琥珀金儀式核心與環狀 HUD，左右維持 `SYSTEM STATUS`、`REAL TIME SYNC`、`SYSTEM ANALYSIS`、`DEVICE INFO`、`CORE LOAD`、`CONSOLE LOG` 等半透明面板。登入按鈕置中，畫面看起來像黑暗西幻版 tactical arcane interface。
 - 中央認證面板：Email / Password 註冊與登入已嵌入中央動畫核心內，作為主要體驗。待機時顯示「登入 / 註冊」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
+- 四段式登入節奏：以 `ORIGIN LIGHT`、`TOKEN CHECK`、`LINK START`、`WORKSPACE RENDER` 取代原作五感同步與角色創建。使用者送出 Email、Google 或訪客登入後，中央核心先亮起，狀態列依序脈衝，表示 Auth / App Check / Firestore / SSE 通道正在接入。
 - 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；送出後呼叫 Firebase Auth 建帳，成功後進入完整 warp。
 - 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後依實際 Auth 結果決定成功轉場或顯示錯誤。
 - 旁側身份入口：Google 登入已移到次要 HUD 模組 `EXTERNAL IDENTITY`；訪客登入保留在同一模組下方，降低視覺優先級但保留可用路徑。
@@ -191,7 +192,7 @@ Firestore rules 官方 emulator 測試：
 npm.cmd run test:rules
 ```
 
-此測試會透過 Firebase Firestore emulator 驗證 owner CRUD、匿名/跨帳號拒絕、欄位與長度拒絕、default deny。`firebase.json` 已將 Firestore emulator 固定在 `127.0.0.1:8088`，避免撞到本機常見的 `8080` 服務。
+此測試會透過 Firebase Firestore emulator 驗證 owner CRUD、匿名/跨帳號拒絕、欄位與長度拒絕、default deny。`firebase.json` 已將 Firestore emulator 固定在 `127.0.0.1:8099`，避免撞到本機常見的 `8080` 服務。
 
 人工登入後 smoke checklist：
 
@@ -208,7 +209,7 @@ npm.cmd run test:rules
 
 目前 App Check 仍維持 report-only：前端會嘗試送 `X-Firebase-AppCheck`，後端會驗證並把 `appCheckStatus` 寫進 structured logs，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
 
-2026-05-20 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。前端已補上初始化後 token warmup、分析前一般取 token 與強制刷新備援；部署後再次以 Email、Google、訪客各送一次短草稿，Functions log 仍是 `missing`。下一個檢查點是 Firebase / Google Cloud 端的 App Check Web app 綁定、reCAPTCHA Enterprise key 類型與 production domain 設定。
+2026-05-20 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。前端已補上初始化後 token warmup、分析前一般取 token 與強制刷新備援；部署後再次以 Email、Google、訪客各送一次短草稿，Functions log 仍是 `missing`。已確認當時缺少 Firebase Console > App Check 綁定；補上後需再重新跑三種登入短草稿，確認 Functions log 變成 `valid` 才能進入強制模式。
 
 切強制前必須先確認：
 
@@ -258,7 +259,8 @@ firebase functions:log --only analyzeV2 -n 80
 - 已收斂登入後帳號顯示：Email/Password、Google、訪客共用通用帳號文案；Email 帳號會優先顯示 displayName，否則顯示 email 前綴，登出/重回登入頁會清空密碼欄位。
 - 已新增 Hosting smoke 腳本與登入後人工 smoke checklist；App Check 強制模式前置也已整理，目前因 log 仍出現 `appCheckStatus: 'missing'`，暫不切強制。
 - 已補強 App Check 前端 token 流程：初始化後先暖身取 token，分析前若一般取 token 失敗或回空值，會再強制刷新一次；同時記錄 `appCheckStatus` / `appCheckError` 方便觀測。
-- 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8088`。
+- 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8099`。
+- 已精修登入頁第一輪：加入四段式 `ORIGIN LIGHT` / `TOKEN CHECK` / `LINK START` / `WORKSPACE RENDER` 狀態列，登入請求期間中央核心會亮起並脈衝；手機版登入畫面改為整頁可捲動以改善鍵盤擠壓。
 
 ---
 
