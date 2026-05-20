@@ -264,6 +264,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8099`。
 - 已精修登入頁第一輪：加入四段式 `ORIGIN LIGHT` / `TOKEN CHECK` / `LINK START` / `WORKSPACE RENDER` 狀態列，登入請求期間中央核心會亮起並脈衝；手機版登入畫面改為整頁可捲動以改善鍵盤擠壓。
 - 已加入登入初始啟動儀式：暖黑 terminal 連線檢查、暗金 veil `WELCOME TO FANTASY LORE GUARDIAN`、低亮度碎片退場與 HUD/登入入口展開；`prefers-reduced-motion` 會跳過長動畫。
+- 已修正登入 handoff：只有本次按下登入 / 註冊 / Google / 訪客時才播放 LINK START；重新整理後若 Firebase 已保留登入狀態，會直接進主工具，不再重播登入 boot、阻擋動畫或自動 focus 到輸入區。
 
 ---
 

@@ -1279,14 +1279,14 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 #loginScreen.warping .login-box,
 #loginScreen.warping .login-hud {
   opacity: 0;
-  transform: scale(1.05);
-  filter: blur(3px);
+  transform: scale(0.92);
+  filter: blur(12px);
   pointer-events: none;
-  /* 放慢放柔：緩進緩出，化為粒子般飄散，不要「啪」一下消失 */
+  /* LINK START 開始時先快速退場，避免登入面板擋住 warp 動畫。 */
   transition:
-    opacity 3.4s cubic-bezier(0.33, 0, 0.2, 1) 0.3s,
-    transform 3.8s cubic-bezier(0.33, 0, 0.2, 1) 0.3s,
-    filter 3.4s ease 0.3s;
+    opacity 0.32s ease,
+    transform 0.48s cubic-bezier(0.33, 0, 0.2, 1),
+    filter 0.42s ease;
 }
 
 /* ════ NEXCORE 級登入 HUD（純裝飾，不擋互動）：墊在 3D 與登入框之間 ════ */

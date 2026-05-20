@@ -59,6 +59,51 @@ let _loginFocusReturn = null;
 let _loginFocusTrapHandler = null;
 let _emailAuthMode = "login";
 let _emailAuthBound = false;
+let _authActionStarted = false;
+
+const beginAuthAction = () => {
+  _authActionStarted = true;
+};
+
+const cancelAuthAction = () => {
+  _authActionStarted = false;
+};
+
+const consumeAuthAction = () => {
+  const started = _authActionStarted;
+  _authActionStarted = false;
+  return started;
+};
+
+const blurActiveElement = () => {
+  const active = document.activeElement;
+  if (active instanceof HTMLElement) active.blur();
+};
+
+const clearLoginStateClasses = () => {
+  el.loginScreen?.classList.remove(
+    "show",
+    "fade-out",
+    "warping",
+    "auth-pending",
+    "booting",
+    "boot-veil-on",
+    "boot-welcome",
+    "boot-reveal",
+    "boot-complete",
+  );
+};
+
+const closeLoginWithoutHandoff = () => {
+  stopLoginBoot();
+  stopLoginFx();
+  stopLoginHud();
+  stopAmbient();
+  clearLoginStateClasses();
+  el.loginScreen?.classList.add("gone");
+  setLoginScreenVisible(false, false);
+  blurActiveElement();
+};
 
 const setLoginErr = (msg = "") => {
   if (el.loginErr) el.loginErr.textContent = msg;
@@ -143,6 +188,7 @@ const submitEmailAuth = async (auth) => {
 
   setLoginErr("");
   setCredentialBusy(true);
+  beginAuthAction();
   try {
     playBootChime();
     if (signup) {
@@ -158,6 +204,7 @@ const submitEmailAuth = async (auth) => {
     }
     clearCredentialSecrets();
   } catch (err) {
+    cancelAuthAction();
     setCredentialBusy(false);
     setLoginErr(getEmailAuthMessage(err));
   }
@@ -391,6 +438,7 @@ const renderUserPanel = () => {
       try {
         await googleSignIn(auth);
       } catch (err) {
+        cancelAuthAction();
         const code = err?.code || "";
         if (!isUserCancel(code)) {
           showToast("登入失敗：" + (err?.message || "未知錯誤"));
@@ -415,6 +463,7 @@ const isUserCancel = (code) =>
  */
 const googleSignIn = async (auth) => {
   const provider = new firebase.auth.GoogleAuthProvider();
+  beginAuthAction();
   const pending = auth.signInWithPopup(provider);
   playBootChime();
   await pending; // 成功由 onAuthStateChanged 接手；錯誤往上拋給呼叫端顯示
@@ -432,6 +481,7 @@ export const handleGoogleLogin = async () => {
   try {
     await googleSignIn(auth);
   } catch (err) {
+    cancelAuthAction();
     const code = err?.code || "";
     setLoginErr(isUserCancel(code) ? "" : "登入失敗：" + (err?.message || "未知錯誤"));
     if (el.loginGoogleBtn) {
@@ -452,9 +502,11 @@ export const handleGuestLogin = async () => {
     el.loginGuestBtn.style.opacity = "0.6";
   }
   el.loginScreen?.classList.add("auth-pending");
+  beginAuthAction();
   try {
     await auth.signInAnonymously();
   } catch (err) {
+    cancelAuthAction();
     setLoginErr("訪客登入失敗：" + (err?.message || "未知錯誤"));
     if (el.loginGuestBtn) {
       el.loginGuestBtn.disabled = false;
@@ -498,12 +550,20 @@ export const initFirebase = () => {
       loadDraftFromStorage(accountChanged);
 
       if (user) {
-        // 登入成功：歷史載入與 LINK START warp 並行（warp 播放期間順便載歷史）
+        const shouldPlayHandoff = consumeAuthAction() && el.loginScreen?.classList.contains("show");
         deactivateLoginFocusTrap(false);
         clearUserData();
         resetResultPanel(); // 杜絕上一位分析內容殘留給新帳號看到
         setSessionUid(user.uid);
         renderHistory();
+
+        if (!shouldPlayHandoff) {
+          closeLoginWithoutHandoff();
+          await loadHistoryFromFirestore();
+          return;
+        }
+
+        // 登入成功：歷史載入與 LINK START warp 並行（warp 播放期間順便載歷史）
         const handoff = () => {
           // 關鍵：先讓登入畫面淡出（loginfx 仍在「活著」渲染，畫面是真實
           // 動畫淡出，不是白格）→ display:none 完全看不見後 → 才 dispose。
@@ -511,9 +571,9 @@ export const initFirebase = () => {
           el.loginScreen?.classList.add("fade-out");
           setTimeout(() => {
             el.loginScreen?.classList.add("gone");
-            el.loginScreen?.classList.remove("show", "fade-out", "auth-pending");
+            el.loginScreen?.classList.remove("show", "fade-out", "warping", "auth-pending");
             setLoginScreenVisible(false, false);
-            el.draftInput?.focus({ preventScroll: true });
+            blurActiveElement();
             stopLoginBoot();
             stopLoginFx();   // 此刻畫面已 display:none，context 丟失不可見
             stopLoginHud();
