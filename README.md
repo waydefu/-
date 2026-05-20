@@ -109,6 +109,8 @@ Rollout 建議：
 - 待機狀態：沿用目前參考圖方向，中央是琥珀金儀式核心與環狀 HUD，左右維持 `SYSTEM STATUS`、`REAL TIME SYNC`、`SYSTEM ANALYSIS`、`DEVICE INFO`、`CORE LOAD`、`CONSOLE LOG` 等半透明面板。登入按鈕置中，畫面看起來像黑暗西幻版 tactical arcane interface。
 - 中央認證面板：Email / Password 註冊與登入已嵌入中央動畫核心內，作為主要體驗。待機時顯示「登入 / 註冊」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
 - 四段式登入節奏：以 `ORIGIN LIGHT`、`TOKEN CHECK`、`LINK START`、`WORKSPACE RENDER` 取代原作五感同步與角色創建。使用者送出 Email、Google 或訪客登入後，中央核心先亮起，狀態列依序脈衝，表示 Auth / App Check / Firestore / SSE 通道正在接入。
+- 初始連線儀式：第一次顯示登入頁時，先以純黑背景跑終端機打字檢查（核心初始化、AES-256、latency、App Check channel、secure status），完成後印出 `[ SECURE CONNECTION ESTABLISHED ]`。
+- 白場歡迎與展開：連線檢查後進入 0.3 秒白場，中央淡入 `WELCOME TO FANTASY LORE GUARDIAN`，再以碎片退場揭露黑金 HUD；中央核心、側邊面板與登入按鈕依序展開。
 - 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；送出後呼叫 Firebase Auth 建帳，成功後進入完整 warp。
 - 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後依實際 Auth 結果決定成功轉場或顯示錯誤。
 - 旁側身份入口：Google 登入已移到次要 HUD 模組 `EXTERNAL IDENTITY`；訪客登入保留在同一模組下方，降低視覺優先級但保留可用路徑。
@@ -261,6 +263,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 已補強 App Check 前端 token 流程：初始化後先暖身取 token，分析前若一般取 token 失敗或回空值，會再強制刷新一次；同時記錄 `appCheckStatus` / `appCheckError` 方便觀測。
 - 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8099`。
 - 已精修登入頁第一輪：加入四段式 `ORIGIN LIGHT` / `TOKEN CHECK` / `LINK START` / `WORKSPACE RENDER` 狀態列，登入請求期間中央核心會亮起並脈衝；手機版登入畫面改為整頁可捲動以改善鍵盤擠壓。
+- 已加入登入初始啟動儀式：純黑 terminal 連線檢查、白場 `WELCOME TO FANTASY LORE GUARDIAN`、白色碎片退場與 HUD/登入入口展開；`prefers-reduced-motion` 會跳過長動畫。
 
 ---
 

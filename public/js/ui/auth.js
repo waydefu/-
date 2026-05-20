@@ -15,6 +15,7 @@ import {
 } from './firestore.js';
 import { resetResultPanel } from './result.js';
 import { startLoginFx, warpLoginFx, stopLoginFx } from './loginfx.js';
+import { startLoginBoot, stopLoginBoot } from './loginboot.js';
 import { startLoginHud, stopLoginHud } from './loginhud.js';
 import { loadDraftFromStorage } from './draft.js';
 import { playBootChime, armAmbient, stopAmbient } from './sfx.js';
@@ -29,6 +30,7 @@ const startLoginBg = async () => {
     stopLoginFx();
     const reduced = !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     startLoginHud({ reduced }); // HUD 面板獨立於 3D，WebGL 不可用也照顯示
+    startLoginBoot({ reduced });
     armAmbient(); // 黑暗神聖 ambient（autoplay 未解鎖時掛一次性手勢延後啟動）
     // 換上全新 canvas：上次 stopLoginFx 對舊 canvas 做了 forceContextLoss，
     // 同一 canvas 再 new WebGLRenderer 會失敗 → 登出重登只剩 HUD。
@@ -511,6 +513,7 @@ export const initFirebase = () => {
             el.loginScreen?.classList.remove("show", "fade-out", "auth-pending");
             setLoginScreenVisible(false, false);
             el.draftInput?.focus({ preventScroll: true });
+            stopLoginBoot();
             stopLoginFx();   // 此刻畫面已 display:none，context 丟失不可見
             stopLoginHud();
             stopAmbient();
