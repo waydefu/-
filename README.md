@@ -220,9 +220,9 @@ npm.cmd run smoke:hosting
 自動 smoke 覆蓋：
 
 - Hosting 首頁 200。
-- 首頁載入目前 `js/app.js?v=30`。
+- 首頁載入目前 `js/app.js?v=31`。
 - Email/Password 登入表單存在。
-- `EXTERNAL IDENTITY` Google / 訪客入口存在。
+- `EXTERNAL SEALS` Google / 訪客入口存在。
 - App Check SDK 與 public site key 存在。
 - `result-parser.js` 已部署。
 - 未登入 POST `analyzeV2` 會回標準 `401 { code, message }`，不碰 Groq。
@@ -304,6 +304,10 @@ firebase functions:log --only analyzeV2 -n 80
 - 已精修登入頁第一輪：加入四段式 `ORIGIN LIGHT` / `TOKEN CHECK` / `LINK START` / `WORKSPACE RENDER` 狀態列，登入請求期間中央核心會亮起並脈衝；手機版登入畫面改為整頁可捲動以改善鍵盤擠壓。
 - 已加入登入初始啟動儀式：暖黑 terminal 連線檢查、暗金 veil `WELCOME TO FANTASY LORE GUARDIAN`、低亮度碎片退場與 HUD/登入入口展開；`prefers-reduced-motion` 會跳過長動畫。
 - 已修正登入 handoff：只有本次按下登入 / 註冊 / Google / 訪客時才播放 LINK START；重新整理後若 Firebase 已保留登入狀態，會直接進主工具，不再重播登入 boot、阻擋動畫或自動 focus 到輸入區。
+- 2026-05-20 已完成 Worldforge Core 電影級登入重構：登入頁改為「禁忌魔導書庫 / 西方奇幻小說編修核心」語彙，保留 `#loginScreen`、`#loginGl`、`emailAuthForm`、`loginEmail`、`loginPassword`、`loginGoogleBtn`、`loginGuestBtn` 等 Firebase Auth 所需 DOM id；Email/Password、Google、訪客登入流程仍由既有 `auth.js` 接手，`loginfx.js` 只負責成功 handoff 動畫。
+- 本次登入重構新增 `SceneManager`、`CoreEngine`、`RuneSystem`、`ParticleSystem`、`HUDSystem`、`PostProcessingPipeline`、`OperationalModeController` 架構；Three.js core/addons 維持 importmap 的 `0.160.0`，桌機正常模式目標 26 層 rune，手機正常模式 14 層，`prefers-reduced-motion` 會降到 10 層並關閉 SAO。
+- 本次部署前檢查：`npm.cmd run check` 通過、`npm.cmd test` 通過（21 tests / 0 fail）、桌機 `1366x768` 無水平溢出、手機 `390x844` 無水平溢出且登入面板可垂直捲動；本機瀏覽器因 reCAPTCHA / App Check localhost 限制仍會出現 `appCheck/recaptcha-error`，所以 Email / Google / 訪客實登入需在正式網域部署後再人工驗證。
+- 2026-05-20 已部署本次登入重構至 Firebase Hosting：只執行 `firebase deploy --only hosting --project project-7276420283723642146`，未部署 Functions、Firestore rules 或 App Check 強制模式；部署後 `npm.cmd run smoke:hosting` 通過，正式站首頁已載入 `js/app.js?v=31`。
 
 ---
 
