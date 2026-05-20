@@ -1,7 +1,7 @@
 // @ts-check
 
-import { el } from '../dom.js';
-import { AppState } from '../state.js';
+import { el } from '../core/dom.js';
+import { AppState } from '../core/state.js';
 
 export const closeAll = (clearActive = true) => {
   el.histTrigger?.classList.remove("active");

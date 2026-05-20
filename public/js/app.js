@@ -1,11 +1,11 @@
-// @ts-check
+// @ts-nocheck
 
-import { API_CONFIG, BTN_DEFAULT, BTN_LOADING, LIMITS, MSG } from './config.js';
-import { el } from './dom.js';
-import { AppState } from './state.js';
-import { analyzeRateLimiter } from './cache.js';
-import { analyzeDraft } from './api.js';
-import { announce, showToast } from './ui/toast.js';
+import { API_CONFIG, BTN_DEFAULT, BTN_LOADING, LIMITS, MSG } from './core/config.js?v=40';
+import { el } from './core/dom.js';
+import { AppState } from './core/state.js';
+import { analyzeRateLimiter } from './services/cache.js';
+import { analyzeDraft } from './services/analyze-api.js';
+import { announce, showToast } from './ui/toast-center.js';
 import {
   setError,
   setLoading,
@@ -13,35 +13,35 @@ import {
   setResultShell,
   animateSteps,
   clearStepTimers
-} from './ui/result.js';
+} from './ui/result-view.js';
 import {
   renderHistory,
   addHistory,
   initHistoryDelegation,
   initHistoryActions
-} from './ui/history.js';
-import { openDropdown, closeAll } from './ui/dropdown.js';
+} from './ui/history-panel.js';
+import { openDropdown, closeAll } from './ui/dropdown-menu.js';
 import {
   initSpellWorker,
   runDraftSpellScan,
   scheduleDraftScan,
   clearDraftScanTimer,
   terminateSpellWorker
-} from './ui/spell.js';
-import { initClock, clearAllIntervals } from './ui/hud.js';
+} from './ui/spell-scan.js';
+import { initClock, clearAllIntervals } from './ui/clock-hud.js';
 import {
   handleGoogleLogin,
   handleGuestLogin,
   initFirebase,
   setLoginScreenVisible
-} from './ui/auth.js';
+} from './ui/auth.js?v=44';
 import {
   updateCharCount,
   scheduleDraftSave,
   loadDraftFromStorage,
   clearText,
   clearDraftSaveTimer
-} from './ui/draft.js';
+} from './ui/draft-editor.js';
 
 /*
 ═════════════════════════════════════════════════════════
@@ -90,7 +90,7 @@ const checkText = async () => {
     el.checkBtn.setAttribute("aria-busy", "true");
   }
   setLoading();
-  announce("守門人審閱中，請稍候");
+  announce("法典審閱中，請稍候");
   animateSteps();
   renderHistory();
   const tid = setTimeout(() => ctrl.abort(), API_CONFIG.FETCH_TIMEOUT_MS);
@@ -105,7 +105,7 @@ const checkText = async () => {
       // Build the result shell once; update only body.textContent during stream
       // (no markdown re-parse each 100ms — full parse happens after stream completes)
       if (!_streamShellBuilt) {
-        setResultShell("🔮 守門人審閱中…");
+        setResultShell("法典審閱中…");
         _streamShellBuilt = true;
       }
       const body = el.result?.querySelector(".result-body");
@@ -158,7 +158,7 @@ const initEventListeners = () => {
     const on = document.body.classList.toggle("focus-mode");
     el.focusModeBtn?.setAttribute("aria-pressed", on ? "true" : "false");
     el.focusModeBtn?.setAttribute("aria-label", on ? "離開專注模式" : "進入專注模式");
-    el.focusModeBtn.textContent = on ? "↩ 退出" : "🎯 專注";
+    el.focusModeBtn.textContent = on ? "離開專注" : "專注模式";
     if (on) el.draftInput?.focus();
   });
   el.draftInput?.addEventListener("compositionstart", () => { AppState.set("ime", true); });

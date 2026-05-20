@@ -1,10 +1,10 @@
 // @ts-check
 
-import { LIMITS, UI_CONFIG } from '../config.js';
-import { el } from '../dom.js';
-import { AppState } from '../state.js';
-import { runDraftSpellScan } from './spell.js';
-import { renderHistory } from './history.js';
+import { LIMITS, UI_CONFIG } from '../core/config.js';
+import { el } from '../core/dom.js';
+import { AppState } from '../core/state.js';
+import { runDraftSpellScan } from './spell-scan.js';
+import { renderHistory } from './history-panel.js';
 
 let _draftSaveTimer = null;
 

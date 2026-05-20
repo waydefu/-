@@ -1,7 +1,7 @@
 // @ts-check
 
-import { API_CONFIG } from './config.js';
-import { AppState } from './state.js';
+import { API_CONFIG } from '../core/config.js';
+import { AppState } from '../core/state.js';
 import { analysisCache } from './cache.js';
 
 // ── SSE helpers ───────────────────────────────────────────────
@@ -109,7 +109,7 @@ export const getAppCheckToken = async () => {
  * @param {AbortSignal} signal
  * @param {number} reqId
  * @param {((partial: string) => void) | undefined} onChunk  — receives cumulative text
- * @returns {Promise<import('./types.js').AnalyzeResponse>}
+ * @returns {Promise<import('../core/types.js').AnalyzeResponse>}
  */
 export const analyzeDraft = async (draft, signal, reqId, onChunk) => {
   const auth = AppState.get("fbAuth");

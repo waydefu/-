@@ -1,6 +1,6 @@
 // @ts-check
 
-import { el } from '../dom.js';
+import { el } from '../core/dom.js';
 
 /* 舊 Psycho-Pass / Canvas2D 開場引擎已整個退役——登入體驗改由
    js/ui/loginfx.js（Three.js 登入背景 + LINK START warp）負責。

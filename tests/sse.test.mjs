@@ -11,8 +11,8 @@ const {
   getAppCheckToken,
   normalizeServerError,
   parseSsePayload,
-} = await import("../public/js/api.js");
-const { AppState } = await import("../public/js/state.js");
+} = await import("../public/js/services/analyze-api.js");
+const { AppState } = await import("../public/js/core/state.js");
 
 describe("SSE helpers", () => {
   it("keeps partial data lines until the next chunk arrives", () => {

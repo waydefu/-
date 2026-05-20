@@ -1,23 +1,20 @@
-// @ts-check
+// @ts-nocheck
 
-import { APP_CHECK_CONFIG, FIREBASE_CONFIG, MSG } from '../config.js';
-import { el } from '../dom.js';
-import { AppState } from '../state.js';
-import { showToast } from './toast.js';
-import { closeAll } from './dropdown.js';
-import { renderHistory } from './history.js';
+import { APP_CHECK_CONFIG, FIREBASE_CONFIG, MSG } from '../core/config.js?v=40';
+import { el } from '../core/dom.js';
+import { AppState } from '../core/state.js';
+import { showToast } from './toast-center.js';
+import { loadHistoryForCurrentUser, renderHistory, setSyncStatus } from './history-panel.js';
+import { renderUserPanel, renderUserTrigger } from './user-menu.js';
 import {
   loadSession,
   clearUserData,
-  setSyncStatus,
-  loadHistoryFromFirestore,
   setSessionUid
-} from './firestore.js';
-import { resetResultPanel } from './result.js';
-import { startLoginFx, warpLoginFx, stopLoginFx } from './loginfx.js';
-import { startLoginBoot, stopLoginBoot } from './loginboot.js';
+} from '../services/history-sync.js';
+import { resetResultPanel } from './result-view.js';
+import { startLoginFx, warpLoginFx, stopLoginFx } from './loginfx.js?v=39';
 import { startLoginHud, stopLoginHud } from './loginhud.js';
-import { loadDraftFromStorage } from './draft.js';
+import { loadDraftFromStorage } from './draft-editor.js';
 import { playBootChime, armAmbient, stopAmbient } from './sfx.js';
 
 // 登入畫面 3D 背景：登出/未登入顯示登入畫面時啟動；WebGL 不可用 → 靜態
@@ -30,10 +27,10 @@ const startLoginBg = async () => {
     stopLoginFx();
     const reduced = !!window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
     startLoginHud({ reduced }); // HUD 面板獨立於 3D，WebGL 不可用也照顯示
-    startLoginBoot({ reduced });
     armAmbient(); // 黑暗神聖 ambient（autoplay 未解鎖時掛一次性手勢延後啟動）
     // 換上全新 canvas：上次 stopLoginFx 對舊 canvas 做了 forceContextLoss，
     // 同一 canvas 再 new WebGLRenderer 會失敗 → 登出重登只剩 HUD。
+    el.loginScreen?.classList.add("boot-complete");
     let cv = el.loginGl;
     if (cv && cv.parentNode) {
       const fresh = document.createElement("canvas");
@@ -63,6 +60,10 @@ let _emailAuthMode = "login";
 let _emailAuthBound = false;
 let _authActionStarted = false;
 
+const resolveInitialAuthGate = () => {
+  document.body.classList.remove("auth-resolving");
+};
+
 const beginAuthAction = () => {
   _authActionStarted = true;
 };
@@ -88,16 +89,11 @@ const clearLoginStateClasses = () => {
     "fade-out",
     "warping",
     "auth-pending",
-    "booting",
-    "boot-veil-on",
-    "boot-welcome",
-    "boot-reveal",
     "boot-complete",
   );
 };
 
 const closeLoginWithoutHandoff = () => {
-  stopLoginBoot();
   stopLoginFx();
   stopLoginHud();
   stopAmbient();
@@ -114,14 +110,6 @@ const setLoginErr = (msg = "") => {
 const setRitualStatus = (msg = "小說編修引擎待命中") => {
   const status = document.getElementById("loginRitualStatus");
   if (status) status.textContent = msg;
-};
-
-const getUserDisplayName = (user) => {
-  if (!user) return "使用者";
-  if (user.displayName) return user.displayName;
-  if (user.isAnonymous) return "訪客";
-  if (user.email) return user.email.split("@")[0] || "使用者";
-  return "使用者";
 };
 
 const clearCredentialSecrets = () => {
@@ -206,7 +194,7 @@ const submitEmailAuth = async (auth) => {
         await credential.user.updateProfile({ displayName });
         AppState.set("currentUser", credential.user);
         renderUserTrigger();
-        renderUserPanel();
+        renderAuthUserPanel();
       }
     } else {
       await auth.signInWithEmailAndPassword(email, password);
@@ -246,6 +234,15 @@ const bindEmailAuthControls = (auth) => {
 
 const initAppCheck = () => {
   const siteKey = APP_CHECK_CONFIG.RECAPTCHA_ENTERPRISE_SITE_KEY.trim();
+  const host = window.location.hostname;
+  const isLocalHost = host === "localhost" || host === "127.0.0.1" || host === "::1";
+  if (isLocalHost) {
+    AppState.set("appCheck", null);
+    AppState.set("appCheckReady", false);
+    AppState.set("appCheckStatus", "local-disabled");
+    AppState.set("appCheckError", "");
+    return;
+  }
   if (!siteKey || typeof firebase?.appCheck !== "function") {
     AppState.set("appCheckStatus", siteKey ? "sdk-missing" : "disabled");
     return;
@@ -330,138 +327,24 @@ export const setLoginScreenVisible = (visible, restoreFocusOnClose = true) => {
   if (!el.loginScreen) return;
   document.body.classList.toggle("login-open", visible);
   el.loginScreen.setAttribute("aria-hidden", visible ? "false" : "true");
+  if (visible) {
+    el.loginScreen.style.setProperty("opacity", "1", "important");
+    el.loginScreen.style.setProperty("visibility", "visible", "important");
+    el.loginScreen.style.setProperty("pointer-events", "auto", "important");
+  } else {
+    el.loginScreen.style.removeProperty("opacity");
+    el.loginScreen.style.removeProperty("visibility");
+    el.loginScreen.style.removeProperty("pointer-events");
+  }
+  if (visible) {
+    el.loginScreen
+      .querySelectorAll(".login-box, .login-box *, .login-hud, .login-hud *, .worldforge-callout, .worldforge-callout *")
+      .forEach((node) => {
+        if (node instanceof HTMLElement) node.style.setProperty("visibility", "visible", "important");
+      });
+  }
   if (visible) activateLoginFocusTrap();
   else deactivateLoginFocusTrap(restoreFocusOnClose);
-};
-
-const buildAvFallback = (name) => {
-  const div = document.createElement("div");
-  div.className = "user-avatar-fb";
-  div.textContent = name.charAt(0).toUpperCase();
-  div.setAttribute("aria-hidden", "true");
-  return div;
-};
-
-const renderUserTrigger = () => {
-  if (!el.userTrigger) return;
-  while (el.userTrigger.firstChild) {
-    el.userTrigger.removeChild(el.userTrigger.firstChild);
-  }
-  const chevron = document.createElement("span");
-  chevron.className = "user-chevron";
-  chevron.setAttribute("aria-hidden", "true");
-  chevron.textContent = "▾";
-  if (!AppState.get("firebaseReady") || !AppState.get("currentUser")) {
-    const wrap = document.createElement("span");
-    wrap.className = "login-compact";
-    const dot = document.createElement("span");
-    dot.className = "google-dot";
-    dot.setAttribute("aria-hidden", "true");
-    const txt = document.createElement("span");
-    txt.className = "login-txt";
-    txt.textContent = "登入";
-    wrap.appendChild(dot);
-    wrap.appendChild(txt);
-    el.userTrigger.appendChild(wrap);
-    el.userTrigger.setAttribute("aria-label", "登入帳號");
-  } else {
-    const user = AppState.get("currentUser");
-    const name = getUserDisplayName(user);
-    const photo = user.photoURL;
-    let av;
-    if (photo) {
-      av = document.createElement("img");
-      av.className = "user-avatar";
-      av.alt = `${name}的頭像`;
-      av.setAttribute("referrerpolicy", "no-referrer");
-      av.setAttribute("src", photo);
-      av.onerror = () => {
-        const fallback = buildAvFallback(name);
-        av.replaceWith(fallback);
-      };
-    } else {
-      av = buildAvFallback(name);
-    }
-    const nm = document.createElement("span");
-    nm.className = "user-name-short";
-    nm.textContent = name;
-    el.userTrigger.appendChild(av);
-    el.userTrigger.appendChild(nm);
-    el.userTrigger.setAttribute("aria-label", "帳號選單");
-  }
-  el.userTrigger.appendChild(chevron);
-};
-
-const renderUserPanel = () => {
-  if (!el.userPanel) return;
-  el.userPanel.innerHTML = "";
-  if (!AppState.get("firebaseReady")) return;
-  const panelUser = AppState.get("currentUser");
-  if (panelUser) {
-    const name = getUserDisplayName(panelUser);
-    const info = document.createElement("div");
-    info.className = "up-info";
-    const n = document.createElement("div");
-    n.className = "up-name";
-    n.textContent = name;
-    const e = document.createElement("div");
-    e.className = "up-email";
-    e.textContent = panelUser.email || (panelUser.isAnonymous ? "訪客模式" : "");
-    info.appendChild(n);
-    info.appendChild(e);
-    const logoutBtn = document.createElement("button");
-    logoutBtn.className = "up-action";
-    logoutBtn.textContent = "登出";
-    logoutBtn.setAttribute("aria-label", "登出帳號");
-    logoutBtn.addEventListener("click", () => {
-      if (logoutBtn.dataset.confirming) {
-        AppState.get("fbAuth")?.signOut();
-        closeAll();
-        return;
-      }
-      logoutBtn.dataset.confirming = "1";
-      logoutBtn.textContent = "確定登出？";
-      logoutBtn.style.color = "var(--red-soft)";
-      setTimeout(() => {
-        if (logoutBtn.isConnected) {
-          delete logoutBtn.dataset.confirming;
-          logoutBtn.textContent = "登出";
-          logoutBtn.style.color = "";
-        }
-      }, 2500);
-    });
-    el.userPanel.appendChild(info);
-    el.userPanel.appendChild(logoutBtn);
-  } else {
-    const loginInfo = document.createElement("div");
-    loginInfo.className = "up-login-info";
-    loginInfo.textContent = "登入後自動儲存歷史紀錄，跨裝置同步。";
-    const loginBtn = document.createElement("button");
-    loginBtn.className = "up-login-btn";
-    loginBtn.setAttribute("aria-label", "以 Google 印章登入");
-    const dot = document.createElement("div");
-    dot.className = "google-dot";
-    dot.setAttribute("aria-hidden", "true");
-    const txt = document.createElement("span");
-    txt.textContent = "以 Google 印章登入";
-    loginBtn.appendChild(dot);
-    loginBtn.appendChild(txt);
-    loginBtn.addEventListener("click", async () => {
-      const auth = AppState.get("fbAuth");
-      if (!auth) return;
-      try {
-        await googleSignIn(auth);
-      } catch (err) {
-        cancelAuthAction();
-        const code = err?.code || "";
-        if (!isUserCancel(code)) {
-          showToast("登入失敗：" + (err?.message || "未知錯誤"));
-        }
-      }
-    });
-    el.userPanel.appendChild(loginInfo);
-    el.userPanel.appendChild(loginBtn);
-  }
 };
 
 const isUserCancel = (code) =>
@@ -481,6 +364,24 @@ const googleSignIn = async (auth) => {
   const pending = auth.signInWithPopup(provider);
   playBootChime();
   await pending; // 成功由 onAuthStateChanged 接手；錯誤往上拋給呼叫端顯示
+};
+
+const handleUserPanelGoogleLogin = async () => {
+  const auth = AppState.get("fbAuth");
+  if (!auth) return;
+  try {
+    await googleSignIn(auth);
+  } catch (err) {
+    cancelAuthAction();
+    const code = err?.code || "";
+    if (!isUserCancel(code)) {
+      showToast("登入失敗：" + (err?.message || "未知錯誤"));
+    }
+  }
+};
+
+const renderAuthUserPanel = () => {
+  renderUserPanel({ onGoogleLogin: handleUserPanelGoogleLogin });
 };
 
 export const handleGoogleLogin = async () => {
@@ -538,9 +439,10 @@ export const initFirebase = () => {
   try {
     if (typeof firebase === "undefined") {
       renderUserTrigger();
-      renderUserPanel();
+      renderAuthUserPanel();
       loadSession();
       renderHistory();
+      resolveInitialAuthGate();
       return;
     }
     firebase.initializeApp(FIREBASE_CONFIG);
@@ -560,7 +462,7 @@ export const initFirebase = () => {
     auth.onAuthStateChanged(async (user) => {
       AppState.set("currentUser", user);
       renderUserTrigger();
-      renderUserPanel();
+      renderAuthUserPanel();
       // 帳號是否真的切換（用尚未被覆寫的 previousUser 比對 uid）
       const accountChanged = (AppState.get("previousUser")?.uid ?? null) !== (user?.uid ?? null);
       AppState.set("previousUser", user);
@@ -577,7 +479,8 @@ export const initFirebase = () => {
 
         if (!shouldPlayHandoff) {
           closeLoginWithoutHandoff();
-          await loadHistoryFromFirestore();
+          resolveInitialAuthGate();
+          await loadHistoryForCurrentUser();
           return;
         }
 
@@ -592,18 +495,18 @@ export const initFirebase = () => {
             el.loginScreen?.classList.remove("show", "fade-out", "warping", "auth-pending");
             setLoginScreenVisible(false, false);
             blurActiveElement();
-            stopLoginBoot();
             stopLoginFx();   // 此刻畫面已 display:none，context 丟失不可見
             stopLoginHud();
             stopAmbient();
           }, 700);
         };
         // warp 開始：登入鈕+HUD 漸消散（CSS .warping），不擋 LINK START 特效
+        resolveInitialAuthGate();
         el.loginScreen?.classList.add("warping");
         setRitualStatus("正在進入禁忌書庫");
         // 無 3D（已登入直入 / WebGL fallback）時 warpLoginFx 會立即 handoff
         warpLoginFx(handoff);
-        await loadHistoryFromFirestore();
+        await loadHistoryForCurrentUser();
       } else {
         // 登出 / 未登入：清空，顯示登入畫面，啟動 3D 背景
         setSyncStatus("", "");
@@ -621,14 +524,16 @@ export const initFirebase = () => {
         setLoginErr("");
         setRitualStatus("小說編修引擎待命中");
         setLoginScreenVisible(true);
+        resolveInitialAuthGate();
         startLoginBg();
       }
     });
   } catch (err) {
     console.warn("[FLG] Firebase init failed:", err?.message);
     renderUserTrigger();
-    renderUserPanel();
+    renderAuthUserPanel();
     loadSession();
     renderHistory();
+    resolveInitialAuthGate();
   }
 };

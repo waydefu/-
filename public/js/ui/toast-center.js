@@ -1,6 +1,6 @@
 // @ts-check
 
-import { el } from '../dom.js';
+import { el } from '../core/dom.js';
 
 /** Announce a message to screen readers via the live region. */
 export const announce = (msg) => {

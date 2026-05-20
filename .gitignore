@@ -17,6 +17,10 @@ functions/.env.local
 # Build output
 functions/lib/
 
+# Local command cache/temp (keeps checks off a full C: drive)
+.npm-cache/
+.tmp/
+
 # OS
 .DS_Store
 Thumbs.db

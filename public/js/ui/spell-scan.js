@@ -1,7 +1,7 @@
 // @ts-check
 
-import { el } from '../dom.js';
-import { escapeHtml } from '../utils.js';
+import { el } from '../core/dom.js';
+import { escapeHtml } from '../utils/text.js';
 
 let _spellWorker = null;
 let _spellScanId = 0;

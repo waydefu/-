@@ -53,29 +53,18 @@ export const UI_CONFIG = {
   CACHE_MAX_ENTRIES: 20,
 };
 
-/** @deprecated Use FIREBASE_CONFIG / API_CONFIG / LIMITS / UI_CONFIG directly. */
-export const CONFIG = {
-  FIREBASE: FIREBASE_CONFIG,
-  get FUNCTIONS_URL()    { return API_CONFIG.FUNCTIONS_URL; },
-  get FETCH_TIMEOUT_MS() { return API_CONFIG.FETCH_TIMEOUT_MS; },
-  get MAX_DRAFT_STORE()  { return LIMITS.MAX_DRAFT_STORE; },
-  get MAX_RESULT_CHARS() { return LIMITS.MAX_RESULT_CHARS; },
-  get MAX_HISTORY()      { return LIMITS.MAX_HISTORY; },
-  get STORAGE_KEY()      { return UI_CONFIG.STORAGE_KEY; },
-};
-
 /** Default analyze button label. */
-export const BTN_DEFAULT = "📜  召喚守門人審閱";
+export const BTN_DEFAULT = "開啟法典審閱";
 /** Analyze button label while a request is active. */
-export const BTN_LOADING = "⏳  守門人審閱中…";
+export const BTN_LOADING = "法典審閱中…";
 
 /** Localized UI copy used by the front-end runtime. */
 export const MSG = {
-  SYNC_LOADING:   "⟳ 載入中",
-  SYNC_SAVING:    "⟳ 儲存中",
-  SYNC_OK:        "☁ 已同步",
-  SYNC_ERR:       "⚠ 離線",
-  SYNC_SAVE_ERR:  "⚠ 儲存失敗",
+  SYNC_LOADING:   "載入草稿記憶",
+  SYNC_SAVING:    "同步草稿記憶",
+  SYNC_OK:        "草稿記憶已同步",
+  SYNC_ERR:       "離線模式",
+  SYNC_SAVE_ERR:  "草稿記憶儲存失敗",
   OFFLINE_TOAST:  "雲端資料載入失敗，顯示本機暫存紀錄。",
   SAVE_ERR_TOAST: "雲端儲存失敗（{code}），本機紀錄仍保留。",
   TIMEOUT:        "請求逾時（超過 180 秒），請稍後再試。",
@@ -84,5 +73,5 @@ export const MSG = {
   POPUP_CLOSED:   "auth/popup-closed-by-user",
   RATE_LIMIT:     "分析請求過於頻繁，請 {sec} 秒後再試。",
   QUOTA_EXCEEDED: "今日使用次數已達上限，請明日再試。",
-  CACHE_HIT:      "已從快取載入相同草稿的分析結果。",
+  CACHE_HIT:      "已從草稿記憶載入相同文本的分析結果。",
 };

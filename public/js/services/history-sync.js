@@ -1,11 +1,8 @@
 // @ts-check
 
-import { CONFIG, LIMITS, MSG } from '../config.js';
-import { el } from '../dom.js';
-import { AppState, historyData, selectedIds } from '../state.js';
-import { withFirestoreTimeout } from '../cache.js';
-import { showToast } from './toast.js';
-import { renderHistory } from './history.js';
+import { LIMITS, UI_CONFIG } from '../core/config.js';
+import { AppState, historyData, selectedIds } from '../core/state.js';
+import { withFirestoreTimeout } from './cache.js';
 
 /** 目前 session 快取所屬的 uid（null = 未登入 / 開機初始） */
 let _sessionUid = null;
@@ -14,10 +11,10 @@ let _sessionUid = null;
 export const setSessionUid = (uid) => { _sessionUid = uid; };
 
 /** 每個使用者獨立的 sessionStorage key，杜絕跨帳號資料外洩 */
-const sessionKeyFor = (uid) => `${CONFIG.STORAGE_KEY}_${uid || "guest"}`;
+const sessionKeyFor = (uid) => `${UI_CONFIG.STORAGE_KEY}_${uid || "guest"}`;
 
 // 一次性清除舊的「全域」key（修正前殘留的他人資料，隱私）
-try { sessionStorage.removeItem(CONFIG.STORAGE_KEY); } catch (_) {}
+try { sessionStorage.removeItem(UI_CONFIG.STORAGE_KEY); } catch (_) {}
 
 export const saveSession = () => {
   try {
@@ -51,20 +48,12 @@ const userHistRef = () => {
   return db.collection("users").doc(user.uid).collection("history");
 };
 
-export const setSyncStatus = (state, msg) => {
-  if (!el.panelSync) return;
-  el.panelSync.className = `panel-sync ${state}`;
-  el.panelSync.textContent = msg;
-};
-
 export const loadHistoryFromFirestore = async () => {
   const ref = userHistRef();
   if (!ref) {
     loadSession();
-    renderHistory();
-    return;
+    return { ok: true, source: "session" };
   }
-  setSyncStatus("syncing", MSG.SYNC_LOADING);
   try {
     const snap = await withFirestoreTimeout(
       ref.orderBy("ts", "desc").limit(LIMITS.MAX_HISTORY).get()
@@ -72,14 +61,11 @@ export const loadHistoryFromFirestore = async () => {
     historyData.length = 0;
     historyData.push(...snap.docs.map((d) => d.data()));
     saveSession();
-    setSyncStatus("ok", MSG.SYNC_OK);
-    renderHistory();
+    return { ok: true, source: "firestore" };
   } catch (err) {
     console.warn("[FLG] Firestore read failed:", err?.code, err?.message);
-    setSyncStatus("err", MSG.SYNC_ERR);
-    showToast(MSG.OFFLINE_TOAST, "info");
     loadSession();
-    renderHistory();
+    return { ok: false, source: "session", error: err };
   }
 };
 
@@ -100,13 +86,11 @@ export const saveItemToFirestore = async (item) => {
     result: safeResult,
     preview: safeDraft.slice(0, 60).replace(/\n/g, " ")
   };
-  setSyncStatus("syncing", MSG.SYNC_SAVING);
   try {
     await withFirestoreTimeout(ref.doc(safeItem.id).set(safeItem));
-    setSyncStatus("ok", MSG.SYNC_OK);
+    return { ok: true };
   } catch (err) {
-    setSyncStatus("err", MSG.SYNC_SAVE_ERR);
-    showToast(MSG.SAVE_ERR_TOAST.replace("{code}", err?.code || err?.message));
+    return { ok: false, error: err };
   }
 };
 

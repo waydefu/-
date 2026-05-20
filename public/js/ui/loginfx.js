@@ -13,7 +13,6 @@ const RED = 0x7a140c;
 const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 const lerp = (a, b, t) => a + (b - a) * t;
 const easeInOutCubic = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
-const easeOutCubic = (x) => 1 - Math.pow(1 - x, 3);
 
 export const isWebGLAvailable = () => {
   try {
@@ -38,15 +37,15 @@ const getPerformanceProfile = (reduced) => {
     reduced,
     mobile,
     lowPower,
-    runeLayers: reduced ? 10 : mobile ? 14 : 26,
-    particleCount: reduced ? 520 : mobile ? 980 : 2400,
-    dustCount: reduced ? 220 : mobile ? 420 : 880,
-    fragmentCount: reduced ? 22 : mobile ? 42 : 76,
-    pixelRatio: reduced ? 1 : mobile ? Math.min(window.devicePixelRatio || 1, 1.15) : Math.min(window.devicePixelRatio || 1, 1.65),
+    runeLayers: reduced ? 14 : mobile ? 18 : 38,
+    particleCount: reduced ? 260 : mobile ? 1500 : 4200,
+    dustCount: reduced ? 120 : mobile ? 760 : 1500,
+    fragmentCount: reduced ? 18 : mobile ? 72 : 132,
+    pixelRatio: reduced ? 1 : mobile ? Math.min(window.devicePixelRatio || 1, 1.15) : Math.min(window.devicePixelRatio || 1, 1.75),
     useComposer: !reduced,
     useSao: !reduced && !mobile && cores >= 6,
-    bloomStrength: reduced ? 0.12 : mobile ? 0.22 : 0.34,
-    bloomRadius: mobile ? 0.28 : 0.38,
+    bloomStrength: reduced ? 0.16 : mobile ? 0.24 : 0.42,
+    bloomRadius: mobile ? 0.3 : 0.46,
   };
 };
 
@@ -187,7 +186,7 @@ class CameraController {
     this.THREE = THREE;
     this.camera = camera;
     this.profile = profile;
-    this.target = new THREE.Vector3(profile.mobile ? 0 : -6, profile.mobile ? 3 : 0, 0);
+    this.target = new THREE.Vector3(profile.mobile ? 0 : -8.5, profile.mobile ? 3 : 0, 0);
     this.pointer = { x: 0, y: 0 };
     this.warpOffset = 0;
   }
@@ -197,7 +196,7 @@ class CameraController {
     this.camera.aspect = aspect;
     this.camera.fov = this.profile.mobile ? 66 : 58;
     this.camera.position.set(
-      this.profile.mobile ? 0 : -3,
+      this.profile.mobile ? 0 : -4.8,
       this.profile.mobile ? 7 : 2,
       aspect > 1.8 ? 60 : aspect < 0.85 ? 72 : 64,
     );
@@ -222,10 +221,11 @@ class CoreEngine {
     this.profile = profile;
     this.group = new THREE.Group();
     this.group.name = "Worldforge Core";
-    this.group.position.set(profile.mobile ? 0 : -10.5, profile.mobile ? 4.5 : 0.5, -8);
+    this.group.position.set(profile.mobile ? 0 : -12.2, profile.mobile ? 5.2 : 0.6, -9);
     this.energy = 0;
     this.layers = [];
     this.fragments = [];
+    this.orbitals = [];
     this.lattice = null;
     this.createCore();
     scene.add(this.group);
@@ -274,8 +274,67 @@ class CoreEngine {
     this.layers.push({ obj: sealB, speed: -0.12, axis: "y", mat: sealMatB });
     this.layers.push({ obj: sealC, speed: 0.09, axis: "x", mat: sealC.material });
 
+    this.createDimensionalSeals();
     this.createLattice();
     this.createFragments();
+    this.createManuscriptOrbitals();
+  }
+
+  createDimensionalSeals() {
+    const THREE = this.THREE;
+    const sealGroup = new THREE.Group();
+    sealGroup.name = "Dimensional Seal Structures";
+    const count = this.profile.mobile ? 7 : 11;
+    for (let i = 0; i < count; i++) {
+      const radius = 12.2 + i * 1.22 + Math.sin(i * 1.47) * 0.72;
+      const color = i % 4 === 0 ? BRIGHT_GOLD : i % 3 === 0 ? EMBER : GOLD;
+      const mat = makeRuneMaterial(THREE, {
+        color,
+        opacity: 0.13 - Math.min(i * 0.006, 0.055),
+        density: 36 + (i * 13) % 72,
+        seed: 90 + i * 17.41,
+        thickness: 0.28 + (i % 4) * 0.08,
+      });
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, 0.01 + (i % 3) * 0.004, 5, 240), mat);
+      ring.rotation.set(
+        (i % 5) * Math.PI / 8 + Math.sin(i) * 0.08,
+        (i % 7) * Math.PI / 10,
+        i * 0.37,
+      );
+      sealGroup.add(ring);
+      this.layers.push({
+        obj: ring,
+        speed: (0.035 + i * 0.006) * (i % 2 ? -1 : 1),
+        axis: ["x", "y", "z"][i % 3],
+        mat,
+      });
+    }
+
+    const starLines = [];
+    const nodes = this.profile.mobile ? 18 : 28;
+    for (let i = 0; i < nodes; i++) {
+      const a = (i / nodes) * TAU;
+      const b = (((i * 9) % nodes) / nodes) * TAU;
+      const r1 = 10.8 + (i % 4) * 1.8;
+      const r2 = 18.4 + (i % 6) * 1.15;
+      starLines.push(
+        Math.cos(a) * r1, Math.sin(a * 2.0) * 2.8, Math.sin(a) * r1 * 0.58,
+        Math.cos(b) * r2, Math.sin(b * 1.7) * 4.2, Math.sin(b) * r2 * 0.58,
+      );
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.Float32BufferAttribute(starLines, 3));
+    const mat = new THREE.LineBasicMaterial({
+      color: BRIGHT_GOLD,
+      transparent: true,
+      opacity: 0.1,
+      blending: THREE.AdditiveBlending,
+      depthWrite: false,
+    });
+    const star = new THREE.LineSegments(geo, mat);
+    sealGroup.add(star);
+    this.layers.push({ obj: star, speed: -0.027, axis: "z", mat });
+    this.group.add(sealGroup);
   }
 
   createLattice() {
@@ -342,12 +401,44 @@ class CoreEngine {
     }
   }
 
+  createManuscriptOrbitals() {
+    const THREE = this.THREE;
+    const stripGeo = new THREE.PlaneGeometry(2.8, 0.34, 1, 1);
+    const longGeo = new THREE.PlaneGeometry(4.6, 0.18, 1, 1);
+    const mat = new THREE.MeshBasicMaterial({
+      color: 0xd7a847,
+      transparent: true,
+      opacity: 0.18,
+      depthWrite: false,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    });
+    const count = this.profile.mobile ? 18 : 32;
+    for (let i = 0; i < count; i++) {
+      const mesh = new THREE.Mesh(i % 4 === 0 ? longGeo : stripGeo, mat.clone());
+      const angle = (i / count) * TAU;
+      const radius = 12 + (i % 7) * 1.35 + Math.sin(i * 1.91) * 1.4;
+      const tilt = (i % 5) * 0.18 + 0.18;
+      mesh.position.set(Math.cos(angle) * radius, Math.sin(i * 0.83) * 4.4, Math.sin(angle) * radius * 0.56);
+      mesh.rotation.set(tilt, angle + Math.PI / 2, Math.sin(i) * 0.8);
+      this.group.add(mesh);
+      this.orbitals.push({
+        mesh,
+        angle,
+        radius,
+        speed: (0.035 + Math.random() * 0.08) * (i % 2 ? -1 : 1),
+        y: mesh.position.y,
+        phase: Math.random() * TAU,
+      });
+    }
+  }
+
   update(dt, time, state) {
     const warp = state.warp;
     const audio = getAudioLevel();
     this.energy = lerp(this.energy, state.energy + audio * 0.6 + warp * 1.3, dt * 2.4);
     const pulse = 1 + Math.sin(time * 0.92) * 0.018 + this.energy * 0.045;
-    this.group.scale.setScalar((this.profile.mobile ? 0.72 : 0.94) * pulse * (1 + warp * 0.34));
+    this.group.scale.setScalar((this.profile.mobile ? 0.78 : 1.18) * pulse * (1 + warp * 0.34));
     this.group.rotation.y += dt * (0.035 + warp * 0.22);
     this.group.rotation.x = Math.sin(time * 0.12) * 0.08 + warp * 0.22;
     this.layers.forEach((layer, idx) => {
@@ -370,6 +461,16 @@ class CoreEngine {
       f.mesh.rotation.y += dt * (0.12 + warp * 2.1);
       f.mesh.material.emissiveIntensity = 0.26 + this.energy * 0.42 + Math.sin(time * 2 + idx) * 0.05;
     });
+    this.orbitals.forEach((f, idx) => {
+      f.angle += dt * f.speed * (1 + warp * 7.2);
+      const radius = f.radius * (1 - warp * 0.62);
+      f.mesh.position.x = Math.cos(f.angle) * radius;
+      f.mesh.position.z = Math.sin(f.angle) * radius * 0.56;
+      f.mesh.position.y = f.y + Math.sin(time * 0.7 + f.phase) * 0.48;
+      f.mesh.rotation.y = f.angle + Math.PI / 2;
+      f.mesh.rotation.z += dt * (0.08 + warp * 1.8) * (idx % 2 ? -1 : 1);
+      f.mesh.material.opacity = 0.11 + this.energy * 0.06 + Math.sin(time * 1.4 + idx) * 0.035 + warp * 0.16;
+    });
   }
 }
 
@@ -391,7 +492,7 @@ class RuneSystem {
     const count = this.profile.runeLayers;
     for (let i = 0; i < count; i++) {
       const t = count === 1 ? 0 : i / (count - 1);
-      const radius = lerp(8.4, this.profile.mobile ? 28 : 36, t) + Math.sin(i * 2.31) * 1.4;
+      const radius = lerp(8.4, this.profile.mobile ? 30 : 43, t) + Math.sin(i * 2.31) * 1.4;
       const tube = lerp(0.006, 0.026, 1 - t);
       const color = i % 7 === 0 ? RED : i % 5 === 0 ? EMBER : i % 3 === 0 ? BRIGHT_GOLD : GOLD;
       const opacity = lerp(0.42, 0.12, t) * (i % 4 === 0 ? 1.25 : 1);
@@ -559,12 +660,12 @@ class HUDSystem {
     const THREE = this.THREE;
     const geo = new THREE.BufferGeometry();
     const lines = [];
-    for (let i = 0; i < 56; i++) {
+    for (let i = 0; i < (this.profile.mobile ? 70 : 128); i++) {
       const side = i % 2 ? 1 : -1;
-      const x = side * (this.profile.mobile ? 26 + Math.random() * 14 : 48 + Math.random() * 36);
-      const y = (Math.random() - 0.5) * 54;
-      const w = 2 + Math.random() * 9;
-      const z = -15 - Math.random() * 60;
+      const x = side * (this.profile.mobile ? 26 + Math.random() * 16 : 38 + Math.random() * 54);
+      const y = (Math.random() - 0.5) * (this.profile.mobile ? 66 : 78);
+      const w = 2 + Math.random() * 13;
+      const z = -12 - Math.random() * 92;
       lines.push(x, y, z, x + side * w, y + Math.sin(i) * 0.8, z);
     }
     geo.setAttribute("position", new THREE.Float32BufferAttribute(lines, 3));
@@ -793,6 +894,7 @@ class OperationalModeController {
     const messages = [
       "正在開啟編修儀式",
       "世界觀核心啟動中",
+      "草稿記憶已同步",
       "深淵法典已連線",
       "小說編修引擎待命中",
       "可開始進行小說分析",
@@ -865,7 +967,7 @@ class SceneManager {
     window.__FLG_LOGIN_FX_METRICS__ = {
       active: true,
       disposed: false,
-      version: "worldforge-core-v1",
+      version: "worldforge-core-v4",
       runeLayers: this.profile.runeLayers,
       particleCount: this.profile.particleCount + this.profile.dustCount,
       useSao: this.profile.useSao && !!this.post.sao,

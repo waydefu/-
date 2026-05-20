@@ -1,20 +1,41 @@
 // @ts-check
 
-import { LIMITS } from '../config.js';
-import { el } from '../dom.js';
-import { AppState, historyData, selectedIds } from '../state.js';
-import { formatDate } from '../utils.js';
-import { setResult } from './result.js';
-import { closeAll } from './dropdown.js';
+import { LIMITS, MSG } from '../core/config.js';
+import { el } from '../core/dom.js';
+import { AppState, historyData, selectedIds } from '../core/state.js';
+import { formatDate } from '../utils/text.js';
+import { setResult } from './result-view.js';
+import { closeAll } from './dropdown-menu.js';
+import { showToast } from './toast-center.js';
 import {
   saveSession,
+  loadHistoryFromFirestore,
   saveItemToFirestore,
   deleteItemFromFirestore,
   deleteItemsFromFirestore
-} from './firestore.js';
-import { updateCharCount } from './draft.js';
+} from '../services/history-sync.js';
+import { updateCharCount } from './draft-editor.js';
 
 let pendingDeleteId = "";
+
+export const setSyncStatus = (state, msg) => {
+  if (!el.panelSync) return;
+  el.panelSync.className = `panel-sync ${state}`;
+  el.panelSync.textContent = msg;
+};
+
+export const loadHistoryForCurrentUser = async () => {
+  setSyncStatus("syncing", MSG.SYNC_LOADING);
+  const result = await loadHistoryFromFirestore();
+  if (result.ok) {
+    setSyncStatus(result.source === "firestore" ? "ok" : "", result.source === "firestore" ? MSG.SYNC_OK : "");
+  } else {
+    setSyncStatus("err", MSG.SYNC_ERR);
+    showToast(MSG.OFFLINE_TOAST, "info");
+  }
+  renderHistory();
+  return result;
+};
 
 const updateBadge = () => {
   const n = historyData.length;
@@ -197,7 +218,14 @@ export const addHistory = async (draft, result) => {
   renderHistory();
   updateBadge();
   try {
-    await saveItemToFirestore(item);
+    setSyncStatus("syncing", MSG.SYNC_SAVING);
+    const saved = await saveItemToFirestore(item);
+    if (saved?.ok) {
+      setSyncStatus("ok", MSG.SYNC_OK);
+    } else if (saved && !saved.ok) {
+      setSyncStatus("err", MSG.SYNC_SAVE_ERR);
+      showToast(MSG.SAVE_ERR_TOAST.replace("{code}", saved.error?.code || saved.error?.message || "unknown"));
+    }
   } catch (e) {
     console.warn("[FLG] bg save failed:", e);
   }
