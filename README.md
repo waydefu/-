@@ -185,6 +185,14 @@ npm.cmd run smoke:hosting
 - `result-parser.js` 已部署。
 - 未登入 POST `analyzeV2` 會回標準 `401 { code, message }`，不碰 Groq。
 
+Firestore rules 官方 emulator 測試：
+
+```powershell
+npm.cmd run test:rules
+```
+
+此測試會透過 Firebase Firestore emulator 驗證 owner CRUD、匿名/跨帳號拒絕、欄位與長度拒絕、default deny。`firebase.json` 已將 Firestore emulator 固定在 `127.0.0.1:8088`，避免撞到本機常見的 `8080` 服務。
+
 人工登入後 smoke checklist：
 
 - Email 註冊成功，導覽列顯示 displayName。
@@ -200,7 +208,7 @@ npm.cmd run smoke:hosting
 
 目前 App Check 仍維持 report-only：前端會嘗試送 `X-Firebase-AppCheck`，後端會驗證並把 `appCheckStatus` 寫進 structured logs，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
 
-2026-05-20 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。目前前端已補上初始化後 token warmup、分析前一般取 token 與強制刷新備援；若部署後仍是 `missing`，下一個檢查點是 Firebase / Google Cloud 端的 App Check Web app 綁定、reCAPTCHA Enterprise key 類型與 production domain 設定。
+2026-05-20 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。前端已補上初始化後 token warmup、分析前一般取 token 與強制刷新備援；部署後再次以 Email、Google、訪客各送一次短草稿，Functions log 仍是 `missing`。下一個檢查點是 Firebase / Google Cloud 端的 App Check Web app 綁定、reCAPTCHA Enterprise key 類型與 production domain 設定。
 
 切強制前必須先確認：
 
@@ -250,6 +258,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 已收斂登入後帳號顯示：Email/Password、Google、訪客共用通用帳號文案；Email 帳號會優先顯示 displayName，否則顯示 email 前綴，登出/重回登入頁會清空密碼欄位。
 - 已新增 Hosting smoke 腳本與登入後人工 smoke checklist；App Check 強制模式前置也已整理，目前因 log 仍出現 `appCheckStatus: 'missing'`，暫不切強制。
 - 已補強 App Check 前端 token 流程：初始化後先暖身取 token，分析前若一般取 token 失敗或回空值，會再強制刷新一次；同時記錄 `appCheckStatus` / `appCheckError` 方便觀測。
+- 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8088`。
 
 ---
 
