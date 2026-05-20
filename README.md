@@ -109,18 +109,18 @@ Rollout 建議：
 - 待機狀態：沿用目前參考圖方向，中央是琥珀金儀式核心與環狀 HUD，左右維持 `SYSTEM STATUS`、`REAL TIME SYNC`、`SYSTEM ANALYSIS`、`DEVICE INFO`、`CORE LOAD`、`CONSOLE LOG` 等半透明面板。登入按鈕置中，畫面看起來像黑暗西幻版 tactical arcane interface。
 - 中央認證面板：Email / Password 註冊與登入已嵌入中央動畫核心內，作為主要體驗。待機時顯示「登入 / 註冊」切換；欄位以半透明琥珀玻璃面板從環狀 HUD 中展開，不做成獨立白底表單或外部風格卡片。
 - 四段式登入節奏：以 `ORIGIN LIGHT`、`TOKEN CHECK`、`LINK START`、`WORKSPACE RENDER` 取代原作五感同步與角色創建。使用者送出 Email、Google 或訪客登入後，中央核心先亮起，狀態列依序脈衝，表示 Auth / App Check / Firestore / SSE 通道正在接入。
-- 初始連線儀式：第一次顯示登入頁時，先以純黑背景跑終端機打字檢查（核心初始化、AES-256、latency、App Check channel、secure status），完成後印出 `[ SECURE CONNECTION ESTABLISHED ]`。
-- 白場歡迎與展開：連線檢查後進入 0.3 秒白場，中央淡入 `WELCOME TO FANTASY LORE GUARDIAN`，再以碎片退場揭露黑金 HUD；中央核心、側邊面板與登入按鈕依序展開。
+- 初始連線儀式：第一次顯示登入頁時，先以夜間友善的暖黑背景跑終端機打字檢查（核心初始化、AES-256、guardian protocol、latency、App Check channel、secure status），完成後印出 `[ SECURE CONNECTION ESTABLISHED ]`。
+- 暗金歡迎與展開：連線檢查後不使用白屏，改以低亮度暗金 veil 與符文環展開，中央淡入 `WELCOME TO FANTASY LORE GUARDIAN`，再以暗金碎片退場揭露黑金 HUD；中央核心、側邊面板與登入按鈕依序展開。
 - 註冊體驗：首次使用者走「建立通行證」流程，依序填入顯示名稱、email、密碼、確認密碼；送出後呼叫 Firebase Auth 建帳，成功後進入完整 warp。
 - 既有帳號登入：登入模式只保留 email 與密碼，視覺上仍放在中央核心；按下登入後依實際 Auth 結果決定成功轉場或顯示錯誤。
 - 旁側身份入口：Google 登入已移到次要 HUD 模組 `EXTERNAL IDENTITY`；訪客登入保留在同一模組下方，降低視覺優先級但保留可用路徑。
 - 認證觸發：使用者點擊 Google、訪客或未來 Email / Password 登入後，登入按鈕鎖定，中央核心由一點亮光啟動，HUD 開始顯示 `AUTH REQUEST`、`TOKEN CHECK`、`SECURE CHANNEL`。不要做假帳密自動填入動畫，以免和真實驗證狀態混淆。
-- 光纖隧道：驗證成功後才進入 LINK START warp。視角從中央光點高速穿入由金色光纖、符文線、資料粒子與環形軌道組成的隧道；主色仍是黑、琥珀、金，淡藍或白光只作為少量高亮，不改成冷藍 cyber 風。
+- 光纖隧道：驗證成功後才進入 LINK START warp。視角從中央光點高速穿入由金色光纖、符文線、資料粒子與環形軌道組成的隧道；主色仍是黑、琥珀、金，淡藍只作為少量狀態高亮，不改成冷藍 cyber 風。
 - 系統自檢：穿梭期間用半透明 HUD 快速跑狀態列，不宣稱真實五感同步；改用符合本網站的項目，例如 `DISPLAY`、`AUDIO`、`AUTH TOKEN`、`APP CHECK`、`FIRESTORE SYNC`、`ENCRYPTION`、`STREAM CHANNEL`，成功顯示 `[ OK ]`，未導入項目顯示 `[ PENDING ]` 或不出現。
-- 登入確認：隧道盡頭以短促白光覆蓋，接著浮現自有文案，例如 `GUARDIAN ACCESS CONNECTED`、`WELCOME, LORE KEEPER` 或 `FANTASY LORE GUARDIAN ONLINE`。白光需限制亮度與時間，避免手機上刺眼或造成轉場白屏誤判。
-- 降臨主工具：白光退去後不是角色創建，而是主工具頁逐步渲染：導覽列、草稿輸入、分析面板、歷史面板依序淡入；語意是「進入守門人工作台」，不是「進入遊戲世界」。
+- 登入確認：隧道盡頭以低亮度金色光霧覆蓋，接著浮現自有文案，例如 `GUARDIAN ACCESS CONNECTED`、`WELCOME, LORE KEEPER` 或 `FANTASY LORE GUARDIAN ONLINE`。避免整頁白屏與純黑硬切，讓夜間使用不刺眼。
+- 降臨主工具：金色光霧退去後不是角色創建，而是主工具頁逐步渲染：導覽列、草稿輸入、分析面板、歷史面板依序淡入；語意是「進入守門人工作台」，不是「進入遊戲世界」。
 - 失敗與取消：驗證失敗不播放完整 warp，只在登入卡片內以低亮度紅琥珀提示錯誤，保留重試按鈕；使用者取消 Google popup 時不顯示錯誤，回到待機狀態。
-- 低效能與可及性：`prefers-reduced-motion`、WebGL 不可用、手機低效能時跳過隧道與白光，只保留簡短 HUD 掃描與淡入；所有動態都不得阻斷鍵盤 focus trap、aria-live 與登入錯誤提示。
+- 低效能與可及性：`prefers-reduced-motion`、WebGL 不可用、手機低效能時跳過隧道與強光，只保留簡短 HUD 掃描與淡入；所有動態都不得阻斷鍵盤 focus trap、aria-live 與登入錯誤提示。
 
 - 主介面定位應維持工具型：讓輸入、分析、歷史、帳號狀態一眼可掃，不做 landing page 或大型說明頁。
 - 登入頁保留強風格，但要收斂成「西幻守門人系統」：保留 `#loginScreen`、`#loginGl`、HUD、ambient、LINK START warp；只優化層級、文案、按鈕與表單密度，不重做成另一套視覺語言。
@@ -263,7 +263,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 已補強 App Check 前端 token 流程：初始化後先暖身取 token，分析前若一般取 token 失敗或回空值，會再強制刷新一次；同時記錄 `appCheckStatus` / `appCheckError` 方便觀測。
 - 已加入官方 Firestore emulator rules 測試：`npm.cmd run test:rules` 會用 `@firebase/rules-unit-testing` 驗證 owner-only、schema/長度限制與 default deny；Firestore emulator 固定使用 `127.0.0.1:8099`。
 - 已精修登入頁第一輪：加入四段式 `ORIGIN LIGHT` / `TOKEN CHECK` / `LINK START` / `WORKSPACE RENDER` 狀態列，登入請求期間中央核心會亮起並脈衝；手機版登入畫面改為整頁可捲動以改善鍵盤擠壓。
-- 已加入登入初始啟動儀式：純黑 terminal 連線檢查、白場 `WELCOME TO FANTASY LORE GUARDIAN`、白色碎片退場與 HUD/登入入口展開；`prefers-reduced-motion` 會跳過長動畫。
+- 已加入登入初始啟動儀式：暖黑 terminal 連線檢查、暗金 veil `WELCOME TO FANTASY LORE GUARDIAN`、低亮度碎片退場與 HUD/登入入口展開；`prefers-reduced-motion` 會跳過長動畫。
 
 ---
 

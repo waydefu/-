@@ -267,6 +267,7 @@ const deactivateLoginFocusTrap = (restoreFocus = true) => {
 
 export const setLoginScreenVisible = (visible, restoreFocusOnClose = true) => {
   if (!el.loginScreen) return;
+  document.body.classList.toggle("login-open", visible);
   el.loginScreen.setAttribute("aria-hidden", visible ? "false" : "true");
   if (visible) activateLoginFocusTrap();
   else deactivateLoginFocusTrap(restoreFocusOnClose);

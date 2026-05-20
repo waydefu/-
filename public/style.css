@@ -85,6 +85,10 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+body.login-open {
+  overflow: hidden;
+}
+
 body::before {
   content: '';
   position: fixed;
@@ -933,19 +937,43 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 #loginScreen {
   position: fixed;
   inset: 0;
+  width: 100dvw;
+  height: 100dvh;
   z-index: var(--z-login);
-  background: radial-gradient(circle at center, rgba(12, 6, 1, 0.95), #000);
+  padding: 16px;
+  background:
+    radial-gradient(circle at 50% 46%, rgba(64, 32, 4, 0.42), rgba(10, 5, 1, 0.88) 45%, #050302 100%),
+    linear-gradient(135deg, #070403, #100601 52%, #050302);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(232, 160, 32, 0.48) rgba(10, 6, 2, 0.78);
   
   /* 預設隱藏防閃爍 */
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.6s ease, visibility 0.6s;
+}
+
+#loginScreen::-webkit-scrollbar { width: 9px; height: 9px; }
+#loginScreen::-webkit-scrollbar-track {
+  background: linear-gradient(180deg, rgba(8, 4, 1, 0.95), rgba(24, 12, 2, 0.82));
+  border-left: 1px solid rgba(232, 160, 32, 0.12);
+}
+#loginScreen::-webkit-scrollbar-thumb {
+  border: 2px solid rgba(8, 4, 1, 0.88);
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(255, 213, 95, 0.64), rgba(146, 85, 12, 0.74));
+  box-shadow: 0 0 12px rgba(232, 160, 32, 0.22);
+}
+#loginScreen::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(255, 226, 128, 0.82), rgba(184, 110, 18, 0.82));
 }
 
 #loginScreen.show {
@@ -970,14 +998,21 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   pointer-events: none;
 }
 #loginScreen.booting {
-  background: #000;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(52, 28, 4, 0.36), rgba(5, 3, 2, 0.96) 58%, #040202 100%),
+    #050302;
 }
 .login-boot {
-  position: absolute;
+  position: fixed;
   inset: 0;
+  width: 100dvw;
+  height: 100dvh;
   z-index: 5;
   display: none;
-  background: #000;
+  background:
+    radial-gradient(circle at 50% 48%, rgba(42, 23, 4, 0.42), rgba(5, 3, 2, 0.9) 55%, #040202 100%),
+    repeating-linear-gradient(90deg, rgba(232, 160, 32, 0.025) 0 1px, transparent 1px 96px),
+    #050302;
   pointer-events: none;
   overflow: hidden;
 }
@@ -992,6 +1027,8 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   min-height: 148px;
   padding: 16px 18px;
   border-left: 1px solid rgba(232, 160, 32, 0.32);
+  background: linear-gradient(90deg, rgba(12, 7, 2, 0.72), rgba(12, 7, 2, 0));
+  box-shadow: inset 18px 0 42px rgba(232, 160, 32, 0.035);
   font-family: 'JetBrains Mono', 'Share Tech Mono', ui-monospace, monospace;
   font-size: clamp(10px, 1.2vw, 13px);
   line-height: 1.75;
@@ -1010,17 +1047,49 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 .boot-line.secure::before {
   content: "";
 }
-.boot-whiteout {
+.boot-veil {
   position: absolute;
   inset: 0;
   display: grid;
   place-items: center;
-  background: #fff;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(232, 160, 32, 0.24), rgba(55, 27, 3, 0.74) 30%, rgba(8, 4, 2, 0.98) 70%),
+    linear-gradient(135deg, rgba(14, 7, 2, 0.98), rgba(24, 11, 1, 0.96));
   opacity: 0;
   transform: scale(0.98);
-  transition: opacity 0.3s ease, transform 0.3s ease;
+  transition: opacity 0.72s ease, transform 0.72s ease;
 }
-#loginScreen.boot-white .boot-whiteout {
+.boot-veil::before,
+.boot-veil::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  pointer-events: none;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+.boot-veil::before {
+  width: min(72vmin, 760px);
+  border: 1px solid rgba(232, 160, 32, 0.24);
+  background:
+    conic-gradient(from 0deg, transparent 0 15deg, rgba(255, 212, 96, 0.14) 16deg 18deg, transparent 19deg 46deg),
+    radial-gradient(circle, transparent 0 62%, rgba(232, 160, 32, 0.08) 63%, transparent 65%);
+  box-shadow:
+    0 0 38px rgba(232, 160, 32, 0.14),
+    inset 0 0 52px rgba(232, 160, 32, 0.08);
+  animation: bootVeilRing 8s linear infinite;
+}
+.boot-veil::after {
+  width: min(46vmin, 480px);
+  border: 1px dashed rgba(255, 216, 112, 0.22);
+  box-shadow:
+    0 0 28px rgba(255, 210, 98, 0.16),
+    inset 0 0 38px rgba(12, 5, 1, 0.5);
+  animation: bootVeilRune 5.8s linear infinite reverse;
+}
+#loginScreen.boot-veil-on .boot-veil {
   opacity: 1;
   transform: scale(1);
 }
@@ -1031,18 +1100,19 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   font-weight: 700;
   letter-spacing: 0.14em;
   text-align: center;
-  color: rgba(82, 56, 8, 0.92);
+  color: rgba(255, 218, 128, 0.94);
   opacity: 0;
   transform: translateY(8px) scale(0.985);
   text-shadow:
-    0 0 24px rgba(32, 125, 255, 0.2),
-    0 0 42px rgba(232, 160, 32, 0.26);
-  transition: opacity 0.85s ease, transform 0.85s ease;
+    0 0 22px rgba(232, 160, 32, 0.38),
+    0 0 54px rgba(255, 204, 85, 0.18),
+    0 8px 32px rgba(0, 0, 0, 0.55);
+  transition: opacity 1.08s ease, transform 1.08s ease;
 }
 #loginScreen.boot-welcome .boot-welcome {
   opacity: 1;
   transform: translateY(0) scale(1);
-  animation: bootWelcomeFloat 2s ease-in-out infinite;
+  animation: bootWelcomeFloat 2.9s ease-in-out infinite;
 }
 @keyframes bootWelcomeFloat {
   0%, 100% { translate: 0 0; }
@@ -1058,8 +1128,12 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
   position: absolute;
   width: 24vw;
   height: 24vh;
-  background: #fff;
-  opacity: 0.94;
+  background:
+    linear-gradient(135deg, rgba(255, 218, 128, 0.22), rgba(34, 16, 2, 0.92)),
+    radial-gradient(circle at 50% 50%, rgba(232, 160, 32, 0.16), transparent 62%);
+  border: 1px solid rgba(255, 214, 112, 0.14);
+  opacity: 0.88;
+  box-shadow: 0 0 34px rgba(232, 160, 32, 0.13);
   clip-path: polygon(10% 0, 100% 18%, 72% 100%, 0 78%);
   transform: translate(0, 0) scale(1);
 }
@@ -1075,24 +1149,31 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 .boot-shards span:nth-child(10) { left: 21vw; top: 50vh; }
 .boot-shards span:nth-child(11) { left: 45vw; top: 50vh; }
 .boot-shards span:nth-child(12) { left: 69vw; top: 50vh; clip-path: polygon(8% 14%, 100% 0, 78% 100%, 0 92%); }
-#loginScreen.boot-reveal .boot-whiteout {
+#loginScreen.boot-reveal .boot-veil {
   opacity: 0;
-  transform: scale(1.04);
-  transition: opacity 0.45s ease, transform 0.45s ease;
+  transform: scale(1.06);
+  transition: opacity 0.86s ease, transform 0.86s ease;
 }
 #loginScreen.boot-reveal .boot-shards {
   opacity: 1;
 }
 #loginScreen.boot-reveal .boot-shards span {
-  animation: bootShardBreak 0.88s cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
+  animation: bootShardBreak 1.25s cubic-bezier(0.16, 0.84, 0.24, 1) forwards;
 }
 #loginScreen.boot-reveal .boot-shards span:nth-child(odd) { --sx: -22vw; --sy: -18vh; --rot: -24deg; }
 #loginScreen.boot-reveal .boot-shards span:nth-child(even) { --sx: 24vw; --sy: 20vh; --rot: 28deg; }
 @keyframes bootShardBreak {
   to {
     opacity: 0;
+    filter: blur(4px);
     transform: translate(var(--sx), var(--sy)) rotate(var(--rot)) scale(0.84);
   }
+}
+@keyframes bootVeilRing {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+@keyframes bootVeilRune {
+  to { transform: translate(-50%, -50%) rotate(360deg); }
 }
 #loginScreen.booting .login-hud,
 #loginScreen.booting .login-box {
@@ -1142,8 +1223,8 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 #loginScreen .login-box { position: relative; z-index: 2; }
 .login-box {
   width: min(760px, calc(100vw - 32px));
-  max-height: min(760px, calc(100dvh - 32px));
-  overflow-y: auto;
+  max-height: none;
+  overflow: visible;
   padding: clamp(22px, 4vw, 32px);
   border: 1px solid rgba(232, 160, 32, 0.24);
   border-radius: 14px;
@@ -1355,23 +1436,22 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 /* 登入視窗內的裝飾性背景特效（選配，維持原本風格） */
 #loginScreen::before {
   content: "";
-  position: absolute;
-  width: 150%;
-  height: 150%;
+  position: fixed;
+  inset: 0;
   background: repeating-linear-gradient(
     0deg,
     transparent,
     transparent 1px,
-    rgba(255, 255, 255, 0.03) 1px,
-    rgba(255, 255, 255, 0.03) 2px
+    rgba(232, 160, 32, 0.025) 1px,
+    rgba(232, 160, 32, 0.025) 2px
   );
   animation: scanline 10s linear infinite;
   pointer-events: none;
 }
 
 @keyframes scanline {
-  from { transform: translateY(0); }
-  to { transform: translateY(-50%); }
+  from { background-position: 0 0; }
+  to { background-position: 0 -64px; }
 }
 
 .login-logo {
@@ -2018,6 +2098,41 @@ footer { width: 100%; max-width: 760px; margin-top: clamp(18px, 4vw, 26px); padd
 
 /* ── 15. RESPONSIVE DESIGN ───────────────────────────────────── */
 @media (max-width: 768px) { .bg-glow { filter: blur(40px); animation: none; } }
+@media (min-width: 641px) and (max-height: 760px) {
+  #loginScreen {
+    justify-content: flex-start;
+    padding: 12px 14px;
+  }
+  .login-box {
+    width: min(760px, calc(100vw - 36px));
+    margin: 0 auto;
+    padding: 16px 20px;
+  }
+  .login-logo {
+    font-size: 2rem;
+    margin-bottom: 4px;
+  }
+  .login-subtitle,
+  .login-divider,
+  .login-stage-rail {
+    margin-bottom: 10px;
+  }
+  .auth-field {
+    margin-bottom: 7px;
+  }
+  .auth-field input {
+    min-height: 38px;
+    padding: 8px 10px;
+  }
+  .login-btn {
+    min-height: 44px;
+    margin-bottom: 8px;
+  }
+  .login-clock {
+    margin-top: 8px;
+  }
+}
+
 @media (max-width: 640px) {
   .hist-panel { position: fixed; top: var(--nav-h); left: 0; right: 0; width: 100%; border-radius: 0 0 20px 20px; max-height: 70vh; transform-origin: top center; }
 }

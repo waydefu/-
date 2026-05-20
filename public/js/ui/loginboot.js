@@ -14,16 +14,16 @@ const appendLine = (terminal, className = "") => {
 
 const typeLine = async (terminal, text, opts = {}) => {
   const row = appendLine(terminal, opts.className || "");
-  const speed = opts.speed ?? 18;
+  const speed = opts.speed ?? 24;
   for (let i = 0; i <= text.length; i++) {
     row.textContent = text.slice(0, i);
     await sleep(speed);
   }
-  await sleep(opts.pause ?? 110);
+  await sleep(opts.pause ?? 180);
 };
 
 const finishBoot = (screen) => {
-  screen.classList.remove("booting", "boot-white", "boot-welcome", "boot-reveal");
+  screen.classList.remove("booting", "boot-veil-on", "boot-welcome", "boot-reveal");
   screen.classList.add("boot-complete");
 };
 
@@ -40,12 +40,16 @@ export const startLoginBoot = async ({ reduced = false } = {}) => {
   _played = true;
   const seq = ++_sequence;
   terminal.textContent = "";
-  screen.classList.remove("boot-complete", "boot-white", "boot-welcome", "boot-reveal");
+  screen.classList.remove("boot-complete", "boot-veil-on", "boot-welcome", "boot-reveal");
   screen.classList.add("booting");
 
   const lines = [
     "Initializing core systems...",
     "Verifying AES-256 encryption...",
+    "Binding guardian protocol...",
+    "Calibrating arcane HUD rings...",
+    "Synchronizing identity gateway...",
+    "Mapping interface telemetry...",
     "Network latency: 12ms",
     "App Check channel: report-only",
     "Status: Secure",
@@ -54,10 +58,10 @@ export const startLoginBoot = async ({ reduced = false } = {}) => {
   if (reduced) {
     lines.forEach((line) => { appendLine(terminal).textContent = line; });
     appendLine(terminal, "secure").textContent = "[ SECURE CONNECTION ESTABLISHED ]";
-    await sleep(520);
+    await sleep(900);
     if (seq !== _sequence) return;
-    screen.classList.add("boot-white", "boot-welcome");
-    await sleep(920);
+    screen.classList.add("boot-veil-on", "boot-welcome");
+    await sleep(1500);
     if (seq === _sequence) finishBoot(screen);
     return;
   }
@@ -67,16 +71,16 @@ export const startLoginBoot = async ({ reduced = false } = {}) => {
     await typeLine(terminal, line);
   }
   if (seq !== _sequence) return;
-  await typeLine(terminal, "[ SECURE CONNECTION ESTABLISHED ]", { className: "secure", speed: 8, pause: 260 });
+  await typeLine(terminal, "[ SECURE CONNECTION ESTABLISHED ]", { className: "secure", speed: 13, pause: 900 });
 
-  screen.classList.add("boot-white");
-  await sleep(320);
+  screen.classList.add("boot-veil-on");
+  await sleep(900);
   if (seq !== _sequence) return;
   screen.classList.add("boot-welcome");
-  await sleep(1700);
+  await sleep(3200);
   if (seq !== _sequence) return;
   screen.classList.add("boot-reveal");
-  await sleep(920);
+  await sleep(1800);
   if (seq !== _sequence) return;
   finishBoot(screen);
 };
