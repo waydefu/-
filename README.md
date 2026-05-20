@@ -143,6 +143,45 @@ Rollout 建議：
 - 補部署後驗證清單：Hosting 載入、Google 登入、訪客登入、SSE 首字輸出、Firestore 歷史同步、CSP 無錯誤、舊 SW 已清除。
 - 保留最小 rollback 路徑：functions 與 hosting 分開部署，避免 UI 與後端契約同時失配時難以回復。
 
+### Phase 6：現代網頁工程化路線圖
+
+此階段目標是把目前可運行的 Firebase Serverless 專案，逐步提升到更接近現代前端工程標準的維護方式。導入順序建議保守推進，避免一次改成 Vite / CI/CD / env 管線時同時破壞 production。
+
+#### Security & Configurations
+
+- 目前狀態：Groq secret 已由 Firebase Secret Manager 管理；前端 Firebase web config、reCAPTCHA Enterprise site key、Cloud Function URL 是 public runtime config，不應當成 secret，但仍應集中管理與避免散落在多個檔案。
+- 下一階段：若導入 Vite，將 public runtime config 移到 `.env` / `.env.production`，使用 `VITE_FIREBASE_API_KEY`、`VITE_FIREBASE_PROJECT_ID`、`VITE_FUNCTIONS_URL`、`VITE_RECAPTCHA_SITE_KEY` 等名稱注入 build。
+- 注意：`VITE_*` 變數會被打包到前端，不能放 Groq API key、Firebase Admin credential、private key 或任何真正的 server secret。
+- 本專案已不使用 `APPS_SCRIPT_URL` / GAS；目前後端入口是 Firebase Functions `analyzeV2`，安全邊界應放在 Firebase Auth、App Check、CORS、quota、Firestore rules 與 Secret Manager，而不是隱藏 URL。
+- 開發 / production 切換：若未導入 build tool，暫時維持 `public/js/config.js` 作為單一 public config；若導入 Vite，再將 dev/prod 對應到不同 Firebase project 或 emulator config。
+
+#### IME 與中文輸入體驗
+
+- 目前狀態：`public/js/app.js` 已使用 `compositionstart` / `compositionend` 搭配 `AppState.ime`，中文注音 / 拼音組字期間不觸發字數統計、禁詞掃描與草稿儲存。
+- 維護原則：未來若新增自動分析、即時提示、快捷鍵或 spell worker 行為，都要避開 IME composing 階段，避免使用者還沒選字就觸發昂貴或干擾性的流程。
+- 測試方向：補一個小型 DOM / event 測試，覆蓋 `compositionstart -> input -> compositionend` 時只在選字完成後更新 char count 與 schedule scan/save。
+
+#### Canvas / HUD Performance
+
+- 目前狀態：登入 Three.js 動畫使用 `requestAnimationFrame`，handoff / close 時會透過 `stopLoginFx()` 執行 `cancelAnimationFrame`、移除 resize listener、dispose geometry/material/composer/renderer，並嘗試 `forceContextLoss()` 釋放 WebGL context。
+- 維護原則：任何新增動畫 loop 都必須有明確 cleanup；離開登入頁、WebGL context lost、reduced-motion、頁面 unload 都要能停止 CPU/GPU 工作。
+- 優化方向：簡單 HUD 線條與角標優先使用 CSS transform / opacity；高成本 Canvas / WebGL 僅保留在真正需要 3D 或粒子深度的區域。
+- 行動裝置策略：持續保留 `prefers-reduced-motion` 與 WebGL fallback；手機低效能時跳過長隧道、降低粒子數與 bloom 強度。
+
+#### Robust API Architecture
+
+- 目前狀態：分析流程已使用 `AbortController`，每次新分析會中斷前一筆請求，並以 `API_CONFIG.FETCH_TIMEOUT_MS` 做 180 秒 UX timeout；AbortError 會轉成 timeout 文案，避免 `isAnalyzing` 卡死。
+- 維護原則：所有長時間 async request 都必須具備 timeout、取消、finally 狀態復原與可辨識錯誤文案。
+- 後續方向：可以增加「取消分析」按鈕，直接呼叫目前保存在 `AppState.analyzeAbort` 的 controller；同時補測試確認取消後按鈕、loading、step timers、SSE buffer 都能復位。
+
+#### CI/CD 與部署自動化
+
+- 目前狀態：專案沒有 GitHub remote，且你目前不打算部署到 GitHub；因此不應強行加入 GitHub Actions 作為必要流程。
+- 現階段做法：保留本機 `npm.cmd run check`、`npm.cmd test`、`npm.cmd run test:rules`、`npm.cmd run smoke:hosting`、`firebase deploy --only hosting/functions` 的手動發布流程，並用本機 Git commit 作 rollback 點。
+- 可選未來路線：若之後要接 GitHub，只建立 CI 驗證 workflow（check/test/rules/smoke dry run）也可以，不一定要自動部署。
+- 若未來確認要用 GitHub Actions 自動部署，再加入 Firebase Hosting deploy workflow：push 到 `main` 時執行 build/check/test，成功後用 GitHub Secrets 中的 Firebase service account 發布 Hosting；Functions 可維持手動或獨立 workflow，降低後端變更風險。
+- 導入 Vite 後再做 build 壓縮與 asset hashing；目前無 build step，所以 Hosting smoke 仍以 `js/app.js?v=30` 檢查快取版本。
+
 ---
 
 ## 部署
@@ -181,7 +220,7 @@ npm.cmd run smoke:hosting
 自動 smoke 覆蓋：
 
 - Hosting 首頁 200。
-- 首頁載入目前 `js/app.js?v=27`。
+- 首頁載入目前 `js/app.js?v=30`。
 - Email/Password 登入表單存在。
 - `EXTERNAL IDENTITY` Google / 訪客入口存在。
 - App Check SDK 與 public site key 存在。
