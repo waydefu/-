@@ -250,7 +250,9 @@ npm.cmd run test:rules
 
 目前 App Check 仍維持 report-only：前端會嘗試送 `X-Firebase-AppCheck`，後端會驗證並把 `appCheckStatus` 寫進 structured logs，但 `ENFORCE_APP_CHECK = false` 時不阻擋。
 
-2026-05-20 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此暫時不能切 `ENFORCE_APP_CHECK = true`。前端已補上初始化後 token warmup、分析前一般取 token 與強制刷新備援；部署後再次以 Email、Google、訪客各送一次短草稿，Functions log 仍是 `missing`。已確認當時缺少 Firebase Console > App Check 綁定；補上後需再重新跑三種登入短草稿，確認 Functions log 變成 `valid` 才能進入強制模式。
+2026-05-20 早期 log 觀察：登入帳號與訪客各送出短草稿後，`analysis_start` / `analysis_done` 仍顯示 `appCheckStatus: 'missing'`，瀏覽器 console 也出現 `appCheck/recaptcha-error`，因此當時不能切 `ENFORCE_APP_CHECK = true`。前端已補上初始化後 token warmup、分析前一般取 token與強制刷新備援；部署後再次以 Email、Google、訪客各送一次短草稿，Functions log 仍是 `missing`。已確認當時缺少 Firebase Console > App Check 綁定。
+
+2026-05-20 正式站補測：Firebase Console > App Check 綁定完成後，兩筆登入帳號分析與一筆訪客分析都出現 `analysis_start` / `analysis_done`，且 `appCheckStatus: 'valid'`；同時 `npm.cmd run smoke:hosting` 通過。下一步可先觀察一段正式流量，若沒有 `app_check_invalid` 或大量 token error，再準備切 `ENFORCE_APP_CHECK = true`。
 
 切強制前必須先確認：
 
