@@ -20,7 +20,7 @@
      此字串若改一個字元，CSP 的 sha256 必須同步重算，否則整個 importmap 被擋。 -->
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
 <link rel="stylesheet" href="style.css" fetchpriority="high" />
-<link rel="modulepreload" href="js/app.js?v=30" />
+<link rel="modulepreload" href="js/app.js?v=31" />
 <link rel="modulepreload" href="js/config.js" />
 <link rel="modulepreload" href="js/dom.js" />
 <link rel="modulepreload" href="js/state.js" />
@@ -44,6 +44,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer crossorigin="anonymous" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer crossorigin="anonymous" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js" defer crossorigin="anonymous" integrity="sha384-E3vxFxXu8FhW5kvqdQJ5Yf8ugrV7iCJP8jgnItRH2Rk8Q08cJzJGTi/oMC3FEp3j"></script>
+<script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js" defer crossorigin="anonymous" integrity="sha384-g4NTh/Iv5PPU4xPyhEWqPcwtNXOvdaDI8LLnyYfyNZOjKJeYQyjzQ9X5275eBjpt"></script>
 </head>
 
 <body>
@@ -51,7 +52,7 @@
 <div id="srAnnouncer" class="visually-hidden" role="status" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ════ LOGIN SCREEN ════ -->
-<div id="loginScreen" aria-label="登入" role="dialog" aria-modal="true" aria-hidden="true">
+<div id="loginScreen" aria-label="作者認證儀式" role="dialog" aria-modal="true" aria-hidden="true">
   <canvas id="loginGl" aria-hidden="true"></canvas>
   <div class="login-boot" id="loginBoot" aria-hidden="true">
     <div class="boot-terminal" id="loginBootTerminal"></div>
@@ -68,31 +69,31 @@
     <span class="lh-corner bl"></span><span class="lh-corner br"></span>
 
     <div class="lh-topbar">
-      <div class="lh-brand">NEXCORE SYSTEM <i>v4.0.72</i><br><small>TACTICAL ARCANE INTERFACE</small></div>
-      <div class="lh-tag">{ FIG // GUARDIAN INTERFACE }</div>
-      <div class="lh-secure">SECURE CONNECTION ESTABLISHED <span class="lh-blink">●</span></div>
+      <div class="lh-brand">ELDRUNE EDITORIUM <i>v4.0.72</i><br><small>MANUSCRIPT ALCHEMY ENGINE</small></div>
+      <div class="lh-tag">{ ABYSS ARCHIVE // WORLD INDEX }</div>
+      <div class="lh-secure">DIMENSIONAL SEAL STABLE <span class="lh-blink">●</span></div>
     </div>
 
     <div class="lh-col lh-colL">
       <div class="lh-panel">
-        <div class="lh-ph">SYSTEM STATUS</div>
-        <div class="lh-row"><span>CORE STATUS</span><b class="ok">NORMAL</b></div>
-        <div class="lh-row"><span>NETWORK</span><b class="ok">SECURE</b></div>
-        <div class="lh-row"><span>AI MODULE</span><b class="ok">ACTIVE</b></div>
-        <div class="lh-row"><span>ENCRYPTION</span><b>AES-256</b></div>
-        <div class="lh-row"><span>FIREWALL</span><b class="ok">ONLINE</b></div>
+        <div class="lh-ph">LORE MATRIX</div>
+        <div class="lh-row"><span>WORLD INDEX</span><b class="ok">SYNCED</b></div>
+        <div class="lh-row"><span>CHARACTER INDEX</span><b class="ok">READY</b></div>
+        <div class="lh-row"><span>RACE CODEX</span><b class="ok">ACTIVE</b></div>
+        <div class="lh-row"><span>GLYPH LOCK</span><b>AES-256</b></div>
+        <div class="lh-row"><span>ABYSS ARCHIVE</span><b class="ok">ONLINE</b></div>
       </div>
       <div class="lh-panel">
-        <div class="lh-ph">REAL TIME SYNC <em>LOCAL</em></div>
+        <div class="lh-ph">MANUSCRIPT CLOCK <em>LOCAL</em></div>
         <div class="lh-row"><span>DATE</span><b id="lh-date">—</b></div>
         <div class="lh-row"><span>TIME</span><b id="lh-time">—</b></div>
         <div class="lh-row"><span>TIMESTAMP</span><b id="lh-ts">—</b></div>
         <div class="lh-row"><span>UTC</span><b id="lh-utc">—</b></div>
       </div>
       <div class="lh-panel">
-        <div class="lh-ph">LOCATION DATA <em>FALLBACK</em></div>
+        <div class="lh-ph">ARCHIVE SECTOR <em>FALLBACK</em></div>
         <div class="lh-row"><span>REGION</span><b id="lh-region">—</b></div>
-        <div class="lh-row"><span>DISTRICT</span><b id="lh-district">—</b></div>
+        <div class="lh-row"><span>SCRIPTORIUM</span><b id="lh-district">—</b></div>
         <div class="lh-row"><span>LATITUDE</span><b id="lh-lat">—</b></div>
         <div class="lh-row"><span>LONGITUDE</span><b id="lh-long">—</b></div>
         <div class="lh-row"><span>TZ OFFSET</span><b id="lh-tz">—</b></div>
@@ -101,7 +102,7 @@
 
     <div class="lh-col lh-colR">
       <div class="lh-panel">
-        <div class="lh-ph">SYSTEM ANALYSIS</div>
+        <div class="lh-ph">MANUSCRIPT DIAGNOSTICS</div>
         <div class="lh-row"><span>PLATFORM</span><b id="lh-platform">—</b></div>
         <div class="lh-row"><span>CORES</span><b id="lh-cores">—</b></div>
         <div class="lh-row"><span>ARCHITECTURE</span><b id="lh-arch">—</b></div>
@@ -109,7 +110,7 @@
         <div class="lh-row"><span>USER AGENT</span><b id="lh-ua">—</b></div>
       </div>
       <div class="lh-panel">
-        <div class="lh-ph">DEVICE INFO</div>
+        <div class="lh-ph">DEVICE SCRYING</div>
         <div class="lh-row"><span>SCREEN W</span><b id="lh-sw">—</b></div>
         <div class="lh-row"><span>SCREEN H</span><b id="lh-sh">—</b></div>
         <div class="lh-row"><span>WINDOW W</span><b id="lh-ww">—</b></div>
@@ -117,26 +118,26 @@
         <div class="lh-row"><span>PIXEL RATIO</span><b id="lh-dpr">—</b></div>
       </div>
       <div class="lh-panel">
-        <div class="lh-ph">CORE LOAD ANALYSIS</div>
+        <div class="lh-ph">CORE STABILITY</div>
         <canvas id="lh-bars" class="lh-canvas" width="220" height="90"></canvas>
       </div>
       <div class="lh-panel">
-        <div class="lh-ph">DATA STREAM //</div>
+        <div class="lh-ph">RUNE STREAM //</div>
         <canvas id="lh-spark" class="lh-canvas lh-canvas-sm" width="220" height="46"></canvas>
       </div>
     </div>
 
     <div class="lh-console">
-      <div class="lh-ph">CONSOLE LOG //</div>
+      <div class="lh-ph">ABYSS LOG //</div>
       <div id="lh-log"></div>
     </div>
 
     <div class="lh-botbar">
-      <span>SYS.STATUS <b class="ok">NORMAL</b></span><i>·</i>
+      <span>EDITORIAL MODE <b class="ok">STANDBY</b></span><i>·</i>
       <span>ENC <b>AES-256</b></span><i>·</i>
-      <span>SECURITY LEVEL <b class="ok">HIGH</b></span><i>·</i>
+      <span>CORE STABILITY <b class="ok">HIGH</b></span><i>·</i>
       <span id="lh-clock">—</span><i>·</i>
-      <span>西幻設定守門人 ALL SYSTEMS OPERATIONAL</span>
+      <span>小說編修引擎待命中 REVISION ENGINE READY</span>
     </div>
     <button id="lh-mute" class="lh-mute" type="button" aria-label="切換環境音效">♪ AUDIO</button>
   </div>
@@ -145,56 +146,58 @@
       <div class="lc tl"></div><div class="lc tr"></div>
       <div class="lc bl"></div><div class="lc br"></div>
     </div>
-    <div class="login-logo" aria-hidden="true">🛡️</div>
-    <div class="login-title">Fantasy Lore Guardian</div>
-    <div class="login-subtitle">SYSTEM ACCESS — AUTHENTICATION REQUIRED</div>
+    <div class="login-logo" aria-hidden="true">◆</div>
+    <div class="login-title">禁忌魔導書庫</div>
+    <div class="login-subtitle">WORLD FORGE CORE — AUTHENTICATION RITUAL</div>
     <div class="login-divider"></div>
     <div class="login-stage-rail" aria-hidden="true">
-      <span>ORIGIN LIGHT</span>
-      <span>TOKEN CHECK</span>
-      <span>LINK START</span>
-      <span>WORKSPACE RENDER</span>
+      <span>喚醒核心</span>
+      <span>校準印記</span>
+      <span>同步法典</span>
+      <span>開啟書庫</span>
     </div>
     <div class="login-auth-grid">
       <form class="credential-panel" id="emailAuthForm" autocomplete="on">
-        <div class="auth-mode-tabs" role="tablist" aria-label="帳密模式">
+        <div class="auth-mode-tabs" role="tablist" aria-label="作者印記模式">
           <button type="button" class="auth-mode active" id="loginModeLogin" aria-pressed="true">登入</button>
           <button type="button" class="auth-mode" id="loginModeSignup" aria-pressed="false">註冊</button>
         </div>
         <label class="auth-field auth-name-field" for="loginDisplayName">
-          <span>顯示名稱</span>
-          <input id="loginDisplayName" name="name" type="text" autocomplete="name" maxlength="40" placeholder="守門人通行名稱">
+          <span>作者稱號</span>
+          <input id="loginDisplayName" name="name" type="text" autocomplete="name" maxlength="40" placeholder="輸入作者稱號">
         </label>
         <label class="auth-field" for="loginEmail">
-          <span>Email</span>
-          <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="lorekeeper@example.com" required>
+          <span>作者印記</span>
+          <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="輸入 Email 作者印記" required>
         </label>
         <label class="auth-field" for="loginPassword">
-          <span>密碼</span>
-          <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="至少 6 位" required>
+          <span>奧術密鑰</span>
+          <input id="loginPassword" name="password" type="password" autocomplete="current-password" minlength="6" placeholder="輸入奧術密鑰，至少 6 位" required>
         </label>
         <label class="auth-field auth-confirm-field" for="loginPasswordConfirm">
-          <span>確認密碼</span>
-          <input id="loginPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="再次輸入密碼">
+          <span>確認密鑰</span>
+          <input id="loginPasswordConfirm" name="passwordConfirm" type="password" autocomplete="new-password" minlength="6" placeholder="再次輸入奧術密鑰">
         </label>
-        <button class="login-btn btn-email" id="loginEmailSubmit" type="submit">進入守門人系統</button>
+        <button class="login-btn btn-email" id="loginEmailSubmit" type="submit">開啟編修儀式</button>
       </form>
-      <div class="external-identity" aria-label="其他身份入口">
-        <div class="external-title">EXTERNAL IDENTITY</div>
-        <button class="login-btn btn-google" id="loginGoogleBtn" type="button" aria-label="使用 Google 帳號登入">
+      <div class="external-identity" aria-label="外部身份入口">
+        <div class="external-title">EXTERNAL SEALS</div>
+        <button class="login-btn btn-google" id="loginGoogleBtn" type="button" aria-label="以 Google 印章登入">
           <div class="google-icon" aria-hidden="true"></div>
-          <span>使用 Google 登入</span>
+          <span>以 Google 印章登入</span>
         </button>
-        <button class="login-btn btn-guest" id="loginGuestBtn" type="button" aria-label="以訪客身份進入">
+        <button class="login-btn btn-guest" id="loginGuestBtn" type="button" aria-label="以訪客抄寫員身分進入">
           <span class="guest-icon" aria-hidden="true">👤</span>
-          <span>以訪客身份進入</span>
+          <span>以訪客抄寫員身分進入</span>
         </button>
-        <p class="guest-note">訪客模式不保證跨裝置保存。</p>
+        <p class="guest-note">訪客抄寫記憶僅保留於目前裝置。</p>
       </div>
     </div>
+    <div class="login-ritual-status" id="loginRitualStatus" aria-live="polite">小說編修引擎待命中</div>
     <div class="login-err" id="loginErr" role="alert" aria-live="polite"></div>
     <div class="login-clock" id="loginClock" aria-live="off"></div>
   </div>
+  <div class="login-operational-status" id="loginOperationalStatus" aria-hidden="true">REVISION ENGINE READY</div>
 </div>
 
 <!-- 開場 overlay 已退役：登入體驗改由 #loginScreen 內的 #loginGl
@@ -320,6 +323,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" defer crossorigin="anonymous" integrity="sha384-/TQbtLCAerC3jgaim+N78RZSDYV7ryeoBCVqTuzRrFec2akfBkHS7ACQ3PQhvMVi"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.5/dist/purify.min.js" defer crossorigin="anonymous" integrity="sha384-nszIONF2FGC59kn+pPFaRa6WUNGwsZgXZiJxJwQbym+TzcH7smolUviLgpPbNx7V"></script>
-<script type="module" src="js/app.js?v=30"></script>
+<script type="module" src="js/app.js?v=31"></script>
 </body>
 </html>

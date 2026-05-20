@@ -1,6 +1,6 @@
 // @ts-check
 /* ═══════════════════════════════════════════════════════════════
-   FLG 登入 HUD 面板資料/圖表引擎（NEXCORE 級）
+   FLG 登入 HUD 面板資料/圖表引擎（魔導書庫級）
    · 真實資料：navigator / screen / Intl 時鐘（不打 IP 服務 → 隱私+免
      CSP/網路依賴；位置以時區推導並標 FALLBACK）
    · 合成動態：核心負載長條圖、資料流 sparkline、CONSOLE LOG
@@ -138,9 +138,13 @@ const drawSpark = (cv, data) => {
 };
 
 const LOGS = [
-  "Core initialization complete.", "Encryption module loaded.",
-  "Firewall active.", "Guardian protocol engaged.", "Lore database synced.",
-  "Inference channel open.", "Awaiting user authentication...",
+  "World index synchronized.",
+  "Character index calibrated.",
+  "Race codex resonance stable.",
+  "Abyss archive seal engaged.",
+  "Manuscript memory channel open.",
+  "Revision engine awaiting author seal.",
+  "Rune synchronization complete.",
 ];
 
 export const startLoginHud = (opts = {}) => {

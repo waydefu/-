@@ -44,12 +44,12 @@ export const startLoginBoot = async ({ reduced = false } = {}) => {
   screen.classList.add("booting");
 
   const lines = [
-    "Initializing core systems...",
-    "Verifying AES-256 encryption...",
-    "Binding guardian protocol...",
-    "Calibrating arcane HUD rings...",
-    "Synchronizing identity gateway...",
-    "Mapping interface telemetry...",
+    "Awakening manuscript core...",
+    "Verifying AES-256 glyph lock...",
+    "Binding abyss archive protocol...",
+    "Calibrating rune synchronization rings...",
+    "Synchronizing author seal gateway...",
+    "Indexing lore matrix telemetry...",
     "Network latency: 12ms",
     "App Check channel: report-only",
     "Status: Secure",
@@ -68,19 +68,19 @@ export const startLoginBoot = async ({ reduced = false } = {}) => {
 
   for (const line of lines) {
     if (seq !== _sequence) return;
-    await typeLine(terminal, line);
+    await typeLine(terminal, line, { speed: 30, pause: 240 });
   }
   if (seq !== _sequence) return;
-  await typeLine(terminal, "[ SECURE CONNECTION ESTABLISHED ]", { className: "secure", speed: 13, pause: 900 });
+  await typeLine(terminal, "[ SECURE CONNECTION ESTABLISHED ]", { className: "secure", speed: 16, pause: 1100 });
 
   screen.classList.add("boot-veil-on");
-  await sleep(900);
+  await sleep(1100);
   if (seq !== _sequence) return;
   screen.classList.add("boot-welcome");
-  await sleep(3200);
+  await sleep(3600);
   if (seq !== _sequence) return;
   screen.classList.add("boot-reveal");
-  await sleep(1800);
+  await sleep(1900);
   if (seq !== _sequence) return;
   finishBoot(screen);
 };

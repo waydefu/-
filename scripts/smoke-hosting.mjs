@@ -15,9 +15,9 @@ const fetchText = async (url, init) => {
 const main = async () => {
   const home = await fetchText(HOSTING_URL);
   assert.equal(home.res.status, 200, "Hosting home should return 200");
-  assert.match(home.text, /js\/app\.js\?v=30/, "Home should load current app bundle");
+  assert.match(home.text, /js\/app\.js\?v=31/, "Home should load current app bundle");
   assert.match(home.text, /emailAuthForm/, "Home should include Email\/Password auth form");
-  assert.match(home.text, /EXTERNAL IDENTITY/, "Home should include secondary identity panel");
+  assert.match(home.text, /EXTERNAL SEALS/, "Home should include secondary identity panel");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
   ok("hosting home, login form, and App Check SDK");
 

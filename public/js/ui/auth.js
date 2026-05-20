@@ -36,7 +36,9 @@ const startLoginBg = async () => {
     // 同一 canvas 再 new WebGLRenderer 會失敗 → 登出重登只剩 HUD。
     let cv = el.loginGl;
     if (cv && cv.parentNode) {
-      const fresh = /** @type {HTMLCanvasElement} */ (cv.cloneNode(false));
+      const fresh = document.createElement("canvas");
+      fresh.id = "loginGl";
+      fresh.setAttribute("aria-hidden", "true");
       cv.parentNode.replaceChild(fresh, cv);
       el.loginGl = fresh;
       cv = fresh;
@@ -109,6 +111,11 @@ const setLoginErr = (msg = "") => {
   if (el.loginErr) el.loginErr.textContent = msg;
 };
 
+const setRitualStatus = (msg = "小說編修引擎待命中") => {
+  const status = document.getElementById("loginRitualStatus");
+  if (status) status.textContent = msg;
+};
+
 const getUserDisplayName = (user) => {
   if (!user) return "使用者";
   if (user.displayName) return user.displayName;
@@ -134,24 +141,25 @@ const setEmailAuthMode = (mode) => {
     el.loginPassword.setAttribute("autocomplete", signup ? "new-password" : "current-password");
   }
   if (el.loginEmailSubmit) {
-    el.loginEmailSubmit.textContent = signup ? "建立守門人通行證" : "進入守門人系統";
+    el.loginEmailSubmit.textContent = signup ? "建立作者印記" : "開啟編修儀式";
   }
+  setRitualStatus(signup ? "正在準備作者印記註冊儀式" : "小說編修引擎待命中");
 };
 
 const getEmailAuthMessage = (err) => {
   const code = err?.code || "";
   const messages = {
-    "auth/email-already-in-use": "這個 Email 已建立通行證，請切換到登入。",
-    "auth/invalid-email": "Email 格式不正確。",
-    "auth/missing-password": "請輸入密碼。",
-    "auth/weak-password": "密碼至少需要 6 位。",
-    "auth/wrong-password": "Email 或密碼不正確。",
-    "auth/invalid-credential": "Email 或密碼不正確。",
-    "auth/user-not-found": "找不到這個通行證，請先註冊。",
+    "auth/email-already-in-use": "這個 Email 已封存作者印記，請切換到登入。",
+    "auth/invalid-email": "作者印記格式不正確。",
+    "auth/missing-password": "請輸入奧術密鑰。",
+    "auth/weak-password": "奧術密鑰至少需要 6 位。",
+    "auth/wrong-password": "作者印記或奧術密鑰不正確。",
+    "auth/invalid-credential": "作者印記或奧術密鑰不正確。",
+    "auth/user-not-found": "找不到這個作者印記，請先註冊。",
     "auth/operation-not-allowed": "Firebase Email/Password 登入尚未啟用，請先到 Console 開啟。",
     "auth/too-many-requests": "嘗試次數過多，請稍後再試。",
   };
-  return messages[code] || `帳密驗證失敗：${err?.message || "未知錯誤"}`;
+  return messages[code] || `作者認證失敗：${err?.message || "未知錯誤"}`;
 };
 
 const setCredentialBusy = (busy) => {
@@ -172,21 +180,22 @@ const submitEmailAuth = async (auth) => {
   const signup = _emailAuthMode === "signup";
 
   if (!email || !password) {
-    setLoginErr("請輸入 Email 與密碼。");
+    setLoginErr("請輸入作者印記與奧術密鑰。");
     return;
   }
   if (signup && !displayName) {
-    setLoginErr("請輸入顯示名稱。");
+    setLoginErr("請輸入作者稱號。");
     el.loginDisplayName?.focus();
     return;
   }
   if (signup && password !== confirm) {
-    setLoginErr("兩次密碼不一致。");
+    setLoginErr("兩次奧術密鑰不一致。");
     el.loginPasswordConfirm?.focus();
     return;
   }
 
   setLoginErr("");
+  setRitualStatus(signup ? "正在建立作者印記" : "正在開啟編修儀式");
   setCredentialBusy(true);
   beginAuthAction();
   try {
@@ -207,6 +216,7 @@ const submitEmailAuth = async (auth) => {
     cancelAuthAction();
     setCredentialBusy(false);
     setLoginErr(getEmailAuthMessage(err));
+    setRitualStatus("作者認證未通過，請重新校準印記");
   }
 };
 
@@ -228,6 +238,10 @@ const bindEmailAuthControls = (auth) => {
     event.preventDefault();
     submitEmailAuth(auth);
   });
+  el.loginDisplayName?.addEventListener("input", () => setRitualStatus("正在同步草稿記憶"));
+  el.loginEmail?.addEventListener("input", () => setRitualStatus("正在校準作者印記"));
+  el.loginPassword?.addEventListener("input", () => setRitualStatus("正在檢查奧術密鑰"));
+  el.loginPasswordConfirm?.addEventListener("input", () => setRitualStatus("正在確認奧術密鑰"));
 };
 
 const initAppCheck = () => {
@@ -424,12 +438,12 @@ const renderUserPanel = () => {
     loginInfo.textContent = "登入後自動儲存歷史紀錄，跨裝置同步。";
     const loginBtn = document.createElement("button");
     loginBtn.className = "up-login-btn";
-    loginBtn.setAttribute("aria-label", "使用 Google 帳號登入");
+    loginBtn.setAttribute("aria-label", "以 Google 印章登入");
     const dot = document.createElement("div");
     dot.className = "google-dot";
     dot.setAttribute("aria-hidden", "true");
     const txt = document.createElement("span");
-    txt.textContent = "使用 Google 登入";
+    txt.textContent = "以 Google 印章登入";
     loginBtn.appendChild(dot);
     loginBtn.appendChild(txt);
     loginBtn.addEventListener("click", async () => {
@@ -473,6 +487,7 @@ export const handleGoogleLogin = async () => {
   const auth = AppState.get("fbAuth");
   if (!auth) { setLoginErr(MSG.NO_FIREBASE); return; }
   setLoginErr("");
+  setRitualStatus("正在驗證 Google 印章");
   if (el.loginGoogleBtn) {
     el.loginGoogleBtn.disabled = true;
     el.loginGoogleBtn.style.opacity = "0.6";
@@ -484,6 +499,7 @@ export const handleGoogleLogin = async () => {
     cancelAuthAction();
     const code = err?.code || "";
     setLoginErr(isUserCancel(code) ? "" : "登入失敗：" + (err?.message || "未知錯誤"));
+    setRitualStatus(isUserCancel(code) ? "小說編修引擎待命中" : "Google 印章驗證失敗");
     if (el.loginGoogleBtn) {
       el.loginGoogleBtn.disabled = false;
       el.loginGoogleBtn.style.opacity = "";
@@ -497,6 +513,7 @@ export const handleGuestLogin = async () => {
   if (!auth) { setLoginErr(MSG.NO_FIREBASE); return; }
   playBootChime(); // 必須在此 click 手勢內，否則 autoplay policy 擋下
   setLoginErr("");
+  setRitualStatus("正在建立訪客抄寫員席位");
   if (el.loginGuestBtn) {
     el.loginGuestBtn.disabled = true;
     el.loginGuestBtn.style.opacity = "0.6";
@@ -507,7 +524,8 @@ export const handleGuestLogin = async () => {
     await auth.signInAnonymously();
   } catch (err) {
     cancelAuthAction();
-    setLoginErr("訪客登入失敗：" + (err?.message || "未知錯誤"));
+    setLoginErr("訪客抄寫員登入失敗：" + (err?.message || "未知錯誤"));
+    setRitualStatus("訪客抄寫員驗證失敗");
     if (el.loginGuestBtn) {
       el.loginGuestBtn.disabled = false;
       el.loginGuestBtn.style.opacity = "";
@@ -582,6 +600,7 @@ export const initFirebase = () => {
         };
         // warp 開始：登入鈕+HUD 漸消散（CSS .warping），不擋 LINK START 特效
         el.loginScreen?.classList.add("warping");
+        setRitualStatus("正在進入禁忌書庫");
         // 無 3D（已登入直入 / WebGL fallback）時 warpLoginFx 會立即 handoff
         warpLoginFx(handoff);
         await loadHistoryFromFirestore();
@@ -600,6 +619,7 @@ export const initFirebase = () => {
         setCredentialBusy(false);
         clearCredentialSecrets();
         setLoginErr("");
+        setRitualStatus("小說編修引擎待命中");
         setLoginScreenVisible(true);
         startLoginBg();
       }
