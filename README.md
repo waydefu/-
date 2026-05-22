@@ -2,7 +2,20 @@
 
 西方奇幻小說編修核心。使用者貼上一段草稿後，前端以 Firebase Auth 建立身份，透過 Firebase Functions v2 的 SSE 串流呼叫 Groq，回傳「修改後全文」與「審查摘要」，並依帳號同步草稿歷史。
 
+> 2026-05-22 復原註記：目前正式入口 `public/index.html` 已復原為大型 Worldforge WebGL 單檔入口，`public/worldforge-login.html` 作為同版視覺母體備份。後續若本 README 的舊模組化描述與 `AGENTS.md` 衝突，以 `AGENTS.md` 的不可違反條款與 `docs/aaa-review-progress.md` 的最新進度為準。
+
 本文件是專案的架構說明與視覺規格。後續修改請先讀完「最高優先級」與「VFX 時序規格」，再動登入頁、WebGL 或主工具介面。
+
+## 後續 Agent 關鍵規則
+
+- 正式入口是 `public/index.html`，視覺與架構母體是 `public/worldforge-login.html`。
+- 修改視覺母體、WebGL 類別、登入儀式、HUD 層、Operational Mode 架構或 RWD 核心規則時，必須評估並同步兩個 HTML；只改正式站資料服務、部署 smoke、Firebase 串接或入口專用文案時，可只改 `public/index.html` 並說明原因。
+- 不可刪除、替換或降級 `CoreEngine`、`RuneSystem`、`ParticleSystem`、`HUDSystem`、`PostProcessingPipeline`、`LoginController`、`OperationalModeController`。
+- 不可為了 HUD 氛圍犧牲主要操作可讀性。草稿、輸出、登入欄位、錯誤訊息、主要按鈕與帳號/歷史操作必須比裝飾 HUD 更清楚、更可點擊。
+- 中央「黑曜石法典」保留草稿輸入與唯一分析主按鈕；目前正式文案是「啟動奧術解析引擎」。
+- 歷史紀錄、登出、複製卷宗、清空等次要操作只能放在可讀、可點擊的小型 HUD 操作列或卷宗區。
+- Operational Mode 是長時間閱讀與編修工作台，不是登入展示頁。字級、行高、輸入框高度、按鈕點擊區和輸出區高度不可低於可用性底線。
+- 文件-only 修改至少跑 `git diff --check`；改到前端、Functions、Firebase、CSS、WebGL、登入流程、Operational Mode 或部署相關檔案時，需跑 `npm run check:frontend`、`npm run check:functions`、`npm test`、`npm run build`。部署後再跑 `firebase deploy --only hosting` 與 `npm run smoke:hosting`。
 
 ---
 

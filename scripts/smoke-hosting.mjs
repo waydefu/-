@@ -15,16 +15,21 @@ const fetchText = async (url, init) => {
 const main = async () => {
   const home = await fetchText(HOSTING_URL);
   assert.equal(home.res.status, 200, "Hosting home should return 200");
-  assert.match(home.text, /js\/app\.js\?v=44/, "Home should load current app bundle");
-  assert.match(home.text, /js\/ui\/auth\.js\?v=44/, "Home should load current auth bundle");
-  assert.match(home.text, /js\/ui\/user-menu\.js/, "Home should preload account menu module");
-  assert.match(home.text, /worldforge\.css\?v=15/, "Home should load current Worldforge UI layer");
-  assert.match(home.text, /<body class="auth-resolving">/, "Home should gate main UI until auth resolves");
-  assert.match(home.text, /emailAuthForm/, "Home should include Email\/Password auth form");
+  assert.match(home.text, /ELDRUNE EDITORIUM/, "Home should load the Worldforge inline shell");
+  assert.match(home.text, /class CoreEngine/, "Home should include CoreEngine");
+  assert.match(home.text, /class RuneSystem/, "Home should include RuneSystem");
+  assert.match(home.text, /class ParticleSystem/, "Home should include ParticleSystem");
+  assert.match(home.text, /class PostProcessingPipeline/, "Home should include PostProcessingPipeline");
+  assert.match(home.text, /class LoginController/, "Home should include LoginController");
+  assert.match(home.text, /class OperationalModeController/, "Home should include OperationalModeController");
+  assert.match(home.text, /id="webgl-container"/, "Home should include the persistent WebGL container");
+  assert.match(home.text, /id="authForm"/, "Home should include Email\/Password auth form");
   assert.match(home.text, /EXTERNAL SEALS/, "Home should include secondary identity panel");
-  assert.match(home.text, /西方奇幻小說編修核心/, "Home should include Worldforge editorial copy");
+  assert.match(home.text, /啟動奧術解析引擎/, "Home should include the operational analysis action");
+  assert.match(home.text, /codex-session/, "Home should include the operational account controls");
+  assert.match(home.text, /西方奇幻小說 AI 編修系統/, "Home should include Worldforge editorial copy");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
-  ok("hosting home, login form, and App Check SDK");
+  ok("hosting Worldforge inline shell, login form, and App Check SDK");
 
   const config = await fetchText(`${HOSTING_URL}/js/core/config.js`);
   assert.equal(config.res.status, 200, "core/config.js should return 200");
