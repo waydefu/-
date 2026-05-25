@@ -84,4 +84,25 @@
 - `npm.cmd run check:functions`：通過。
 - `npm.cmd test`：通過，22 tests passed。
 - `npm.cmd run build`：通過。
-- 待處理：S9 commit；若依執行單部署，commit 後再跑 Hosting deploy + smoke。
+- S9 commit：`3a46953 test(s9): add a11y and visual baselines`。
+- S9 Hosting deploy：通過，Hosting URL `https://project-7276420283723642146.web.app`。
+- S9 production smoke：`npm.cmd run smoke:hosting` 通過。
+
+## S10 接管版執行紀錄
+
+### 舊計劃暫停確認
+
+- 不執行舊 codex「黑金 SAO 系統 UI 實作計劃」任何 Part。
+- 已推翻且不得採用：三欄 modal、固定 px 字級、手動 100% 同步 worldforge。
+
+### Part A 變更前確認
+
+- 預計改動：`public/index.html` 與 `public/worldforge-login.html` viewport meta。
+- 目標：移除 `maximum-scale=1.0`，加入 `viewport-fit=cover`。
+- 風險：Low；iOS 可捏拉縮放，符合 WCAG 1.4.4。
+
+### Part A 完成紀錄
+
+- 已同步更新 `public/index.html` / `public/worldforge-login.html`。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`，`meta-viewport` moderate 已消失。
+- `git diff --check`：通過。
