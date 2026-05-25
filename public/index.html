@@ -46,15 +46,16 @@
       --font-serif: "Noto Serif TC", "Cinzel", serif;
       --font-en: "Cinzel", serif;
       --font-mono: "Share Tech Mono", ui-monospace, monospace;
-      --text-nano: clamp(10px, 0.68vw, 11px);
-      --text-hud: clamp(11px, 0.78vw, 12px);
-      --text-btn: clamp(13px, 0.92vw, 14px);
-      --text-input: clamp(14px, 1vw, 16px);
-      --text-body: clamp(13px, 0.92vw, 15px);
-      --text-label: clamp(11px, 0.78vw, 12px);
-      --text-section: clamp(14px, 1.1vw, 17px);
-      --text-core: clamp(12px, 0.9vw, 14px);
-      --text-hero: clamp(24px, 2.6vw, 38px);
+      font-size: clamp(1rem, 0.92rem + 0.5vw, 1.25rem);
+      --text-nano: clamp(0.625rem, 0.55rem + 0.15vw, 0.6875rem);
+      --text-hud: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
+      --text-label: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
+      --text-core: clamp(0.75rem, 0.66rem + 0.2vw, 0.875rem);
+      --text-body: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
+      --text-btn: clamp(0.8125rem, 0.72rem + 0.22vw, 0.875rem);
+      --text-input: clamp(0.875rem, 0.78rem + 0.25vw, 1rem);
+      --text-section: clamp(0.875rem, 0.74rem + 0.32vw, 1.0625rem);
+      --text-hero: clamp(1.5rem, 1.1rem + 1.4vw, 2.375rem);
       --keyboard-inset: 0px;
       --session-dock-size: 52px;
       --session-dock-offset: clamp(14px, 2.2vw, 34px);
@@ -653,7 +654,7 @@
     .brand-block h1 {
       margin: 0;
       font-family: var(--font-en);
-      font-size: clamp(24px, 3vw, 44px);
+      font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.75rem);
       letter-spacing: 0.22em;
       color: var(--rf-white-gold);
       text-shadow: var(--text-glow), 0 0 30px rgba(255, 211, 100, 0.22);
@@ -668,7 +669,7 @@
       margin: 8px 0 0;
       color: rgba(234, 230, 205, 0.88);
       font-family: var(--font-serif);
-      font-size: clamp(12px, 1.1vw, 15px);
+      font-size: clamp(0.75rem, 0.66rem + 0.28vw, 0.9375rem);
       letter-spacing: 0.08em;
       text-shadow: 0 0 18px rgba(200, 120, 8, 0.22);
     }
@@ -680,7 +681,7 @@
       border-top: 1px solid rgba(214, 166, 77, 0.28);
       color: rgba(200, 216, 232, 0.72);
       font-family: var(--font-mono);
-      font-size: clamp(9px, 0.75vw, 11px);
+      font-size: clamp(0.5625rem, 0.5rem + 0.16vw, 0.6875rem);
       letter-spacing: 0.16em;
       line-height: 1.65;
       text-transform: uppercase;
@@ -962,7 +963,7 @@
     }
 
     .auth-panel.is-danger .auth-body h2 {
-      font-size: clamp(20px, 1.8vw, 26px);
+      font-size: clamp(1.25rem, 1rem + 0.6vw, 1.625rem);
     }
 
     .auth-panel.is-danger .auth-copy {
@@ -1169,7 +1170,7 @@
 
     .auth-panel.is-google-only .primary-btn {
       min-height: 50px;
-      font-size: clamp(15px, 1vw, 16px);
+      font-size: clamp(0.9375rem, 0.86rem + 0.16vw, 1rem);
       letter-spacing: 0.02em;
     }
 
@@ -1410,7 +1411,7 @@
     .override-body b {
       color: var(--gold-hot);
       font-family: var(--font-serif);
-      font-size: clamp(20px, 2vw, 27px);
+      font-size: clamp(1.25rem, 1rem + 0.7vw, 1.6875rem);
       letter-spacing: 0.12em;
     }
 
@@ -1945,7 +1946,7 @@
       margin: 0;
       color: var(--gold-hot);
       font-family: var(--font-serif);
-      font-size: clamp(28px, 2.45vw, 40px);
+      font-size: clamp(1.75rem, 1.34rem + 1.05vw, 2.5rem);
       letter-spacing: 0;
       line-height: 1.22;
       text-align: center;
@@ -1957,7 +1958,7 @@
       color: rgba(241, 222, 194, 0.66);
       text-align: center;
       line-height: 1.8;
-      font-size: clamp(15px, 1.15vw, 18px);
+      font-size: clamp(0.9375rem, 0.8rem + 0.34vw, 1.125rem);
       letter-spacing: 0;
       text-wrap: pretty;
     }
@@ -1972,14 +1973,14 @@
 
     .draft-field-title {
       color: rgba(234, 230, 205, 0.86);
-      font: 800 clamp(13px, 0.86vw, 14px)/1.45 var(--font-mono);
+      font: 800 clamp(0.8125rem, 0.74rem + 0.18vw, 0.875rem)/1.45 var(--font-mono);
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
     .draft-field-help {
       color: rgba(232, 216, 184, 0.58);
-      font-size: clamp(13px, 0.86vw, 14px);
+      font-size: clamp(0.8125rem, 0.74rem + 0.18vw, 0.875rem);
       line-height: 1.6;
     }
 
@@ -1987,7 +1988,7 @@
       min-height: 100%;
       resize: vertical;
       line-height: 1.85;
-      font-size: clamp(19px, 1.45vw, 22px);
+      font-size: clamp(1.1875rem, 1.02rem + 0.42vw, 1.375rem);
       letter-spacing: 0;
       padding-bottom: 46px;
       background:
@@ -2117,14 +2118,14 @@
 
     .operational-actions button {
       min-height: 48px;
-      font-size: clamp(14px, 0.98vw, 16px);
+      font-size: clamp(0.875rem, 0.78rem + 0.24vw, 1rem);
       letter-spacing: 0;
     }
 
     .analyze-ritual-btn {
       min-height: 60px;
       border-color: rgba(255, 226, 160, 0.62);
-      font-size: clamp(15px, 1.02vw, 17px);
+      font-size: clamp(0.9375rem, 0.84rem + 0.26vw, 1.0625rem);
       font-weight: 900;
       letter-spacing: 0;
       box-shadow:
@@ -2170,7 +2171,7 @@
       border: 1px solid rgba(214, 166, 77, 0.16);
       background: rgba(0, 0, 0, 0.28);
       color: rgba(241, 222, 194, 0.84);
-      font-size: clamp(18px, 1.35vw, 22px);
+      font-size: clamp(1.125rem, 0.96rem + 0.42vw, 1.375rem);
       line-height: 2;
       white-space: pre-wrap;
     }
@@ -2276,7 +2277,7 @@
     .result-section-body {
       padding: 14px 16px;
       font-family: var(--font-serif);
-      font-size: clamp(16px, 1.2vw, 19px);
+      font-size: clamp(1rem, 0.88rem + 0.32vw, 1.1875rem);
       line-height: 2;
       color: rgba(241, 222, 194, 0.88);
       white-space: normal;
@@ -2298,7 +2299,7 @@
       margin: 14px 0 8px;
       color: var(--gold-hot);
       font-family: var(--font-serif);
-      font-size: clamp(16px, 1.3vw, 20px);
+      font-size: clamp(1rem, 0.84rem + 0.42vw, 1.25rem);
       font-weight: 700;
     }
 
@@ -2367,7 +2368,7 @@
       gap: 8px 14px;
       align-items: center;
       color: rgba(241, 222, 194, 0.74);
-      font-size: clamp(15px, 1.08vw, 18px);
+      font-size: clamp(0.9375rem, 0.82rem + 0.32vw, 1.125rem);
     }
 
     .analysis-progress-row b {
@@ -2425,7 +2426,7 @@
 
     .analysis-progress-note {
       color: rgba(241, 222, 194, 0.58);
-      font-size: clamp(14px, 0.98vw, 16px);
+      font-size: clamp(0.875rem, 0.78rem + 0.24vw, 1rem);
       line-height: 1.7;
     }
 
@@ -2586,7 +2587,7 @@
       margin-bottom: 10px;
       color: rgba(255, 226, 160, 0.88);
       font-family: var(--font-en);
-      font-size: clamp(14px, 1.2vw, 18px);
+      font-size: clamp(0.875rem, 0.74rem + 0.36vw, 1.125rem);
       letter-spacing: 0.28em;
       text-transform: uppercase;
     }
@@ -2594,7 +2595,7 @@
     .center-caption span {
       color: rgba(241, 222, 194, 0.72);
       font-family: var(--font-serif);
-      font-size: clamp(11px, 1vw, 15px);
+      font-size: clamp(0.6875rem, 0.58rem + 0.34vw, 0.9375rem);
       letter-spacing: 0.12em;
       text-shadow: 0 0 22px rgba(214, 166, 77, 0.28);
     }
@@ -2920,7 +2921,7 @@
       .brand-block h1 {
         max-width: calc(100vw - 32px);
         margin-inline: auto;
-        font-size: clamp(18px, 5.9vw, 23px);
+        font-size: clamp(1.125rem, 0.95rem + 1vw, 1.4375rem);
         letter-spacing: 0.08em;
         overflow-wrap: anywhere;
       }
@@ -3129,7 +3130,7 @@
       }
 
       .codex-panel h2 {
-        font-size: clamp(23px, 7vw, 27px);
+        font-size: clamp(1.4375rem, 1.18rem + 1.2vw, 1.6875rem);
         line-height: 1.14;
       }
 
@@ -3246,7 +3247,7 @@
       }
 
       .auth-body h2 {
-        font-size: clamp(20px, 3.8vh, 26px);
+        font-size: clamp(1.55rem, 0.65rem + 2.6vh, 2rem);
       }
 
       .auth-copy {

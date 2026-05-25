@@ -106,3 +106,20 @@
 - 已同步更新 `public/index.html` / `public/worldforge-login.html`。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`，`meta-viewport` moderate 已消失。
 - `git diff --check`：通過。
+
+### Part B 變更前確認
+
+- 預計改動：`public/index.html` 與 `public/worldforge-login.html` 的 `:root` font-size 與 `--text-*` tokens。
+- 目標：改成 rem-based fluid type scale，支援 browser zoom 與使用者預設字級。
+- 風險：High；會重排視覺 baseline，必須 `test:visual -- --update-snapshots` 後逐張 review。
+
+### Part B 完成紀錄
+
+- 已將 `--text-*` tokens 改為 rem-based clamp，並加上 `:root font-size` fluid base。
+- 額外修正舊可見 `font-size: clamp(...px...)`，避免局部 px clamp 壓住 browser zoom；`rg` 檢查已無 `font-size` px clamp。
+- 200% zoom 抽查：`#authTitle` computed font-size 49.6px。
+- 400% zoom 抽查：`documentElement.scrollWidth === clientWidth`，無水平捲動。
+- `npm.cmd run test:visual -- --update-snapshots`：通過並更新 snapshots；已逐張 review。
+- `npm.cmd run test:visual`：通過。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- `git diff --check`：通過。
