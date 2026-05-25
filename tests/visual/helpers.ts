@@ -50,11 +50,6 @@ export async function waitForLoginReady(page: Page) {
       ritualStack.style.display = "grid";
     }
 
-    const backdrop = document.querySelector<HTMLElement>(".login-modal-backdrop");
-    if (backdrop) {
-      backdrop.style.opacity = "1";
-      backdrop.style.visibility = "visible";
-    }
   });
   await stabilizeVisuals(page);
 }
@@ -99,7 +94,7 @@ export async function enterOperationalWorkbench(page: Page) {
       bootVeil.style.display = "none";
     }
 
-    document.querySelectorAll<HTMLElement>(".login-modal-backdrop, #ritualStack, #sealPanel, #overrideWindow, #connectionWindow").forEach((node) => {
+    document.querySelectorAll<HTMLElement>("#ritualStack, #overrideWindow, #connectionWindow").forEach((node) => {
       node.style.opacity = "0";
       node.style.visibility = "hidden";
       node.style.display = "none";

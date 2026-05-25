@@ -244,3 +244,23 @@
 - `git diff --check`：通過。
 - `npm.cmd run check:frontend`：通過。
 - `npm.cmd run build`：通過，prebuild 已實際執行同步。
+
+### Part K 變更前確認
+
+- 預計改動：只先改 `public/index.html`，完成後用 `npm.cmd run sync:login-mother` 生成 `public/worldforge-login.html`。
+- 清理目標：hidden email/password/name fields、seal-panel、redirect fallback、guest / other login dead DOM、退役 `.login-modal-backdrop` CSS / JS refs，以及對應不可達 JS 分支。
+- 保留目標：Google-only sign-in、native dialog、ARIA / focus-visible / skip-link、草稿 / 歷史 / Firebase schema。
+- 風險：Med；需跑 `rg` 殘留檢查、frontend check、visual、a11y。
+
+### Part K 完成紀錄
+
+- 已刪除 Google-only 模式下不可達的 hidden email/password/name fields、seal-panel、redirect fallback、guest / other login DOM。
+- 已刪除退役 `.login-modal-backdrop` CSS / JS refs 與對應 mobile keyframes。
+- `LoginController` 已收斂為 Google-only 可達流程；舊 Email / guest / register 分支改為不存在，不碰 Firebase Auth 的 Google popup 與既有 auth callback。
+- `tests/visual/helpers.ts` 已移除 dead backdrop / sealPanel selector。
+- `npm.cmd run sync:login-mother`：通過，`public/index.html` 與 `public/worldforge-login.html` 一致。
+- `rg` dead-code 檢查：指定 dead selectors / branches 在 `public/index.html`、`public/worldforge-login.html`、`tests/visual/helpers.ts` 皆無殘留。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
