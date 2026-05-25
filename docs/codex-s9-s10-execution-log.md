@@ -226,3 +226,21 @@
 - `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
 - 真頁面 vitals 數值待 Part L / 完整 browser 驗收讀取。
+
+### Part J 變更前確認
+
+- 已確認 `public/index.html` 與 `public/worldforge-login.html` 目前內容一致。
+- 預計改動：新增 `scripts/sync-worldforge-login.mjs`，`package.json` 加 `sync:login-mother` 與 `prebuild`；README 更新同步規則。
+- 目標：取代手動 100% 同步要求，改由 build 前自動同步。
+- 風險：Low；第一次跑前已確認兩份一致，不碰 Firebase / Auth / 草稿 / 歷史。
+
+### Part J 完成紀錄
+
+- 新增 `scripts/sync-worldforge-login.mjs`，會從 `public/index.html` 覆寫 `public/worldforge-login.html`。
+- `package.json` 新增 `sync:login-mother` 與 `prebuild`，`npm.cmd run build` 會先同步 worldforge。
+- README 新增 S10 Black Gold SAO UI 規則，並將 worldforge 同步政策改為 script / prebuild。
+- `npm.cmd run sync:login-mother`：通過。
+- 同步後 `public/index.html` 與 `public/worldforge-login.html` 內容一致。
+- `git diff --check`：通過。
+- `npm.cmd run check:frontend`：通過。
+- `npm.cmd run build`：通過，prebuild 已實際執行同步。

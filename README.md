@@ -9,7 +9,7 @@
 ## 後續 Agent 關鍵規則
 
 - 正式入口是 `public/index.html`，視覺與架構母體是 `public/worldforge-login.html`。
-- 修改視覺母體、WebGL 類別、登入儀式、HUD 層、Operational Mode 架構或 RWD 核心規則時，必須評估並同步兩個 HTML；只改正式站資料服務、部署 smoke、Firebase 串接或入口專用文案時，可只改 `public/index.html` 並說明原因。
+- 修改視覺母體、WebGL 類別、登入儀式、HUD 層、Operational Mode 架構或 RWD 核心規則時，先改正式入口 `public/index.html`，再執行 `npm run sync:login-mother` 同步 `public/worldforge-login.html`；`npm run build` 會透過 `prebuild` 自動同步。只改正式站資料服務、部署 smoke、Firebase 串接或入口專用文案時，可只改 `public/index.html` 並說明原因。
 - 不可刪除、替換或降級 `CoreEngine`、`RuneSystem`、`ParticleSystem`、`HUDSystem`、`PostProcessingPipeline`、`LoginController`、`OperationalModeController`。
 - 不可為了 HUD 氛圍犧牲主要操作可讀性。草稿、輸出、登入欄位、錯誤訊息、主要按鈕與帳號/歷史操作必須比裝飾 HUD 更清楚、更可點擊。
 - 中央「黑曜石法典」保留草稿輸入與唯一分析主按鈕；目前正式文案是「啟動奧術解析引擎」。
@@ -67,7 +67,7 @@ flowchart LR
 ### Frontend
 
 - `public/index.html`：正式入口。包含 HTML、CSS、Firebase compat SDK、GSAP、Three.js importmap、登入 / 工作台 DOM、主 orchestration inline module。
-- `public/worldforge-login.html`：同版視覺母體備份。改登入儀式、WebGL、HUD、Operational Mode 或 RWD 核心時，需與 `public/index.html` 保持同步。
+- `public/worldforge-login.html`：同版視覺母體備份。改登入儀式、WebGL、HUD、Operational Mode 或 RWD 核心時，需以 `npm run sync:login-mother` 或 `npm run build` 的 `prebuild` hook 從 `public/index.html` 同步。
 - `public/js/core/`：跨模組設定、狀態與型別，包含 `config.js`、`state.js`、`types.js`。
 - `public/js/services/`：外部服務邊界，包含 `analyze-api.js`、`cache.js`。
 - `public/js/utils/`：純工具函式，包含 `hud-state.js`、`result-sections.js`。
@@ -82,6 +82,13 @@ flowchart LR
 - 新增純函式工具時，放在 `public/js/utils/`；不得直接碰 DOM、Firebase 或 AppState。
 - 新增或拆分 WebGL 類別時，放在 `public/js/webgl/`，並保留 dispose / reduced motion / visibility cleanup。
 - 目前 UI DOM、CSS 與主流程 orchestration 仍在 `public/index.html` / `public/worldforge-login.html` 內。不要把已退役的 `public/js/app.js`、`public/style.css`、`public/worldforge.css`、`public/js/ui/*` 當成現行架構；若重新拆檔，必須同步更新 README、smoke test、CSP / importmap 與兩個 HTML。
+
+### S10 Black Gold SAO UI
+
+- S10 接管版取代舊 codex「黑金 SAO 系統 UI 實作計劃」；不得執行已被推翻的三欄 modal、固定 px 字級、人工 100% 同步 worldforge 方案。
+- 登入 modal 採單欄置中 native `<dialog>`，保留 Google-only 登入流程與既有 ARIA / focus-visible / skip-link。
+- 字級使用 root rem-based fluid type scale，需維持 WCAG 1.4.4 200% resize text 與 WCAG 1.4.10 320px reflow。
+- 黑金 SAO 裝飾限於不遮擋主 CTA、繁中文案、草稿輸入、輸出、歷史與帳號操作；Operational Mode 仍以長時間閱讀與編修可用性為優先。
 
 ### Backend
 
