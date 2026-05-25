@@ -17,6 +17,10 @@ functions/.env.local
 # Build output
 functions/lib/
 
+# Playwright output
+test-results/
+playwright-report/
+
 # Local command cache/temp (keeps checks off a full C: drive)
 .npm-cache/
 .tmp/

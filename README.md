@@ -490,6 +490,43 @@ firebase functions:log --only analyzeV2 -n 80
 
 ---
 
+## Accessibility
+
+### a11y baseline 2026-05-26
+
+- S9 自動化 baseline 已新增 `npm.cmd run test:a11y`，以 Playwright + axe 掃描登入頁、工作區、歷史抽屜開啟三種狀態。
+- axe critical / serious violations：0。
+- axe moderate / minor：每個狀態各 1 個 moderate，皆為 `meta-viewport`。原因是目前 viewport 仍含 `maximum-scale=1.0`；這是 S10 Part A 的指定修正，不在 S9 先行搬動。
+- visual baseline 已新增 `npm.cmd run test:visual`，涵蓋登入頁 1366、登入頁 390、工作區 1366、歷史抽屜 1366、帳號選單 1366；5 張 snapshot 已建立並逐張確認 cyan 只保留在 status / sync 語意附近。
+- 真機 SR 測試（NVDA / VoiceOver / TalkBack）：尚未執行，列入後續專項。
+
+### Contrast Baseline
+
+以下以 CSS 宣告色混合到主要深色背景後估算，門檻為 WCAG AA 一般文字 4.5:1。
+
+| 場景 | 文字色 / 背景 | 對比 | 結論 |
+|---|---|---:|---|
+| `.hud-code` | `rgba(200,216,232,0.72)` / `#050505` | 7.37:1 | 通過 |
+| input / textarea placeholder | `rgba(170,195,215,0.78)` / 深黑輸入底 | 7.01:1 | 通過 |
+| `.auth-panel .seal-strip` | `rgba(214,166,77,0.78)` / `#050505` | 5.78:1 | 已由 0.62 alpha 調整後通過 |
+| `.dossier-action` | ghost button 實際文字 `rgba(200,216,232,0.88)` / 黑底 | 11.09:1 | 通過 |
+| `.history-time` | `rgba(255,226,160,0.58)` / 黑底 | 5.67:1 | 通過 |
+| `.account-meta small` | `rgba(241,222,194,0.58)` / 黑底 | 5.48:1 | 通過 |
+| `.spell-warn` | `rgba(255,226,160,0.62)` / `#050505` | 6.36:1 | 通過 |
+| `.draft-field-help` | `rgba(232,216,184,0.58)` / 深黑面板底 | 5.18:1 | 通過 |
+| `.notice` toast | `rgba(255,226,160,0.86)` / 黑底 | 12.13:1 | 通過 |
+| `.workbench-nav-title span` | `rgba(200,216,232,0.62)` / `rgba(4,14,28)` | 5.58:1 | 通過 |
+
+### Keyboard Walkthrough
+
+- 桌機 1366 與手機 390 皆完成 Playwright walkthrough。
+- 登入狀態 Tab flow：skip-link 顯現，接著到 Google 登入 CTA；沒有落入 `aria-hidden` 或 `[hidden]` 元素。
+- 工作區 Tab flow：skip-link → 歷史紀錄 → 帳號選單 → 草稿輸入 → 分析按鈕 → 複製全部 → 清空手稿。
+- 發現並修補：作者 CSS 可能覆蓋 HTML `hidden` 預設，導致 hidden 的 `#reanalyzeButton` 可被聚焦；已新增全域 `[hidden] { display: none !important; }`，並同步 `public/index.html` / `public/worldforge-login.html`。
+- ESC / Ctrl+Enter / menu close 屬 runtime 行為，保留現有 controller 與事件 handler；S9 baseline 未改 Auth 或分析流程。
+
+---
+
 ## 主要檔案索引
 
 - 前端入口：`public/index.html`

@@ -9,12 +9,17 @@
     "check:frontend": "npm --prefix functions exec tsc -- --project jsconfig.json --noEmit",
     "check:functions": "npm --prefix functions run build -- --noEmit",
     "test": "npm run build:functions && node --test tests/*.test.mjs",
+    "test:a11y": "playwright test tests/visual/a11y.spec.ts",
+    "test:visual": "playwright test tests/visual/worldforge.spec.ts",
     "test:rules": "firebase emulators:exec --only firestore \"node --test tests/firestore-emulator.emu.mjs\"",
     "smoke:hosting": "node scripts/smoke-hosting.mjs",
     "audit:functions": "npm --prefix functions audit"
   },
   "devDependencies": {
+    "@axe-core/cli": "^4.11.3",
+    "@axe-core/playwright": "^4.11.3",
     "@firebase/rules-unit-testing": "^5.0.1",
+    "@playwright/test": "^1.60.0",
     "firebase": "^12.13.0"
   }
 }
