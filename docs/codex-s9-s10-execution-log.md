@@ -123,3 +123,23 @@
 - `npm.cmd run test:visual`：通過。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
 - `git diff --check`：通過。
+
+### Part C 變更前確認
+
+- 預計改動：登入 modal 外層由 `div.ritual-stack` 改為 native `<dialog>`，以 `showModal()` / `close()` 控制。
+- 本 Part 保留 Google-only CTA 與既有 hidden fallback DOM；dead fields / seal panel 留到 Part K 清理，避免混入 modal 語意改造。
+- 同步更新 smoke 與 visual helper 的 dialog 判斷。
+- 風險：Med；需驗證 axe、visual 與 hosting smoke。
+
+### Part C 完成紀錄
+
+- `ritualStack` 已改為 native `<dialog>`，`authPanel` 不再帶自寫 `role="dialog"` / `aria-modal`。
+- boot timeline 與 force fallback 改用 `showModal()` / `open` fallback；進入工作區時呼叫 `close()`。
+- 登入 dialog 的 `cancel` 事件會 `preventDefault()`，避免 Google-only 唯一入口被 ESC 關掉。
+- `scripts/smoke-hosting.mjs` 改檢查 `<dialog class="ritual-stack" id="ritualStack">`。
+- `tests/visual/helpers.ts` 改用 `showModal()` 開啟 static baseline dialog，進工作區前關閉 dialog。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- `npm.cmd run test:visual -- --update-snapshots`：通過並更新登入 snapshots；已 review。
+- `npm.cmd run test:visual`：通過。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。

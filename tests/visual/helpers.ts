@@ -40,10 +40,14 @@ export async function waitForLoginReady(page: Page) {
 
     const ritualStack = document.getElementById("ritualStack");
     if (ritualStack) {
+      if ("showModal" in ritualStack && !ritualStack.open) {
+        ritualStack.showModal();
+      } else if (!ritualStack.open) {
+        ritualStack.setAttribute("open", "");
+      }
       ritualStack.style.opacity = "1";
       ritualStack.style.visibility = "visible";
       ritualStack.style.display = "grid";
-      ritualStack.removeAttribute("aria-hidden");
     }
 
     const backdrop = document.querySelector<HTMLElement>(".login-modal-backdrop");
@@ -83,6 +87,11 @@ export async function enterOperationalWorkbench(page: Page) {
   await page.evaluate(() => {
     document.body.classList.remove("is-booting", "login-modal-entering", "auth-handoff-collapsing");
     document.body.classList.add("boot-complete", "operational");
+
+    const ritualDialog = document.getElementById("ritualStack");
+    if (ritualDialog?.open && typeof ritualDialog.close === "function") {
+      ritualDialog.close();
+    }
 
     const bootVeil = document.getElementById("bootVeil");
     if (bootVeil) {

@@ -28,7 +28,7 @@ const main = async () => {
   assert.match(home.text, /createIngestionStreams/, "Home should include manuscript ingestion streams");
   assert.match(home.text, /dataset\.runeLayers/, "Home should expose login FX metrics for browser validation");
   assert.match(home.text, /id="webgl-container"/, "Home should include the persistent WebGL container");
-  assert.match(home.text, /role="dialog"[^>]+aria-modal="true"/, "Home should expose the login modal as a dialog");
+  assert.match(home.text, /<dialog class="ritual-stack"[^>]+id="ritualStack"/, "Home should expose the login modal as a native dialog");
   assert.match(home.text, /id="openRitualBtn"[^>]*>[\s\S]*?使用 Google 登入[\s\S]*?<\/button>/, "Home should expose the single Google login CTA");
   assert.match(home.text, /id="guestScribeBtn"[^>]*hidden/, "Guest login fallback should remain hidden");
   assert.match(home.text, /啟動奧術解析引擎/, "Home should include the operational analysis action");
