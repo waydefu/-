@@ -880,6 +880,27 @@
       box-shadow: var(--shadow-lg), inset 0 0 52px rgba(234, 230, 205, 0.035);
     }
 
+    .frame-sweep {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      border-radius: inherit;
+      pointer-events: none;
+      padding: 1px;
+      background: conic-gradient(
+        from var(--sweep-angle, 0deg),
+        transparent 0deg 80deg,
+        rgba(214, 166, 77, 0.6) 88deg 92deg,
+        transparent 100deg 360deg
+      );
+      -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      -webkit-mask-composite: xor;
+      mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      mask-composite: exclude;
+      opacity: 0;
+      animation: frameSweep 4.8s linear infinite, frameSweepFade 1.2s 1s ease-out forwards;
+    }
+
     .auth-panel::after {
       content: "";
       position: absolute;
@@ -2563,6 +2584,7 @@
       .hud-code::before,
       .hud-code::after,
       .auth-panel::before,
+      .frame-sweep,
       .seal-panel::before,
       .operational-deck::before,
       .override-window::before,
@@ -2781,6 +2803,12 @@
       to { opacity: 1; }
     }
 
+    @property --sweep-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+
     @keyframes panelMaterialize {
       0% {
         opacity: 0;
@@ -2799,6 +2827,14 @@
         transform: scaleX(1) scaleY(1);
         filter: blur(0) brightness(1);
       }
+    }
+
+    @keyframes frameSweep {
+      to { --sweep-angle: 360deg; }
+    }
+
+    @keyframes frameSweepFade {
+      to { opacity: 0.84; }
     }
 
     @keyframes mobileBackdropConjure {
@@ -3381,6 +3417,7 @@
         <i class="corner-seal tr" aria-hidden="true"></i>
         <i class="corner-seal bl" aria-hidden="true"></i>
         <i class="corner-seal br" aria-hidden="true"></i>
+        <div class="frame-sweep" aria-hidden="true"></div>
         <div class="auth-header">
           <span id="authHeaderLabel">AUTH_REQUIRED</span>
           <span id="authHeaderState">ANALYTICAL LOCK</span>

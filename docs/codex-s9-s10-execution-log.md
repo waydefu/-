@@ -178,3 +178,20 @@
 - `git diff --check`：通過。
 - `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+
+### Part G 變更前確認
+
+- 預計改動：`auth-panel` 內新增裝飾性 `frame-sweep`，並新增對應 CSS / keyframes。
+- 目標：登入 modal 邊框加入 SAO 式金色 sweep，僅 `aria-hidden` 裝飾，不改繁中文案與登入流程。
+- 風險：Low；`@property` 舊瀏覽器不支援時只會讓 sweep 靜止，modal 仍可用。
+
+### Part G 完成紀錄
+
+- 已在登入 `auth-panel` 新增 `frame-sweep` 裝飾層，`aria-hidden="true"`。
+- 新增 `@property --sweep-angle`、`frameSweep`、`frameSweepFade` 與 reduced-motion 停動畫規則。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:visual -- --update-snapshots`：通過，已更新並 review 5 張 snapshots。
+- `npm.cmd run test:visual`：通過。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- 視覺 review：登入桌機 / 390px 手機 / 工作區 / 歷史抽屜 / 帳號選單均無文字遮擋或水平外溢。
