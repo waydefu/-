@@ -162,3 +162,19 @@
 - `git diff --check`：通過。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
 - `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
+
+### Part F 變更前確認
+
+- 預計改動：`public/index.html` / `public/worldforge-login.html` inline `RuneSystem`。
+- 目標：登入階段維持 1.0 速度，Operational Mode 自動降至 0.42 速度；OAuth 暫時降速仍保留為手動倍率。
+- 風險：Low；不改 `public/js/webgl/*.js` 核心著色器，不碰 Firebase / Auth / 草稿 / 歷史。
+
+### Part F 完成紀錄
+
+- `RuneSystem` 新增 `operationalSpeedScale`，`setOperational(value)` 會將 operational 狀態映射為 `1 -> 0.42`。
+- ring rotation 移除 operational 額外加速項，改為 `speedScale * operationalSpeedScale * shockBoost`。
+- `enterOperationalMode()` 將手動 `speedScale` 重設為 1，由 `setOperational(1)` 接管常態降速。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。

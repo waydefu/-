@@ -4798,6 +4798,7 @@
         this.shock = 0;
         this.operational = 0;
         this.speedScale = 1;
+        this.operationalSpeedScale = 1;
         this.createRuneLayers();
       }
 
@@ -4879,7 +4880,8 @@
       }
 
       setOperational(value) {
-        this.operational = value;
+        this.operational = clamp(value, 0, 1);
+        this.operationalSpeedScale = 1 - this.operational * 0.58;
       }
 
       setSpeedScale(value) {
@@ -4894,7 +4896,7 @@
           material.uniforms.uWake.value = zoneWake;
           material.uniforms.uShock.value = this.shock;
           material.uniforms.uOperational.value = this.operational;
-          const speed = ring.userData.speed * this.speedScale * (1 + this.shock * 29 + this.operational * 0.5);
+          const speed = ring.userData.speed * this.speedScale * this.operationalSpeedScale * (1 + this.shock * 29);
           ring.rotateOnAxis(ring.userData.axis, speed * delta * 60);
           const breathe = 1 + Math.sin(time * 0.42 + ring.userData.phase) * 0.008 + this.shock * 0.1;
           ring.scale.setScalar(breathe * (0.96 + zoneWake * 0.04));
@@ -6046,7 +6048,7 @@
         this.core.setShock(0);
         this.core.setIntensity(0.82);
         this.runes.setShock(0);
-        this.runes.setSpeedScale(0.42);
+        this.runes.setSpeedScale(1);
         this.particles.setShock(0);
         this.particles.setSpiral(0);
         this.post.setShock(0);
