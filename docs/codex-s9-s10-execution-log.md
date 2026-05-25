@@ -264,3 +264,40 @@
 - `git diff --check`：通過。
 - `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+
+### Part L 變更前確認
+
+- 預計改動：新增 `tests/visual/zoom.spec.ts`、`tests/visual/dialog.spec.ts`、`tests/visual/cls.spec.ts`，並擴充 `test:visual` script。
+- 目標：固定驗證 200% / 400% zoom、native dialog 行為、CLS < 0.1 與 vitals probe 存在。
+- 風險：Low-Med；使用既有 static visual helper 以避免外部 CDN / Firebase 造成測試不穩，真頁面 vitals 於完整 browser 驗收另抓。
+
+### Part L 完成紀錄
+
+- 新增 `tests/visual/zoom.spec.ts`：200% 字級可讀、400% 無水平 page scroll。
+- 新增 `tests/visual/dialog.spec.ts`：登入 dialog 為 native / 有 label；ESC 與 backdrop click 不關閉 Google-only 必填 dialog。
+- 新增 `tests/visual/cls.spec.ts`：確認 production HTML 有 CLS / LCP / INP probe，static boot-complete layout CLS < 0.1。
+- `tests/visual/helpers.ts` 補上 static dialog cancel listener，對齊真頁面 Google-only 不可 ESC 關閉的行為。
+- `scripts/smoke-hosting.mjs` 更新 Google-only 驗收：改確認 guest fallback / sealPanel / dead backdrop 已移除。
+- 真站 vitals 抽查時發現 `.corner-hud` / `.bottom-hud` GSAP no-op warning；已移除不存在 selector 的 timeline refs 並同步 worldforge。
+- `package.json` 的 `test:visual` 已擴充為 worldforge screenshots + zoom + dialog + CLS。
+- `git diff --check`：通過。
+- `npm.cmd run check:frontend`：通過。
+- `npm.cmd run test:visual`：通過，12 tests passed。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+
+## 完整驗收與部署收尾
+
+- `npm.cmd run sync:login-mother`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run check:frontend`：通過。
+- `npm.cmd run check:functions`：通過。
+- `npm.cmd test`：通過，22 tests passed。
+- `npm.cmd run test:visual`：通過，12 tests passed。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- `npm.cmd audit`：通過，0 vulnerabilities。
+- `npm.cmd run audit:functions`：未通過，10 moderate vulnerabilities，皆來自 dependency chain：`qs`、`uuid` through `firebase-admin` / Google Cloud packages；未執行 `audit fix --force`，避免更動 Firebase Admin 版本越過紅線。
+- `npm.cmd run build`：通過，prebuild 已同步 worldforge。
+- `firebase.cmd deploy --only hosting --project project-7276420283723642146`：通過，Hosting URL `https://project-7276420283723642146.web.app`。
+- `npm.cmd run smoke:hosting`：通過。
+- 真站 vitals：CLS `0.0002563214273050026`、LCP `5364` ms、INP `0` ms；`window.__FLG_VITALS_READY__ === true`、`boot-complete === true`、login dialog open。
+- 截圖輸出：`artifacts/s10/login-1920.png`、`login-1366.png`、`login-768.png`、`login-390.png`、`workbench-1366.png`、`zoom-200.png`、`zoom-400.png`、`hosting-live-1366.png`。

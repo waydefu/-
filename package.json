@@ -11,7 +11,7 @@
     "check:functions": "npm --prefix functions run build -- --noEmit",
     "test": "npm run build:functions && node --test tests/*.test.mjs",
     "test:a11y": "playwright test tests/visual/a11y.spec.ts",
-    "test:visual": "playwright test tests/visual/worldforge.spec.ts",
+    "test:visual": "playwright test tests/visual/worldforge.spec.ts tests/visual/zoom.spec.ts tests/visual/dialog.spec.ts tests/visual/cls.spec.ts",
     "test:rules": "firebase emulators:exec --only firestore \"node --test tests/firestore-emulator.emu.mjs\"",
     "smoke:hosting": "node scripts/smoke-hosting.mjs",
     "audit:functions": "npm --prefix functions audit",

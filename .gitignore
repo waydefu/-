@@ -20,6 +20,7 @@ functions/lib/
 # Playwright output
 test-results/
 playwright-report/
+artifacts/
 
 # Local command cache/temp (keeps checks off a full C: drive)
 .npm-cache/

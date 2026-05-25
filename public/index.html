@@ -5570,7 +5570,7 @@
           return;
         }
 
-        gsap.set([".top-hud", ".bottom-hud", ".corner-hud"], { opacity: 0 });
+        gsap.set(".top-hud", { opacity: 0 });
         gsap.set(".ritual-stack", { opacity: 0, clearProps: "transform,scale,x,y,xPercent,yPercent" });
         gsap.set(".boot-sequence", { opacity: 0, scale: 0.94, y: 10 });
         gsap.set("#connectionWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
@@ -5605,9 +5605,7 @@
           .to(".boot-sequence", { opacity: 0, scale: 0.96, y: -8, duration: 0.4 }, 1.6)
           .to("#bootVeil", { opacity: 0, duration: 0.8, ease: "power2.out" }, 1.8)
           .set("#bootVeil", { display: "none" }, 2.6)
-          .to(".corner-hud", { opacity: 1, duration: 0.5, stagger: 0.08 }, 1.6)
           .to(".top-hud", { opacity: 1, y: 0, duration: 0.6 }, 1.8)
-          .to(".bottom-hud", { opacity: 1, y: 0, duration: 0.6 }, 2.0)
           .call(() => this.markLoginModalEntering(), null, 2.32)
           .call(() => {
             const dlg = document.getElementById("ritualStack");

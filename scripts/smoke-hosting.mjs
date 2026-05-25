@@ -30,7 +30,9 @@ const main = async () => {
   assert.match(home.text, /id="webgl-container"/, "Home should include the persistent WebGL container");
   assert.match(home.text, /<dialog class="ritual-stack"[^>]+id="ritualStack"/, "Home should expose the login modal as a native dialog");
   assert.match(home.text, /id="openRitualBtn"[^>]*>[\s\S]*?使用 Google 登入[\s\S]*?<\/button>/, "Home should expose the single Google login CTA");
-  assert.match(home.text, /id="guestScribeBtn"[^>]*hidden/, "Guest login fallback should remain hidden");
+  assert.doesNotMatch(home.text, /id="guestScribeBtn"/, "Guest login fallback should be removed");
+  assert.doesNotMatch(home.text, /id="sealPanel"/, "Dead external seal panel should be removed");
+  assert.doesNotMatch(home.text, /login-modal-backdrop/, "Dead login backdrop should be removed");
   assert.match(home.text, /啟動奧術解析引擎/, "Home should include the operational analysis action");
   assert.match(home.text, /codex-session/, "Home should include the operational account controls");
   assert.match(home.text, /西方奇幻小說 AI 編修系統/, "Home should include Worldforge editorial copy");

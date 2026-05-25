@@ -40,6 +40,11 @@ export async function waitForLoginReady(page: Page) {
 
     const ritualStack = document.getElementById("ritualStack");
     if (ritualStack) {
+      ritualStack.addEventListener("cancel", (event) => {
+        event.preventDefault();
+        const status = document.getElementById("ritualStatus");
+        if (status) status.textContent = "請先完成 Google 登入";
+      });
       if ("showModal" in ritualStack && !ritualStack.open) {
         ritualStack.showModal();
       } else if (!ritualStack.open) {
