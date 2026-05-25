@@ -210,3 +210,19 @@
 - `git diff --check`：通過。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
 - `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
+
+### Part I 變更前確認
+
+- 預計改動：inline module 末端新增 Core Web Vitals observer。
+- 目標：在 `window.__FLG_CLS__`、`window.__FLG_LCP__`、`window.__FLG_INP__` 暴露驗收數值。
+- 風險：Low；只讀 PerformanceObserver，不送網路、不碰資料契約。
+
+### Part I 完成紀錄
+
+- 已新增 `PerformanceObserver` 監測 CLS / LCP / INP，並暴露 `window.__FLG_CLS__`、`window.__FLG_LCP__`、`window.__FLG_INP__`、`window.__FLG_VITALS_READY__`。
+- observer 不送網路；不支援時只 `console.debug`，不阻斷頁面。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- 真頁面 vitals 數值待 Part L / 完整 browser 驗收讀取。
