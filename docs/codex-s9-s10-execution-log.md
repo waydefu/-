@@ -195,3 +195,18 @@
 - `npm.cmd run test:visual`：通過。
 - `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
 - 視覺 review：登入桌機 / 390px 手機 / 工作區 / 歷史抽屜 / 帳號選單均無文字遮擋或水平外溢。
+
+### Part H 變更前確認
+
+- 預計改動：inline style 末端新增 `prefers-contrast: more` 與 `prefers-color-scheme: light` fallback。
+- 目標：高對比偏好下提高文字與框線清晰度；產品仍固定 dark scheme。
+- 風險：Low；只加 media query，不改預設 UI 與繁中文案。
+
+### Part H 完成紀錄
+
+- 已新增 `prefers-contrast: more` 色票、HUD / help / corner label 文字提亮與 panel 邊線提亮。
+- 已新增 `prefers-color-scheme: light` 下維持 `color-scheme: dark`。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。

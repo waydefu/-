@@ -3344,6 +3344,32 @@
       max-height: calc(100dvh - 24px - (var(--keyboard-inset) * 0.18));
     }
 
+    @media (prefers-contrast: more) {
+      :root {
+        --gold: #ffcc55;
+        --gold-hot: #fff2cc;
+        --parchment: #fff8e0;
+        --muted: #d4b896;
+      }
+
+      .hud-code,
+      .draft-field-help,
+      .corner-label {
+        color: rgba(255, 250, 220, 0.96) !important;
+      }
+
+      .auth-panel,
+      .codex-panel {
+        border-color: rgba(255, 226, 160, 0.62) !important;
+      }
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        color-scheme: dark;
+      }
+    }
+
   </style>
 </head>
 <body class="is-booting">
