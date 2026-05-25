@@ -2,9 +2,9 @@
 
 西方奇幻小說編修核心。使用者貼上一段草稿後，前端以 Firebase Auth 建立身份，透過 Firebase Functions v2 的 SSE 串流呼叫 Groq，回傳「修改後全文」與「審查摘要」，並依帳號同步草稿歷史。
 
-> 2026-05-22 復原註記：目前正式入口 `public/index.html` 已復原為大型 Worldforge WebGL 單檔入口，`public/worldforge-login.html` 作為同版視覺母體備份。後續若本 README 的舊模組化描述與 `AGENTS.md` 衝突，以 `AGENTS.md` 的不可違反條款與 `docs/aaa-review-progress.md` 的最新進度為準。
+> 2026-05-26 線上復原註記：正式站與本機 `public/` 已回到 Firebase Hosting release `9ed4d1e801969ed1`（2026-05-25 13:17 TPE）的 Great Sage / WebGL 版本。本 README 是唯一共用 source of truth；`AGENTS.md` 只保留讀取 README 的入口指令，`docs/*` 僅作歷史紀錄。
 
-本文件是專案的架構說明與視覺規格。後續修改請先讀完「最高優先級」與「VFX 時序規格」，再動登入頁、WebGL 或主工具介面。
+本文件是專案的架構說明、視覺規格、風險邊界與驗收清單。後續修改請先讀完「最高優先級」與「VFX 時序規格」，再動登入頁、WebGL 或主工具介面。
 
 ## 後續 Agent 關鍵規則
 
@@ -66,28 +66,22 @@ flowchart LR
 
 ### Frontend
 
-- `public/index.html`：HTML 結構、CSP、Firebase compat SDK、GSAP、Three.js importmap、module preload。
-- `public/style.css`：基礎 UI、主工具、歷史面板、帳號面板、結果面板、初代登入樣式。
-- `public/worldforge.css`：Worldforge 視覺層，包含黑暗西幻 HUD、登入頁、主工具頁外觀校準。
-- `public/js/app.js`：前端 orchestration。負責 boot、事件綁定、分析流程、清理 timers / worker。
-- `public/js/core/`：跨模組核心設定與狀態，包含 `config.js`、`dom.js`、`state.js`、`types.js`。
-- `public/js/services/`：外部服務與資料同步邊界，包含 `analyze-api.js`、`cache.js`、`history-sync.js`。
-- `public/js/utils/`：通用純工具函式，包含文字 escape 與日期格式化。
-- `public/js/ui/auth.js`：Firebase 初始化、Email / Google / 訪客登入、App Check 啟動與登入 handoff。
-- `public/js/ui/user-menu.js`：帳號觸發器與帳號面板渲染。
-- `public/js/ui/loginfx.js`：Three.js 登入背景與 LINK START / Worldforge Core VFX。
-- `public/js/ui/loginhud.js`、`sfx.js`：登入 HUD、環境音與音訊能量回饋。
-- `public/js/ui/result-view.js`、`result-parser.js`：串流結果 shell、Markdown sanitize、修改後全文 / 審查摘要分區、複製操作。
-- `public/js/ui/history-panel.js`、`draft-editor.js`、`spell-scan.js`：歷史 UI、草稿保存、禁詞掃描與 IME 保護；Firestore 同步在 `services/history-sync.js`。
+- `public/index.html`：正式入口。包含 HTML、CSS、Firebase compat SDK、GSAP、Three.js importmap、登入 / 工作台 DOM、主 orchestration inline module。
+- `public/worldforge-login.html`：同版視覺母體備份。改登入儀式、WebGL、HUD、Operational Mode 或 RWD 核心時，需與 `public/index.html` 保持同步。
+- `public/js/core/`：跨模組設定、狀態與型別，包含 `config.js`、`state.js`、`types.js`。
+- `public/js/services/`：外部服務邊界，包含 `analyze-api.js`、`cache.js`。
+- `public/js/utils/`：純工具函式，包含 `hud-state.js`、`result-sections.js`。
+- `public/js/webgl/`：Three.js / WebGL 視覺模組，包含核心、光學背景、計算環、粒子、字形環、bokeh、材質、數學與 dispose helper。
+- `public/forbidden-words.json`：禁詞與語彙掃描資料。
+- `public/sw.js`、`public/sw-register.js`、`public/swkill.js`：Service Worker 與清理入口。
 
 ### Frontend Placement Rules
 
-- 新增全域設定、常數、DOM id、AppState 欄位或 JSDoc 型別時，放在 `public/js/core/`。
-- 新增 API fetch、Firebase / Firestore 同步、快取、timeout、token 讀取等外部服務邏輯時，放在 `public/js/services/`。
-- 新增可重用 UI helper、面板渲染、互動控制時，放在 `public/js/ui/`，並由 `app.js` 或 feature 模組組裝。
+- 新增全域設定、常數、AppState 欄位或 JSDoc 型別時，放在 `public/js/core/`。
+- 新增 API fetch、快取、timeout、App Check token 讀取等外部服務邏輯時，放在 `public/js/services/`。
 - 新增純函式工具時，放在 `public/js/utils/`；不得直接碰 DOM、Firebase 或 AppState。
-- `public/js/app.js` 只負責 boot、事件綁定與主流程 orchestration；避免再塞入 Firebase、Firestore 或大型 UI 細節。
-- `public/index.html` 的 `modulepreload` 需跟著檔案搬移同步更新，版本 query 改動後也要更新 smoke test。
+- 新增或拆分 WebGL 類別時，放在 `public/js/webgl/`，並保留 dispose / reduced motion / visibility cleanup。
+- 目前 UI DOM、CSS 與主流程 orchestration 仍在 `public/index.html` / `public/worldforge-login.html` 內。不要把已退役的 `public/js/app.js`、`public/style.css`、`public/worldforge.css`、`public/js/ui/*` 當成現行架構；若重新拆檔，必須同步更新 README、smoke test、CSP / importmap 與兩個 HTML。
 
 ### Backend
 
@@ -165,7 +159,9 @@ flowchart LR
 
 ## 登入 VFX 架構
 
-目前 `public/js/ui/loginfx.js` 已切成下列職責，後續請沿用，不要重新塞回單一巨型 function。
+目前登入 / 工作台 orchestration 在兩個 HTML 的 inline module；基礎 VFX 類別在同一個 inline module，Great Sage / Raphael 強化層拆在 `public/js/webgl/`。後續請沿用，不要把核心特效改回零散或不可 cleanup 的巨型 function。
+
+基礎核心：
 
 - `SceneManager`：建立 renderer / scene / camera，持有生命週期、resize、visibility、context lost、cleanup、warp。
 - `CameraController`：滑鼠視差、手機視角、warp 攝影機推進。
@@ -174,8 +170,18 @@ flowchart LR
 - `ParticleSystem`：金色粒子、灰燼、vortex / swarm，登入成功時向核心收束。
 - `HUDSystem`：WebGL 內的 holographic archive lines 與角落 glyph。
 - `PostProcessingPipeline`：EffectComposer、SAO、UnrealBloomPass、Chromatic Aberration、Vignette、Grain。
-- `AnimationTimeline`：GSAP 存在時使用 GSAP，否則 fallback 到 requestAnimationFrame tween。
-- `OperationalModeController`：登入成功後的狀態文字與 operational mode class。
+- `LoginController`、`AnimationTimeline`、`OperationalModeController`：認證 handoff、階段動畫與 Operational Mode 狀態切換。
+
+Great Sage / Raphael 強化層：
+
+- `ArcaneSingularityCore`：中央魔導核心強化、封印層、手稿軌道、脈衝與同步狀態。
+- `ArcaneOpticalBackground`：金色光學背景、景深、鏡頭感與背景呼吸。
+- `RaphaelComputationRing`：大賢者計算環與系統分析視覺語彙。
+- `MagiculeParticleField`：魔素 / 粒子場、登入同步與待命流動。
+- `ReferenceGlyphRing`：參考圖感的外圈字形環與符文閱讀層。
+- `GoldBokehField`：金色 bokeh、近遠景層次與視覺密度。
+- `SteppedAnimationController`：階段式 boot / handoff 時序控制。
+- `materials.js`、`constants.js`、`math-utils.js`、`dispose-utils.js`：材質、色票、數學與資源釋放共用層。
 
 性能 profile 規則：
 
@@ -487,19 +493,16 @@ firebase functions:log --only analyzeV2 -n 80
 ## 主要檔案索引
 
 - 前端入口：`public/index.html`
-- 主流程：`public/js/app.js`
-- 核心設定 / 狀態 / DOM map：`public/js/core/`
+- 視覺母體備份：`public/worldforge-login.html`
+- 主流程 / DOM / CSS / 登入與工作台 orchestration：`public/index.html` inline module
+- 核心設定 / 狀態 / 型別：`public/js/core/`
 - API 串流：`public/js/services/analyze-api.js`
-- 分析快取 / Firestore timeout：`public/js/services/cache.js`
-- Firebase / App Check / Auth：`public/js/ui/auth.js`
-- 帳號選單 UI：`public/js/ui/user-menu.js`
-- 登入 VFX：`public/js/ui/loginfx.js`
-- 主視覺樣式：`public/worldforge.css`
-- 基礎樣式：`public/style.css`
-- 結果渲染：`public/js/ui/result-view.js`
-- 結果解析：`public/js/ui/result-parser.js`
-- 歷史同步：`public/js/services/history-sync.js`
-- 通用工具：`public/js/utils/`
+- 分析快取 / Firestore timeout helper：`public/js/services/cache.js`
+- HUD 狀態工具：`public/js/utils/hud-state.js`
+- 結果解析與 Markdown lite render：`public/js/utils/result-sections.js`
+- WebGL 視覺模組：`public/js/webgl/`
+- 禁詞資料：`public/forbidden-words.json`
+- Service Worker：`public/sw.js`、`public/sw-register.js`、`public/swkill.js`
 - Cloud Function：`functions/src/index.ts`
 - System prompt / CORS：`functions/src/config.ts`
 - 輸入驗證：`functions/src/validation.ts`
@@ -508,6 +511,36 @@ firebase functions:log --only analyzeV2 -n 80
 - Hosting / emulator 設定：`firebase.json`
 - Hosting smoke：`scripts/smoke-hosting.mjs`
 - 測試：`tests/*.test.mjs`
+
+---
+
+## 線上復原與文件校準紀錄（2026-05-26）
+
+- 正式站與本機 `public/` 已回到 Firebase Hosting release `9ed4d1e801969ed1`（2026-05-25 13:17 TPE）的 Great Sage / WebGL 版本。
+- `public/index.html` 與 `public/worldforge-login.html` 目前是同版大型單檔入口；檔案內容包含 `GREAT SAGE MANUSCRIPT SYSTEM` 與 `tool-stack`，且不包含錯誤重構版的假核心登入 DOM。
+- README 已改回唯一共用 source of truth；`AGENTS.md` 只保留讀 README 的入口指令，`docs/*` 只作歷史快照。
+- 已退役的 `public/js/app.js`、`public/style.css`、`public/worldforge.css`、`public/js/ui/*` 不再是現行架構。後續若要重新拆檔，需先在本 README 更新設計與驗收清單，再動程式。
+
+### 下次復原方式
+
+本次復原點會保存在 Git tag `restore/great-sage-online-20260526`，並在 `restore-points/great-sage-online-20260526.json` 留下 machine-readable manifest。
+
+優先復原方式：
+
+```powershell
+git restore --source restore/great-sage-online-20260526 -- public README.md AGENTS.md docs scripts/smoke-hosting.mjs tests/result-parser.test.mjs restore-points/great-sage-online-20260526.json
+git diff --check
+npm run check
+npm test
+npm run smoke:hosting
+```
+
+若 Git 內容再次被錯誤覆寫，先用 `git show restore/great-sage-online-20260526:restore-points/great-sage-online-20260526.json` 確認版本指紋，再恢復上述檔案。若本機 Git ref 遺失，從 Firebase Hosting release history 找 `sites/project-7276420283723642146/versions/9ed4d1e801969ed1`；復原後需確認首頁同時符合：
+
+- 包含 `GREAT SAGE MANUSCRIPT SYSTEM`。
+- 包含 `class="tool-stack left"`。
+- 不包含 `class="auth-core"`。
+- `public/index.html` 與 `public/worldforge-login.html` 內容一致。
 
 ---
 

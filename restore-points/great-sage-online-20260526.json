@@ -1,0 +1,39 @@
+{
+  "id": "great-sage-online-20260526",
+  "createdAt": "2026-05-26T00:21:54+08:00",
+  "purpose": "Restore the correct Great Sage WebGL UI after the rejected SAO/auth-core rewrite.",
+  "gitRef": "restore/great-sage-online-20260526",
+  "firebaseHosting": {
+    "site": "project-7276420283723642146",
+    "liveUrl": "https://project-7276420283723642146.web.app",
+    "sourceVersion": "sites/project-7276420283723642146/versions/9ed4d1e801969ed1",
+    "sourceVersionLocalTime": "2026-05-25 13:17 Asia/Taipei"
+  },
+  "expectedMarkers": {
+    "required": [
+      "GREAT SAGE MANUSCRIPT SYSTEM",
+      "class=\"tool-stack left\""
+    ],
+    "forbidden": [
+      "class=\"auth-core\"",
+      "ui-hotfix",
+      "pre-restore-sao-ui-hotfix"
+    ],
+    "mirroredFilesMustMatch": [
+      "public/index.html",
+      "public/worldforge-login.html"
+    ]
+  },
+  "restoreCommands": [
+    "git restore --source restore/great-sage-online-20260526 -- public README.md AGENTS.md docs scripts/smoke-hosting.mjs tests/result-parser.test.mjs restore-points/great-sage-online-20260526.json",
+    "git diff --check",
+    "npm run check",
+    "npm test",
+    "npm run smoke:hosting"
+  ],
+  "notes": [
+    "Do not use docs/*.md as active specs; README.md is the only Markdown source of truth.",
+    "Do not reapply the rejected auth-core modal rewrite.",
+    "Keep the existing stash pre-restore-sao-ui-hotfix-2026-05-25 unless the user explicitly asks to delete it."
+  ]
+}

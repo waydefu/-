@@ -31,6 +31,7 @@ export const APP_CHECK_CONFIG = {
  */
 export const API_CONFIG = {
   FUNCTIONS_URL:       "https://analyzev2-yxfwrism4q-uc.a.run.app",
+  QUOTA_URL:           "https://us-central1-project-7276420283723642146.cloudfunctions.net/quotaPeek",
   FETCH_TIMEOUT_MS:    180000,
   FIRESTORE_TIMEOUT_MS: 5000,
 };

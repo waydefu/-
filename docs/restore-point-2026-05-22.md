@@ -1,5 +1,7 @@
 # 復原點：Worldforge Operational Mode 收尾版
 
+> 歷史快照：本檔只記錄 2026-05-22 當時的復原點與操作方式，不是目前 source of truth。目前規格、架構、驗收與最新復原狀態請看 `../README.md`。
+
 日期：2026-05-22
 
 ## 目的
