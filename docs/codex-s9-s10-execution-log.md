@@ -143,3 +143,22 @@
 - `npm.cmd run test:visual`：通過。
 - `npm.cmd run check:frontend`：通過。
 - `git diff --check`：通過。
+
+### Part D/E 變更前確認
+
+- 預計改動：`AnimationTimeline.start()` boot 時序與 boot veil hide timing。
+- 目標：未登入首次 boot 約 3.5s 可操作；reduced-motion 快速完成；safety timer 6s。
+- Part E 包含在 Part D：`#bootVeil` 於 2.6s `display:none`。
+- 風險：Med；需驗證前端檢查與視覺 baseline。
+
+### Part D/E 完成紀錄
+
+- 已同步更新 `public/index.html` / `public/worldforge-login.html`。
+- boot safety timer 由 11s 改為 6s。
+- boot sequence 與 HUD 顯示時序縮短；login dialog 約 2.4s 開啟。
+- `#bootVeil` 於 2.6s `display:none`。
+- 移除 boot timeline 內已退役 `.login-modal-backdrop` tween，dead CSS / DOM 清理由 Part K 處理。
+- `npm.cmd run check:frontend`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run test:a11y`：通過，axe impact counts `{}`。
+- `npm.cmd run test:visual`：通過，5 張 snapshot 無 drift。

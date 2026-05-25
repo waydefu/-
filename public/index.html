@@ -6294,14 +6294,14 @@
           this.forceBootComplete();
           return;
         }
-        this.forceTimer = window.setTimeout(() => this.forceBootComplete(), 11000);
+        this.forceTimer = window.setTimeout(() => this.forceBootComplete(), 6000);
         if (!gsap) {
           this.forceBootComplete();
           return;
         }
 
-        gsap.set([".top-hud", ".ritual-stack", ".login-modal-backdrop"], { opacity: 0 });
-        gsap.set(".ritual-stack", { xPercent: -50, yPercent: -50, scaleX: 0, scaleY: 0.02, x: 0, y: 0, transformOrigin: "center center" });
+        gsap.set([".top-hud", ".bottom-hud", ".corner-hud"], { opacity: 0 });
+        gsap.set(".ritual-stack", { opacity: 0, clearProps: "transform,scale,x,y,xPercent,yPercent" });
         gsap.set(".boot-sequence", { opacity: 0, scale: 0.94, y: 10 });
         gsap.set("#connectionWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
         gsap.set("#overrideWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
@@ -6320,44 +6320,25 @@
         });
         this.timeline = tl;
         tl
-        .to(".boot-sequence", { opacity: 1, scale: 1, y: 0, duration: 1.05, ease: "power2.out" }, 0)
-          .to(reveal, {
-            wake: 0.12,
-            intensity: 0.12,
-            duration: 1.58,
-            ease: "sine.inOut",
-            onUpdate: () => {
-              this.applyWake(reveal.wake);
-              this.core.setIntensity(reveal.intensity);
-            }
-          })
-          .to("#bootVeil", { opacity: 0.42, scale: 1.012, duration: 1.22, ease: "power2.out" }, 1.18)
-          .to(reveal, {
-            wake: 0.58,
-            intensity: isCompactStage() ? 0.36 : 0.50,
-            duration: 2.08,
-            ease: "sine.inOut",
-            onUpdate: () => {
-              this.applyWake(reveal.wake);
-              this.core.setIntensity(reveal.intensity);
-            }
-          }, 1.72)
+          .set("#bootVeil", { opacity: 1, display: "grid" })
+          .to(".boot-sequence", { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0)
           .to(reveal, {
             wake: 1,
             intensity: loginIdleIntensity(),
-            duration: 1.7,
-            ease: "power2.out",
+            duration: 2.4,
+            ease: "sine.inOut",
             onUpdate: () => {
               this.applyWake(reveal.wake);
               this.core.setIntensity(reveal.intensity);
             }
-          }, 4.04)
-          .to(".boot-sequence", { opacity: 0, scale: 0.82, y: -18, duration: 1.08, ease: "power2.inOut" }, 3.78)
-          .to("#bootVeil", { opacity: 0, scale: 1.08, duration: 1.24, ease: "power2.inOut" }, 3.9)
-          .call(() => this.markLoginModalEntering(), null, 4.42)
-          .set(".login-modal-backdrop", { visibility: "visible" }, 4.46)
-          .to(".login-modal-backdrop", { opacity: 1, duration: uiMotion.loginBackdrop, ease: "power2.out" }, 4.48)
-          .to(".top-hud", { opacity: 1, y: 0, duration: 1.22 }, 4.72)
+          }, 0.2)
+          .to(".boot-sequence", { opacity: 0, scale: 0.96, y: -8, duration: 0.4 }, 1.6)
+          .to("#bootVeil", { opacity: 0, duration: 0.8, ease: "power2.out" }, 1.8)
+          .set("#bootVeil", { display: "none" }, 2.6)
+          .to(".corner-hud", { opacity: 1, duration: 0.5, stagger: 0.08 }, 1.6)
+          .to(".top-hud", { opacity: 1, y: 0, duration: 0.6 }, 1.8)
+          .to(".bottom-hud", { opacity: 1, y: 0, duration: 0.6 }, 2.0)
+          .call(() => this.markLoginModalEntering(), null, 2.32)
           .call(() => {
             const dlg = document.getElementById("ritualStack");
             if (dlg?.showModal && !dlg.open) {
@@ -6365,9 +6346,11 @@
             } else if (dlg && !dlg.open) {
               dlg.setAttribute("open", "");
             }
-          }, null, 5.08)
-          .to(".ritual-stack", { scaleX: 1, scaleY: 1, opacity: 1, xPercent: -50, yPercent: -50, y: 0, duration: uiMotion.loginPanel, ease: mobileQuery.matches ? "back.out(1.28)" : "back.out(1.12)" }, 5.16)
-          .set("#bootVeil", { display: "none" }, 5.22);
+            if (dlg) {
+              dlg.style.opacity = "1";
+              dlg.style.transform = "";
+            }
+          }, null, 2.4);
       }
 
       forceBootComplete() {
