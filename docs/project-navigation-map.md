@@ -1,0 +1,172 @@
+# Project Navigation Map
+
+Last updated: 2026-05-27 Asia/Taipei
+
+Purpose: current handoff map for the Fantasy Lore Guardian / Great Sage Manuscript System project. Use this before editing when context may be compacted or stale.
+
+## Current State
+
+- Main working tree has uncommitted S10.8 / S10.9 UI work, visual snapshots, and documentation updates.
+- Do not assume `HEAD` includes the latest UI. Check `git status --short` before planning commits or deploys.
+- Current frontend source of truth is `public/index.html`.
+- `public/worldforge-login.html` is generated from `public/index.html` by `npm run sync:login-mother`.
+- Latest SAO button correction is based on the dev.to Cyberpunk 2077 button article, adapted to black/gold manuscript styling:
+  - two clipped plate layers;
+  - real lower backing plate via `translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y))`;
+  - no cyan backing plate;
+  - no tag badge;
+  - no visible circular history/account nav glyphs;
+  - no tag cutout in `--sao-cyber-clip`.
+
+## First Files To Read
+
+1. `README.md`
+   - Long-form product, architecture, VFX, accessibility, and validation rules.
+2. `docs/project-navigation-map.md`
+   - This current map.
+3. `docs/s10.9-mobile-sao-button-animation-layout-execution-plan.md`
+   - Latest S10.9 mobile layout, SAO button, article review, and validation record.
+4. `docs/s10.8-sao-cyber-buttons-modal-execution-log.md`
+   - S10.8 modal/button implementation record.
+5. `docs/project-scan-handoff-2026-05-26.md`
+   - Broader scan findings and residual risks.
+
+## Entry Points
+
+- `public/index.html`
+  - Formal frontend entry.
+  - Contains the live HTML/CSS, login dialog, workbench DOM, SAO button CSS, runtime orchestration inline module, Firebase compat SDK loading, GSAP, and Three.js importmap.
+- `public/worldforge-login.html`
+  - Synchronized copy from `public/index.html`.
+  - Do not edit directly unless explicitly repairing a sync failure.
+- `scripts/sync-worldforge-login.mjs`
+  - Copies `public/index.html` to `public/worldforge-login.html`.
+- `public/js/core/`
+  - Config, state, and type helpers.
+- `public/js/services/`
+  - Analyze API and cache service helpers.
+- `public/js/utils/`
+  - Result parsing and HUD state helpers.
+- `public/js/webgl/`
+  - Great Sage / Raphael WebGL components, materials, math, and dispose helpers.
+- `functions/src/`
+  - Firebase Functions v2 backend: `analyzeV2`, quota, validation, CORS, prompt config.
+- `firestore.rules`
+  - Owner-only history rules and field constraints.
+
+## Current UI Ids And Contracts
+
+Preserve these unless the user explicitly requests a breaking migration:
+
+- Login dialog: `#ritualStack`, `#authPanel`, `#authTitle`, `#authPrompt`, `#ritualStatus`.
+- Google login button: `#openRitualBtn`.
+- Workbench shell: `#operationalDeck`, `#codexPanel`, `#operationalTitle`.
+- Draft input: `#draftField`, `#draftFieldLabel`, `#draftFieldHelp`, `#charCount`, `#spellWarn`.
+- Analyze button: `[data-op="analyze"]`.
+- Status/output: `#operationalStatus`, `#analysisDossier`, `#analysisResult`.
+- History: `#historyToggle`, `#historyDrawer`, `#historyList`, `#historyClear`, `#historyClose`.
+- Account: `#accountToggle`, `#accountMenu`, `#logoutButton`.
+- Logout confirm window: `#logoutConfirmWindow`, `#logoutConfirmTitle`, `#logoutConfirmBody`, `#confirmLogoutButton`, `#cancelLogoutButton`.
+- Notification / accessibility: `#notice`, `#announcer`, `.skip-link`, existing ARIA and focus-visible rules.
+
+## Current SAO Button Design
+
+- CSS variables live near the top of `public/index.html`:
+  - `--sao-cyber-clip`
+  - `--sao-glitch-clip-*`
+  - `--sao-cyber-offset-x`
+  - `--sao-cyber-offset-y`
+  - `--sao-cyber-primary`
+  - `--sao-cyber-underplate`
+- Late overrides near the end of the stylesheet force the shared plate treatment across `.sao-btn`, nav, menu, history, dossier, and result buttons.
+- Current backing plate target:
+  - black bronze underplate;
+  - `translate(10px, 7px)` at 390px viewport in computed style;
+  - hard slab shadow, not glow;
+  - no `OR` / system tag badge.
+- `hydrateSaoButton` still creates `.sao-btn-glitch` and `.sao-btn-tag` layers for duplicate-text effects, but `.sao-btn-tag` is hidden globally.
+- History/account nav circles are visually hidden with `.history-chip .nav-glyph` and `.account-chip .account-avatar`.
+
+## Red Lines
+
+- Do not touch Firebase/Auth semantics unless explicitly requested.
+- Do not touch draft/history persistence unless explicitly requested.
+- Do not change existing button ids.
+- Do not remove existing ARIA, focus-visible, skip-link, native dialog structure, or reduced-motion paths.
+- Keep touch targets at least 44 x 44 CSS px.
+- Keep WCAG 2.1 AA contrast, 200% zoom, and 320px reflow viable.
+- Keep `prefers-reduced-motion` functional.
+- Keep CLS under 0.1.
+- For visual/front-end changes: edit `public/index.html`, then run `npm run sync:login-mother`.
+
+## Validation Commands
+
+Use the smallest necessary set for documentation-only edits, and the full set for frontend/runtime changes.
+
+- Documentation only:
+  - `git diff --check`
+- Frontend / CSS / login / workbench / visual:
+  - `npm run sync:login-mother`
+  - `npm run test:visual:update`
+  - `npm run check`
+  - `npm run test:a11y`
+  - `git diff --check`
+- Backend / validation / quota / parser:
+  - `npm run check`
+  - `npm test`
+  - `git diff --check`
+- Build:
+  - `npm run build`
+- Deployment smoke after hosting deploy:
+  - `npm run smoke:hosting`
+
+## Current Visual Baselines
+
+Worldforge visual snapshots:
+
+- `tests/visual/worldforge.spec.ts-snapshots/login-1366-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/login-390-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/workbench-1366-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/workbench-390-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/history-drawer-1366-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/account-menu-1366-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/logout-confirm-1366-chromium-win32.png`
+
+Snapshot tests strip scripts and hide WebGL for deterministic layout. They do not prove OAuth, real animation timing, audio, or live WebGL behavior by themselves.
+
+## Current Documentation Timeline
+
+- `docs/codex-s9-s10-execution-log.md`
+  - S9 / S10 base implementation record.
+- `docs/codex-s10.5-s10.6-execution-log.md`
+  - S10.5 modal ritual and S10.6 all-button SAO work.
+- `docs/codex-s10.7-sao-copy-button-icon-execution-log.md`
+  - Copy and icon polish.
+- `docs/s10.8-sao-cyber-buttons-modal-execution-log.md`
+  - S10.8 cyber buttons and modal interactions.
+- `docs/s10.9-mobile-sao-button-animation-layout-execution-plan.md`
+  - Latest mobile spacing, button correction, dev.to article review, reference-image comparison, and validation.
+- `docs/project-scan-handoff-2026-05-26.md`
+  - Broader risk scan and optimization backlog.
+
+## Known Drift / Caution
+
+- README has had stale lines in prior turns; verify against `public/index.html` before relying on old DOM ids or old copy.
+- Current Three importmap in `public/index.html` uses `three@0.164.1`.
+- Current analyze CTA text in the live DOM is `啟動手稿鑑定引擎`.
+- `API_CONFIG.QUOTA_URL` points to `quotaPeek`, but repository scan previously found no local function source for it. Treat quota HUD / hosting smoke around quota as a known risk until verified.
+- `functions/src/index.ts` currently keeps App Check enforcement disabled (`ENFORCE_APP_CHECK = false`).
+
+## Next-Step Checklist
+
+Before any new UI task:
+
+1. Read this file and the latest task-specific execution log.
+2. Run `git status --short`.
+3. Confirm whether the task is documentation-only, frontend, backend, deploy, or smoke.
+4. Preserve red lines.
+5. Record intended changes in docs before editing when the user requests persistent handoff safety.
+6. Edit `public/index.html` first for UI work.
+7. Run `npm run sync:login-mother`.
+8. Run the relevant validation commands.
+9. Update this map or the task log with what changed and what passed.

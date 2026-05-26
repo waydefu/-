@@ -56,7 +56,63 @@ export async function waitForLoginReady(page: Page) {
     }
 
   });
+  await hydrateStaticSaoButtons(page);
   await stabilizeVisuals(page);
+}
+
+export async function hydrateStaticSaoButtons(page: Page) {
+  await page.evaluate(() => {
+    function resolveLabel(button: HTMLElement) {
+      const explicit = button.dataset.saoGlitchLabel || "";
+      if (explicit.trim()) return explicit.trim();
+      const labelNode = button.querySelector(".sao-btn-label, .btn-label, .nav-label, .history-time");
+      const label = labelNode?.textContent?.trim();
+      if (label) return label;
+      return (button.getAttribute("aria-label") || button.title || button.textContent || "").trim();
+    }
+
+    function resolveTag(button: HTMLElement) {
+      if (button.dataset.saoTag) return button.dataset.saoTag;
+      if (button.id) {
+        const tag = button.id
+          .replace(/Button|Btn|Toggle|Clear|Close/gi, "")
+          .replace(/[a-z][A-Z]/g, (part) => `${part[0]}_${part[1]}`)
+          .split(/[^A-Za-z0-9]+|_/)
+          .filter(Boolean)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 4)
+          .toUpperCase();
+        if (tag) return tag;
+      }
+      if (button.dataset.op) return String(button.dataset.op).slice(0, 4).toUpperCase();
+      return "SYS";
+    }
+
+    document.querySelectorAll<HTMLElement>(".sao-btn").forEach((button) => {
+      const label = resolveLabel(button) || "SYSTEM";
+      button.dataset.saoGlitch = label;
+      button.dataset.saoTag = resolveTag(button);
+      button.dataset.saoCompact = String(button.classList.contains("history-delete")
+        || (!button.querySelector(".sao-btn-label, .btn-label, .nav-label") && (button.textContent || "").trim().length <= 2));
+
+      if (!button.querySelector(".sao-btn-glitch")) {
+        const glitch = document.createElement("span");
+        glitch.className = "sao-btn-glitch";
+        glitch.setAttribute("aria-hidden", "true");
+        glitch.textContent = label;
+        button.appendChild(glitch);
+      }
+
+      if (!button.querySelector(".sao-btn-tag")) {
+        const tag = document.createElement("span");
+        tag.className = "sao-btn-tag";
+        tag.setAttribute("aria-hidden", "true");
+        tag.textContent = button.dataset.saoTag || "SYS";
+        button.appendChild(tag);
+      }
+    });
+  });
 }
 
 export async function stabilizeVisuals(page: Page) {
@@ -136,6 +192,7 @@ export async function enterOperationalWorkbench(page: Page) {
       `;
     }
   });
+  await hydrateStaticSaoButtons(page);
 }
 
 export async function openHistoryDrawer(page: Page) {
@@ -158,6 +215,7 @@ export async function openHistoryDrawer(page: Page) {
       `;
     }
   });
+  await hydrateStaticSaoButtons(page);
 }
 
 export async function openAccountMenu(page: Page) {
@@ -166,5 +224,26 @@ export async function openAccountMenu(page: Page) {
     toggle?.setAttribute("aria-expanded", "true");
     const menu = document.getElementById("accountMenu");
     menu?.removeAttribute("hidden");
+  });
+}
+
+export async function openLogoutConfirm(page: Page) {
+  await page.evaluate(() => {
+    const accountMenu = document.getElementById("accountMenu");
+    accountMenu?.setAttribute("hidden", "");
+    document.getElementById("accountToggle")?.setAttribute("aria-expanded", "false");
+
+    const dialog = document.getElementById("logoutConfirmWindow");
+    if (dialog) {
+      dialog.removeAttribute("hidden");
+      dialog.removeAttribute("data-closing");
+      dialog.setAttribute("aria-hidden", "false");
+      dialog.style.display = "block";
+      dialog.style.opacity = "1";
+      dialog.style.transform = "translate(-50%, -50%) scaleX(1) scaleY(1)";
+      dialog.style.filter = "none";
+    }
+    document.documentElement.classList.add("sao-modal-open");
+    document.body.classList.add("sao-modal-open");
   });
 }

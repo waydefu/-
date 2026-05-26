@@ -2,7 +2,7 @@
 
 西方奇幻小說編修核心。使用者貼上一段草稿後，前端以 Firebase Auth 建立身份，透過 Firebase Functions v2 的 SSE 串流呼叫 Groq，回傳「修改後全文」與「審查摘要」，並依帳號同步草稿歷史。
 
-> 2026-05-26 線上復原註記：正式站與本機 `public/` 已回到 Firebase Hosting release `9ed4d1e801969ed1`（2026-05-25 13:17 TPE）的 Great Sage / WebGL 版本。本 README 是唯一共用 source of truth；`AGENTS.md` 只保留讀取 README 的入口指令，`docs/*` 僅作歷史紀錄。
+> 2026-05-27 導航註記：本 README 是長期架構與規格 source of truth；最新接手導航、當前未提交狀態、S10.8/S10.9 變更位置與快照路徑請先看 `docs/project-navigation-map.md`。`AGENTS.md` 只保留讀取 README 的入口指令，其他 `docs/*` 多為執行紀錄與歷史交接。
 
 本文件是專案的架構說明、視覺規格、風險邊界與驗收清單。後續修改請先讀完「最高優先級」與「VFX 時序規格」，再動登入頁、WebGL 或主工具介面。
 
@@ -12,7 +12,7 @@
 - 修改視覺母體、WebGL 類別、登入儀式、HUD 層、Operational Mode 架構或 RWD 核心規則時，先改正式入口 `public/index.html`，再執行 `npm run sync:login-mother` 同步 `public/worldforge-login.html`；`npm run build` 會透過 `prebuild` 自動同步。只改正式站資料服務、部署 smoke、Firebase 串接或入口專用文案時，可只改 `public/index.html` 並說明原因。
 - 不可刪除、替換或降級 `CoreEngine`、`RuneSystem`、`ParticleSystem`、`HUDSystem`、`PostProcessingPipeline`、`LoginController`、`OperationalModeController`。
 - 不可為了 HUD 氛圍犧牲主要操作可讀性。草稿、輸出、登入欄位、錯誤訊息、主要按鈕與帳號/歷史操作必須比裝飾 HUD 更清楚、更可點擊。
-- 中央「黑曜石法典」保留草稿輸入與唯一分析主按鈕；目前正式文案是「啟動奧術解析引擎」。
+- 中央「黑曜石法典」保留草稿輸入與唯一分析主按鈕；目前正式文案是「啟動手稿鑑定引擎」。
 - 歷史紀錄、登出、複製卷宗、清空等次要操作只能放在可讀、可點擊的小型 HUD 操作列或卷宗區。
 - Operational Mode 是長時間閱讀與編修工作台，不是登入展示頁。字級、行高、輸入框高度、按鈕點擊區和輸出區高度不可低於可用性底線。
 - 文件-only 修改至少跑 `git diff --check`；改到前端、Functions、Firebase、CSS、WebGL、登入流程、Operational Mode 或部署相關檔案時，需跑 `npm run check:frontend`、`npm run check:functions`、`npm test`、`npm run build`。部署後再跑 `firebase deploy --only hosting` 與 `npm run smoke:hosting`。
@@ -24,7 +24,7 @@
 1. 視覺語言必須是黑暗西幻魔導系統，不是冷藍 cyberpunk、蘋果式 glassmorphism、一般 SaaS 登入頁或行銷 landing page。
 2. 登入頁可以電影感很強，主工具頁必須安靜、可讀、可長時間編修。儀式感服務於進入工作台，不可蓋過草稿輸入、分析結果、歷史紀錄與帳號狀態。
 3. Firebase Auth 是唯一登入真相。動畫只能在真實 Email / Google / 訪客登入成功後播放 handoff，不可用假帳密、自動成功或固定時間硬切來偽裝驗證。
-4. 保留現有 DOM id 與模組契約：`#loginScreen`、`#loginGl`、`#emailAuthForm`、`#loginEmail`、`#loginPassword`、`#loginGoogleBtn`、`#loginGuestBtn`、`#draftInput`、`#checkBtn`、`#result` 等不可任意改名。
+4. 保留現有 DOM id 與模組契約：`#ritualStack`、`#openRitualBtn`、`#operationalDeck`、`#draftField`、`[data-op="analyze"]`、`#analysisResult`、`#historyToggle`、`#accountToggle`、`#logoutConfirmWindow` 等不可任意改名；完整清單見 `docs/project-navigation-map.md`。
 5. 不可在 Markdown、程式碼註解、截圖、issue 或 log 中記錄 Groq API key、key prefix、Firebase Admin credential、Secret Manager 輸出或任何真正 server secret。
 6. 所有 WebGL / Canvas / Audio loop 必須有 cleanup。離開登入頁、登出、WebGL context lost、reduced motion、visibility hidden、頁面卸載都要停止 CPU / GPU 工作。
 7. 強光與 bloom 必須校準。禁止純白閃屏、長時間白屏、刺眼冷藍高亮；淨化閃光應使用羊皮紙金或暗金光霧，並快速回到黑曜石底色。
@@ -101,7 +101,7 @@ flowchart LR
 ### Runtime Constraints
 
 - 前端是 Vanilla JS ES Modules，無 build step。
-- Three.js 由 importmap 指向 `three@0.160.0`，addons 由 `three/addons/` 載入。
+- Three.js 由 importmap 指向 `three@0.164.1`，addons 由 `three/addons/` 載入。
 - Firebase Web SDK 使用 compat 版本，App Check 目前是 report-only，不強制阻擋。
 - Cloud Functions 使用 Node 22、Firebase Functions v2、Secret Manager `GROQ_API_KEY`。
 - CSP 不允許任意 inline script；importmap hash 若內容改動，必須同步更新 CSP `sha256`。

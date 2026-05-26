@@ -23,6 +23,12 @@
     }
   </script>
   <style>
+    @font-face {
+      font-family: "Cyber";
+      src: url("https://assets.codepen.io/605876/Blender-Pro-Bold.otf") format("opentype");
+      font-display: swap;
+    }
+
     :root {
       color-scheme: dark;
       --black: #020101;
@@ -46,6 +52,7 @@
       --font-serif: "Noto Serif TC", "Cinzel", serif;
       --font-en: "Cinzel", serif;
       --font-mono: "Share Tech Mono", ui-monospace, monospace;
+      --font-cyber: "Cyber", "Noto Sans TC", system-ui, sans-serif;
       font-size: clamp(1rem, 0.92rem + 0.5vw, 1.25rem);
       --text-nano: clamp(0.625rem, 0.55rem + 0.15vw, 0.6875rem);
       --text-hud: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
@@ -79,6 +86,24 @@
       --sao-glow-focus: 0 0 0 2px rgba(255, 226, 160, 0.82), 0 0 26px rgba(214, 166, 77, 0.68);
       --sao-glow-danger: 0 0 22px rgba(185, 75, 25, 0.56), inset 0 0 16px rgba(255, 156, 100, 0.28);
       --sao-scan-color: rgba(255, 226, 160, 0.78);
+      --sao-cyber-clip: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%);
+      --sao-glitch-clip-one: polygon(0 2%, 100% 2%, 100% 95%, 8% 95%, 0 70%);
+      --sao-glitch-clip-two: polygon(0 78%, 100% 78%, 100% 100%, 8% 100%, 0 78%);
+      --sao-glitch-clip-three: polygon(0 44%, 100% 44%, 100% 54%, 8% 54%, 0 54%);
+      --sao-glitch-clip-four: polygon(0 0, 100% 0, 100% 0, 8% 0, 0 0);
+      --sao-glitch-clip-five: polygon(0 0, 100% 0, 100% 0, 8% 0, 0 0);
+      --sao-glitch-clip-six: polygon(0 40%, 100% 40%, 100% 85%, 8% 85%, 0 70%);
+      --sao-glitch-clip-seven: polygon(0 63%, 100% 63%, 100% 80%, 8% 80%, 0 70%);
+      --sao-glitch-shift: 5;
+      --sao-cyber-offset-x: clamp(10px, 0.9vw, 14px);
+      --sao-cyber-offset-y: clamp(7px, 0.62vw, 10px);
+      --sao-cyber-border: clamp(4px, 0.35vw, 6px);
+      --sao-cyber-primary: linear-gradient(180deg, rgba(255, 224, 148, 0.9) 0%, rgba(196, 106, 13, 0.94) 44%, rgba(117, 47, 4, 0.98) 76%, rgba(31, 12, 2, 0.99) 100%);
+      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 232, 166, 0.96) 0%, rgba(210, 118, 17, 0.98) 48%, rgba(92, 33, 4, 0.99) 100%);
+      --sao-cyber-primary-active: linear-gradient(180deg, rgba(150, 77, 9, 0.94), rgba(41, 15, 3, 0.98));
+      --sao-cyber-underplate: linear-gradient(180deg, rgba(58, 35, 8, 1) 0%, rgba(22, 11, 3, 1) 58%, rgba(3, 2, 1, 1) 100%);
+      --sao-cyber-shadow-primary: rgba(80, 48, 12, 0.98);
+      --sao-cyber-shadow-secondary: rgba(211, 139, 39, 0.72);
       --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
       --sao-easing-back: cubic-bezier(0.34, 1.56, 0.64, 1);
       --sao-easing-decel: cubic-bezier(0.16, 1, 0.3, 1);
@@ -841,28 +866,28 @@
     }
 
     .ritual-stack[open] .auth-panel {
-      animation: panelMaterialize 1.4s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: panelMaterialize 1.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
       transform-origin: center center;
     }
 
     .ritual-stack[open] .auth-header {
-      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.72s both;
     }
 
     .ritual-stack[open] .seal-strip {
-      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both;
+      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.88s both;
     }
 
     .ritual-stack[open] #authTitle {
-      animation: textGlow 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
+      animation: textGlow 0.82s cubic-bezier(0.22, 1, 0.36, 1) 1.06s both;
     }
 
     .ritual-stack[open] #authPrompt {
-      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 1.05s both;
+      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 1.24s both;
     }
 
     .ritual-stack[open] .auth-actions {
-      animation: ctaWake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s both;
+      animation: ctaWake 0.78s cubic-bezier(0.34, 1.56, 0.64, 1) 1.48s both;
     }
 
     .auth-panel {
@@ -1094,7 +1119,7 @@
     }
 
     .google-mark {
-      display: grid;
+      display: none;
       place-items: center;
       width: 28px;
       height: 28px;
@@ -1227,28 +1252,41 @@
     .sao-btn {
       position: relative;
       isolation: isolate;
-      overflow: hidden;
+      overflow: visible;
       min-height: 44px;
       min-width: 44px;
-      clip-path: var(--edge-sm);
       cursor: pointer;
-      font-family: var(--font-tw);
-      letter-spacing: 0.02em;
-      text-shadow: 0 0 10px rgba(255, 226, 160, 0.16);
+      font-family: var(--font-cyber);
+      font-weight: 900;
+      letter-spacing: 0;
+      color: rgba(255, 246, 203, 0.96);
+      background: transparent;
+      border: 0;
+      border-radius: 0;
+      outline: transparent;
+      text-shadow:
+        0 0 10px rgba(255, 226, 160, 0.18),
+        1px 1px rgba(41, 15, 3, 0.38);
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
+      transform: translateZ(0);
       transition:
         transform var(--sao-dur-fast) var(--sao-easing-out),
         box-shadow var(--sao-dur-mid) var(--sao-easing-out),
         border-color var(--sao-dur-mid) var(--sao-easing-out),
         filter var(--sao-dur-mid) var(--sao-easing-out);
-      box-shadow: var(--sao-glow-default);
+      box-shadow: none;
     }
 
     .sao-btn .sao-btn-label,
     .sao-btn .sao-btn-symbol {
       position: relative;
-      z-index: 1;
+      z-index: 4;
+    }
+
+    .sao-btn > :not(.sao-btn-glitch):not(.sao-btn-tag):not(.sao-ripple) {
+      position: relative;
+      z-index: 4;
     }
 
     .sao-btn .sao-btn-label {
@@ -1339,39 +1377,39 @@
       content: "";
       position: absolute;
       inset: 0;
+      clip-path: var(--sao-cyber-clip);
       pointer-events: none;
-      transition: opacity var(--sao-dur-mid) var(--sao-easing-out);
+      transition:
+        background 0.2s var(--sao-easing-out),
+        filter var(--sao-dur-mid) var(--sao-easing-out),
+        transform var(--sao-dur-fast) var(--sao-easing-out);
     }
 
     .sao-btn::before {
-      background:
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top left/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top left/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top right/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top right/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom left/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom left/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom right/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom right/var(--sao-edge) var(--sao-edge-len) no-repeat;
-      opacity: 0.42;
+      z-index: 1;
+      background: var(--sao-cyber-underplate);
+      transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
+      opacity: 0.96;
+      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.46));
     }
 
     .sao-btn::after {
-      background:
-        linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%),
-        repeating-linear-gradient(0deg, transparent 0 5px, rgba(255, 226, 160, 0.12) 5px 6px, transparent 6px 10px);
-      transform: translateX(-120%);
-      opacity: 0;
+      z-index: 2;
+      background: var(--sao-cyber-primary);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 226, 160, 0.32),
+        inset 0 -18px 28px rgba(12, 5, 1, 0.56),
+        inset 0 0 0 1px rgba(255, 226, 160, 0.18);
     }
 
     .sao-btn:hover:not(:disabled)::before {
       opacity: 1;
+      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
     }
 
     .sao-btn:hover:not(:disabled)::after {
-      opacity: 0.86;
-      transform: translateX(120%);
-      transition: transform 0.9s var(--sao-easing-out), opacity var(--sao-dur-mid) var(--sao-easing-out);
+      background: var(--sao-cyber-primary-hover);
+      filter: brightness(0.96);
     }
 
     .sao-btn:hover:not(:disabled) {
@@ -1384,6 +1422,71 @@
       box-shadow: var(--sao-glow-active);
       filter: brightness(1.18) saturate(1.12);
       transition: transform 0.1s var(--sao-easing-out), box-shadow 0.1s ease;
+    }
+
+    .sao-btn-glitch,
+    .sao-btn-tag {
+      position: absolute;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    .sao-btn-glitch {
+      top: calc(var(--sao-cyber-border) * -1);
+      right: calc(var(--sao-cyber-border) * -1);
+      bottom: calc(var(--sao-cyber-border) * -1);
+      left: calc(var(--sao-cyber-border) * -1);
+      z-index: 5;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: inherit;
+      color: rgba(255, 246, 203, 0.96);
+      font: inherit;
+      line-height: inherit;
+      text-align: center;
+      text-shadow:
+        2px 2px rgba(80, 48, 12, 0.98),
+        -2px -2px var(--sao-cyber-shadow-secondary);
+      background: var(--sao-cyber-underplate);
+      clip-path: var(--sao-cyber-clip);
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+
+    .sao-btn-glitch::before {
+      content: "";
+      position: absolute;
+      inset: var(--sao-cyber-border);
+      z-index: -1;
+      clip-path: var(--sao-cyber-clip);
+      background:
+        var(--sao-cyber-primary),
+        repeating-linear-gradient(90deg, rgba(255, 226, 160, 0.12) 0 1px, transparent 1px 10px);
+    }
+
+    .sao-btn-tag {
+      right: 7%;
+      bottom: -5%;
+      z-index: 6;
+      display: none;
+      min-width: 2.3em;
+      padding: 1px 5px 2px;
+      place-items: center;
+      color: rgba(14, 6, 1, 0.96);
+      background: linear-gradient(180deg, rgba(255, 246, 203, 0.92), rgba(214, 166, 77, 0.82));
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 7px 100%, 0 calc(100% - 7px));
+      font: 800 clamp(0.5625rem, 0.52rem + 0.1vw, 0.625rem)/1 var(--font-mono);
+      letter-spacing: 0;
+      text-transform: uppercase;
+      opacity: 0.72;
+      box-shadow: 0 0 10px rgba(255, 226, 160, 0.22);
+    }
+
+    .sao-btn:hover:not(:disabled) .sao-btn-glitch,
+    .sao-btn:focus-visible .sao-btn-glitch {
+      display: flex;
+      animation: saoCyberGlitch 2s infinite;
     }
 
     .sao-btn:focus-visible {
@@ -1442,24 +1545,24 @@
     }
 
     .sao-btn.is-confirming {
-      border-color: rgba(255, 126, 84, 0.82);
-      background: rgba(110, 35, 15, 0.66);
       color: rgba(255, 226, 160, 0.96);
       animation: saoConfirmShake 0.62s ease both;
       box-shadow: 0 0 28px rgba(185, 75, 25, 0.52);
     }
 
     .sao-btn.is-confirming::before {
-      background:
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top left/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top left/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top right/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top right/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom left/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom left/var(--sao-edge) var(--sao-edge-len) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom right/var(--sao-edge-len) var(--sao-edge) no-repeat,
-        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom right/var(--sao-edge) var(--sao-edge-len) no-repeat;
+      background: var(--sao-cyber-underplate);
       opacity: 1;
+    }
+
+    .sao-btn.is-danger::after,
+    .sao-btn.is-confirming::after {
+      background: linear-gradient(180deg, rgba(255, 190, 144, 0.96), rgba(185, 75, 25, 0.94) 54%, rgba(85, 18, 13, 0.98));
+    }
+
+    .sao-btn.is-danger .sao-btn-glitch::before,
+    .sao-btn.is-confirming .sao-btn-glitch::before {
+      background: linear-gradient(180deg, rgba(255, 190, 144, 0.96), rgba(185, 75, 25, 0.94) 54%, rgba(85, 18, 13, 0.98));
     }
 
     .sao-btn.is-success {
@@ -1475,11 +1578,9 @@
       box-shadow: var(--sao-glow-active);
     }
 
-    .primary-btn:hover::after {
-      background:
-        linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%),
-        conic-gradient(from var(--sao-spin-angle, 0deg), transparent 0 80deg, rgba(255, 226, 160, 0.42) 88deg 92deg, transparent 100deg 360deg);
-      animation: saoSpinAngle 2.4s linear infinite;
+    .primary-btn.sao-btn:hover::after {
+      background: var(--sao-cyber-primary-hover);
+      animation: none;
     }
 
     html.sao-modal-open,
@@ -1602,6 +1703,14 @@
       box-shadow: 0 18px 40px rgba(185, 75, 25, 0.28);
     }
 
+    .sao-confirm-window {
+      width: min(520px, calc(100vw - 34px));
+    }
+
+    .sao-confirm-window .override-body b {
+      letter-spacing: 0;
+    }
+
     .ritual-status {
       min-height: 26px;
       display: grid;
@@ -1651,8 +1760,8 @@
     .codex-panel {
       position: relative;
       overflow: hidden;
-      min-height: clamp(560px, 76dvh, 880px);
-      padding: clamp(20px, 2vw, 30px);
+      min-height: clamp(480px, 68dvh, 780px);
+      padding: clamp(18px, 1.8vw, 28px);
       border: 1px solid rgba(214, 166, 77, 0.2);
       background:
         radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.08), transparent 38%),
@@ -1661,8 +1770,8 @@
       box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.78), 0 0 34px rgba(214, 166, 77, 0.08);
       clip-path: var(--edge);
       display: grid;
-      grid-template-rows: auto auto minmax(300px, 1.18fr) auto minmax(0, auto) auto auto minmax(260px, 1fr);
-      gap: clamp(10px, 1vw, 16px);
+      grid-template-rows: auto auto minmax(250px, 0.95fr) auto minmax(0, auto) auto auto minmax(240px, 0.9fr);
+      gap: clamp(8px, 0.8vw, 13px);
     }
 
     .sao-window {
@@ -1987,7 +2096,7 @@
     .account-menu[hidden] {
       display: grid !important;
       opacity: 0;
-      transform: scale(0.86) translateY(-6px);
+      transform: scaleX(0.02) scaleY(0.02) translateY(-6px);
       pointer-events: none;
       visibility: hidden;
       transition:
@@ -2052,7 +2161,7 @@
     .history-drawer[hidden] {
       display: block !important;
       opacity: 0;
-      transform: scaleY(0.02) translateY(-8px);
+      transform: scaleX(0.02) scaleY(0.02) translateY(-8px);
       pointer-events: none;
       visibility: hidden;
       transition:
@@ -3020,12 +3129,17 @@
       .sao-btn,
       .sao-btn::before,
       .sao-btn::after,
+      .sao-btn .sao-btn-glitch,
+      .sao-btn .sao-btn-tag,
       .sao-btn .sao-btn-symbol,
       .sao-btn .sao-btn-label,
       .sao-btn .sao-btn-label::after,
       .sao-btn .sao-ripple {
         transition: none !important;
         animation: none !important;
+      }
+      .sao-btn .sao-btn-glitch {
+        opacity: 0 !important;
       }
       .field::before,
       .textarea-wrap::before,
@@ -3084,6 +3198,11 @@
       .connection-window[aria-hidden="false"] .connection-state,
       .spell-list span {
         animation: none !important;
+      }
+      .override-window[aria-hidden="false"] {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+        filter: none;
       }
       .spell-list span {
         opacity: 1;
@@ -3182,19 +3301,19 @@
 
     @media (max-width: 820px) {
       body.login-modal-entering:not(.operational) .ritual-stack {
-        animation: mobileRitualStackConjure 1.54s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+        animation: mobileRitualStackConjure 2.15s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
       body.login-modal-entering:not(.operational) .auth-panel {
-        animation: mobileAuthPanelWake 1.66s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+        animation: mobileAuthPanelWake 2.25s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
       body.login-modal-entering:not(.operational) .auth-panel::after {
-        animation: mobileAuthEdgePulse 1.66s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+        animation: mobileAuthEdgePulse 2.25s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
       body.login-modal-entering:not(.operational) .primary-btn {
-        animation: mobileAuthCtaWake 1.34s cubic-bezier(0.18, 0.92, 0.2, 1) 0.22s both;
+        animation: mobileAuthCtaWake 1.64s cubic-bezier(0.18, 0.92, 0.2, 1) 0.36s both;
       }
 
       body.auth-handoff-collapsing .auth-panel {
@@ -3215,6 +3334,11 @@
       filter: none !important;
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
+    }
+
+    body.workbench-materializing .operational-deck {
+      animation: deckMaterialize 1.55s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+      transform-origin: center top;
     }
 
     body.operational .codex-panel,
@@ -3304,25 +3428,25 @@
         filter: blur(12px) brightness(2.2) saturate(0.6);
       }
 
-      8% {
+      12% {
         opacity: 1;
         transform: scaleX(0.02) scaleY(0.02);
         filter: blur(6px) brightness(2) saturate(0.8);
       }
 
-      30% {
+      38% {
         opacity: 1;
         transform: scaleX(1) scaleY(0.02);
         filter: blur(3px) brightness(1.6) saturate(1);
       }
 
-      66% {
+      72% {
         opacity: 1;
         transform: scaleX(1) scaleY(1.08);
         filter: blur(1px) brightness(1.2) saturate(1.05);
       }
 
-      85% {
+      88% {
         transform: scaleX(1) scaleY(0.98);
         filter: blur(0) brightness(1.05) saturate(1.02);
       }
@@ -3331,6 +3455,32 @@
         opacity: 1;
         transform: scaleX(1) scaleY(1);
         filter: blur(0) brightness(1) saturate(1);
+      }
+    }
+
+    @keyframes deckMaterialize {
+      0% {
+        opacity: 0;
+        transform: translateY(10px) scaleX(0.02) scaleY(0.02);
+        filter: blur(10px) brightness(1.8);
+      }
+
+      32% {
+        opacity: 1;
+        transform: translateY(0) scaleX(1) scaleY(0.025);
+        filter: blur(5px) brightness(1.55);
+      }
+
+      76% {
+        opacity: 1;
+        transform: translateY(0) scaleX(1) scaleY(1.035);
+        filter: blur(1px) brightness(1.16);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scaleX(1) scaleY(1);
+        filter: blur(0) brightness(1);
       }
     }
 
@@ -3412,6 +3562,81 @@
       82% { transform: translate3d(0, 0, 0) skewX(0deg); }
     }
 
+    @keyframes saoCyberGlitch {
+      0% {
+        clip-path: var(--sao-glitch-clip-one);
+      }
+
+      2%, 8% {
+        clip-path: var(--sao-glitch-clip-two);
+        transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+      }
+
+      6% {
+        clip-path: var(--sao-glitch-clip-two);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      9% {
+        clip-path: var(--sao-glitch-clip-two);
+        transform: translate3d(0, 0, 0);
+      }
+
+      10% {
+        clip-path: var(--sao-glitch-clip-three);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      13% {
+        clip-path: var(--sao-glitch-clip-three);
+        transform: translate3d(0, 0, 0);
+      }
+
+      14%, 21% {
+        clip-path: var(--sao-glitch-clip-four);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      25% {
+        clip-path: var(--sao-glitch-clip-five);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      30% {
+        clip-path: var(--sao-glitch-clip-five);
+        transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+      }
+
+      35%, 45% {
+        clip-path: var(--sao-glitch-clip-six);
+        transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+      }
+
+      40% {
+        clip-path: var(--sao-glitch-clip-six);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      50% {
+        clip-path: var(--sao-glitch-clip-six);
+        transform: translate3d(0, 0, 0);
+      }
+
+      55% {
+        clip-path: var(--sao-glitch-clip-seven);
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+
+      60% {
+        clip-path: var(--sao-glitch-clip-seven);
+        transform: translate3d(0, 0, 0);
+      }
+
+      31%, 61%, 100% {
+        clip-path: var(--sao-glitch-clip-four);
+      }
+    }
+
     @keyframes saoActiveTriangle {
       from {
         opacity: 0;
@@ -3427,34 +3652,52 @@
     @keyframes saoDrawerOpen {
       0% {
         opacity: 0;
-        transform: scaleY(0.02) translateY(-10px);
+        transform: scaleX(0.02) scaleY(0.02) translateY(-10px);
+        filter: blur(8px) brightness(1.8);
       }
 
-      60% {
+      35% {
         opacity: 1;
-        transform: scaleY(1.05) translateY(2px);
+        transform: scaleX(1) scaleY(0.03) translateY(-4px);
+        filter: blur(4px) brightness(1.5);
+      }
+
+      72% {
+        opacity: 1;
+        transform: scaleX(1) scaleY(1.05) translateY(2px);
+        filter: blur(1px) brightness(1.12);
       }
 
       100% {
         opacity: 1;
-        transform: scaleY(1) translateY(0);
+        transform: scaleX(1) scaleY(1) translateY(0);
+        filter: blur(0) brightness(1);
       }
     }
 
     @keyframes saoMenuOpen {
       0% {
         opacity: 0;
-        transform: scale(0.86) translateY(-6px);
+        transform: scaleX(0.02) scaleY(0.02) translateY(-6px);
+        filter: blur(7px) brightness(1.7);
       }
 
-      60% {
+      38% {
         opacity: 1;
-        transform: scale(1.05) translateY(2px);
+        transform: scaleX(1) scaleY(0.05) translateY(-3px);
+        filter: blur(3px) brightness(1.42);
+      }
+
+      72% {
+        opacity: 1;
+        transform: scaleX(1) scaleY(1.07) translateY(2px);
+        filter: blur(1px) brightness(1.12);
       }
 
       100% {
         opacity: 1;
-        transform: scale(1) translateY(0);
+        transform: scaleX(1) scaleY(1) translateY(0);
+        filter: blur(0) brightness(1);
       }
     }
 
@@ -3857,8 +4100,10 @@
         justify-self: center;
         align-self: start;
         transform: none !important;
-        width: min(780px, calc(100vw - 28px));
-        margin: 6px auto 48px;
+        width: min(780px, calc(100vw - 18px));
+        margin: 4px auto 34px;
+        padding: 10px;
+        gap: 8px;
         grid-template-columns: 1fr;
       }
 
@@ -3867,11 +4112,11 @@
       }
 
       .codex-panel {
-        padding: 16px;
-        padding-top: 14px;
+        padding: 14px;
+        padding-top: 13px;
         min-height: auto;
         gap: 8px;
-        grid-template-rows: auto auto minmax(300px, auto) auto minmax(0, auto) auto auto minmax(260px, auto);
+        grid-template-rows: auto auto minmax(220px, auto) auto minmax(0, auto) auto auto minmax(220px, auto);
       }
 
       .codex-session {
@@ -3881,7 +4126,7 @@
         right: auto;
         bottom: auto;
         width: 100%;
-        margin: 0 auto 10px;
+        margin: 0 auto 6px;
         grid-template-columns: minmax(0, 1fr) auto;
       }
 
@@ -3908,6 +4153,19 @@
         max-height: min(46dvh, 520px);
         margin-top: 2px;
         justify-self: stretch;
+      }
+
+      .account-menu[hidden],
+      .history-drawer[hidden] {
+        width: 0 !important;
+        height: 0;
+        max-height: 0;
+        min-height: 0;
+        margin: 0;
+        padding: 0;
+        border-width: 0;
+        overflow: hidden;
+        box-shadow: none;
       }
 
       .auth-body {
@@ -3941,6 +4199,8 @@
     @media (max-width: 560px) {
       .operational-deck {
         align-self: start;
+        margin-bottom: 24px;
+        padding: 8px;
       }
 
       .auth-body h2 {
@@ -3955,8 +4215,8 @@
 
       .codex-session {
         grid-template-columns: 1fr;
-        gap: 8px;
-        padding: 8px;
+        gap: 7px;
+        padding: 7px;
       }
 
       .workbench-nav-title {
@@ -3970,9 +4230,9 @@
       }
 
       .workbench-nav-actions > button {
-        min-height: 50px;
-        font-size: 15px;
-        padding-inline: 12px;
+        min-height: 52px;
+        font-size: 16px;
+        padding-inline: 10px;
       }
 
       .codex-session .history-chip {
@@ -4004,17 +4264,17 @@
       }
 
       .codex-panel h2 {
-        font-size: clamp(1.4375rem, 1.18rem + 1.2vw, 1.6875rem);
-        line-height: 1.14;
+        font-size: clamp(1.75rem, 1.48rem + 1vw, 2rem);
+        line-height: 1.12;
       }
 
       .codex-panel p {
-        font-size: 14px;
-        line-height: 1.58;
+        font-size: 16px;
+        line-height: 1.62;
       }
 
       .draft-field-shell {
-        grid-template-rows: auto minmax(260px, auto);
+        grid-template-rows: auto minmax(220px, auto);
         gap: 8px;
       }
 
@@ -4029,7 +4289,7 @@
       }
 
       .draft-field-title {
-        font-size: 12px;
+        font-size: 14px;
         letter-spacing: 0.12em;
       }
 
@@ -4039,13 +4299,13 @@
         bottom: 9px;
         grid-template-columns: max-content minmax(0, 1fr);
         gap: 8px;
-        font-size: 10px;
+        font-size: 12px;
         letter-spacing: 0.08em;
       }
 
       .operational-deck textarea {
-        min-height: 260px;
-        font-size: 19px;
+        min-height: 220px;
+        font-size: 21px;
         padding-bottom: 44px;
       }
 
@@ -4059,10 +4319,10 @@
       }
 
       .analysis-dossier {
-        min-height: 300px;
+        min-height: 260px;
         max-height: none;
         padding: 16px 14px;
-        font-size: 18px;
+        font-size: 19px;
         line-height: 1.95;
       }
 
@@ -4132,6 +4392,101 @@
 
     body.keyboard-raised .ritual-stack {
       max-height: calc(100dvh - 24px - (var(--keyboard-inset) * 0.18));
+    }
+
+    .sao-btn,
+    .workbench-nav-actions > button.sao-btn,
+    .account-menu button.sao-btn,
+    .history-delete.sao-btn {
+      overflow: visible;
+      border: 0;
+      border-radius: 0;
+      background: transparent;
+      font-family: var(--font-cyber);
+      color: rgba(255, 246, 203, 0.96);
+      box-shadow: none;
+    }
+
+    .sao-btn::before,
+    .workbench-nav-actions > button.sao-btn::before,
+    .account-menu button.sao-btn::before,
+      .history-delete.sao-btn::before {
+      inset: 0;
+      z-index: 1;
+      border: 0;
+      border-radius: 0;
+      background: var(--sao-cyber-underplate);
+      clip-path: var(--sao-cyber-clip);
+      opacity: 1;
+      transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
+      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.46));
+    }
+
+    .sao-btn::after,
+    .workbench-nav-actions > button.sao-btn::after,
+    .account-menu button.sao-btn::after,
+    .history-delete.sao-btn::after {
+      inset: 0;
+      z-index: 2;
+      border: 0;
+      border-radius: 0;
+      background: var(--sao-cyber-primary);
+      clip-path: var(--sao-cyber-clip);
+      opacity: 1;
+      transform: none;
+      box-shadow:
+        inset 0 1px 0 rgba(255, 226, 160, 0.32),
+        inset 0 -18px 28px rgba(12, 5, 1, 0.56),
+        inset 0 0 0 1px rgba(255, 226, 160, 0.18);
+    }
+
+    .sao-btn.is-danger::after,
+    .sao-btn.is-confirming::after,
+    .account-menu button.sao-btn.is-danger::after,
+    .history-delete.sao-btn::after {
+      background: linear-gradient(180deg, rgba(255, 190, 144, 0.96), rgba(185, 75, 25, 0.94) 54%, rgba(85, 18, 13, 0.98));
+    }
+
+    .sao-btn:hover:not(:disabled)::after,
+    .sao-btn:focus-visible::after,
+    .workbench-nav-actions > button.sao-btn:hover::after,
+    .workbench-nav-actions > button.sao-btn:focus-visible::after,
+    .account-menu button.sao-btn:hover::after,
+    .account-menu button.sao-btn:focus-visible::after,
+    .history-delete.sao-btn:hover::after,
+    .history-delete.sao-btn:focus-visible::after {
+      background: var(--sao-cyber-primary-hover);
+      opacity: 1;
+      transform: none;
+      animation: none;
+    }
+
+    .sao-btn:hover:not(:disabled)::before,
+    .sao-btn:focus-visible::before {
+      opacity: 1;
+      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
+    }
+
+    .sao-btn .sao-btn-tag {
+      display: none;
+    }
+
+    .history-chip .nav-glyph,
+    .account-chip .account-avatar {
+      display: none !important;
+    }
+
+    .history-chip,
+    .account-chip {
+      gap: 0;
+    }
+
+    .workbench-nav-actions > button.sao-btn .sao-btn-tag,
+    .account-menu button.sao-btn .sao-btn-tag,
+    .history-head button.sao-btn .sao-btn-tag,
+    .dossier-actions button.sao-btn .sao-btn-tag,
+    .result-section-copy.sao-btn .sao-btn-tag {
+      display: none;
     }
 
     @media (prefers-contrast: more) {
@@ -4218,6 +4573,22 @@
     </div>
   </div>
 
+  <div class="override-window sao-confirm-window" id="logoutConfirmWindow" role="alertdialog" aria-modal="true" aria-labelledby="logoutConfirmTitle" aria-describedby="logoutConfirmBody" aria-hidden="true" hidden>
+    <div class="frame-sweep" aria-hidden="true"></div>
+    <div class="override-header">
+      <span>SESSION_SEAL</span>
+      <span>ARCHIVE HANDOFF</span>
+    </div>
+    <div class="override-body">
+      <b id="logoutConfirmTitle">確認封存並登出</b>
+      <p id="logoutConfirmBody">系統會先保留目前草稿記憶，再結束本次 Google 授權工作階段。請確認是否離開鑑定核心。</p>
+      <div class="override-actions">
+        <button class="ghost-btn sao-btn" id="cancelLogoutBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">返回工作區</span></button>
+        <button class="secondary-btn danger-btn sao-btn is-danger" id="confirmLogoutBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">⇥</span><span class="sao-btn-label">封存並登出</span></button>
+      </div>
+    </div>
+  </div>
+
   <main class="interface" aria-label="西方奇幻小說 AI 編修系統登入介面">
     <header class="top-hud" aria-hidden="true">
       <div class="hud-code">SYSTEM COORDINATES<br />N 45.291 // W 12.082<br />SECTOR XIII</div>
@@ -4244,10 +4615,10 @@
         </div>
         <form class="auth-body" id="authForm" autocomplete="off">
           <h2 id="authTitle">西方奇幻手稿編修核心</h2>
-          <p class="auth-copy" id="authPrompt">以 Google 登入後，即可貼上手稿，取得全文重寫、語感審查與歷史卷宗同步。</p>
+          <p class="auth-copy" id="authPrompt">完成 Google 授權後，可貼上手稿並同步取得全文重寫、語感審查與歷史卷宗。</p>
 
           <div class="auth-actions">
-            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span class="sao-btn-label">使用 Google 登入</span><span class="google-mark" aria-hidden="true"></span></button>
+            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span class="sao-btn-label">使用 Google 登入</span></button>
           </div>
 
           <div class="ritual-status visually-hidden" id="ritualStatus" role="status" aria-live="polite">Google 登入待命中</div>
@@ -4278,16 +4649,16 @@
           <span>Archives / Account / Session</span>
         </div>
         <div class="workbench-nav-actions" role="toolbar" aria-label="編修核心操作">
-          <button class="history-chip sao-btn" type="button" id="historyToggle" aria-label="開啟歷史卷宗" title="歷史卷宗" aria-expanded="false" aria-controls="historyDrawer">
+          <button class="history-chip sao-btn" type="button" id="historyToggle" aria-label="開啟鑑定紀錄" title="鑑定紀錄" aria-expanded="false" aria-controls="historyDrawer">
             <span class="nav-glyph" aria-hidden="true">歷</span>
-            <span class="nav-label">歷史卷宗</span>
+            <span class="nav-label">鑑定紀錄</span>
           </button>
-          <button class="account-chip sao-btn" type="button" id="accountToggle" aria-label="開啟帳號選單" title="帳號選單" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+          <button class="account-chip sao-btn" type="button" id="accountToggle" aria-label="開啟帳號中樞" title="帳號中樞" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
             <span class="account-avatar" id="accountAvatar" aria-hidden="true">
               <img id="accountAvatarImg" alt="" />
               <span id="accountAvatarText">編</span>
             </span>
-            <span class="nav-label account-nav-label" aria-hidden="true">帳號</span>
+            <span class="nav-label account-nav-label" aria-hidden="true">帳號中樞</span>
             <span class="account-meta">
               <b class="session-badge" id="sessionBadge">待命</b>
               <small id="sessionSyncState">草稿記憶待命中</small>
@@ -4300,8 +4671,8 @@
         <div class="history-drawer" id="historyDrawer" role="region" aria-labelledby="historyHeading" hidden>
           <div class="history-head">
             <span id="historyHeading" aria-label="歷史鑑定卷宗">APPRAISAL ARCHIVE</span>
-            <button class="sao-btn is-danger" type="button" id="historyClear"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">清空</span></button>
-            <button class="sao-btn" type="button" id="historyClose"><span class="sao-btn-symbol" aria-hidden="true">⌃</span><span class="sao-btn-label">收回</span></button>
+            <button class="sao-btn is-danger" type="button" id="historyClear"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">清空紀錄</span></button>
+            <button class="sao-btn" type="button" id="historyClose"><span class="sao-btn-symbol" aria-hidden="true">⌃</span><span class="sao-btn-label">收合面板</span></button>
           </div>
           <div class="history-list" id="historyList">
             <p class="history-empty">尚無鑑定紀錄。</p>
@@ -4339,9 +4710,9 @@
           <div class="analysis-dossier-head">
             <span>ARCANE DIAGNOSTIC DOSSIER</span>
             <div class="dossier-actions">
-              <button type="button" class="dossier-copy sao-btn" id="copyAllButton"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製卷宗</span></button>
-              <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden><span class="sao-btn-symbol" aria-hidden="true">↻</span><span class="sao-btn-label">再次鑑定</span></button>
-              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton"><span class="sao-btn-symbol" aria-hidden="true">⌫</span><span class="sao-btn-label">清空手稿</span></button>
+              <button type="button" class="dossier-copy sao-btn" id="copyAllButton"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製鑑定卷宗</span></button>
+              <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden><span class="sao-btn-symbol" aria-hidden="true">↻</span><span class="sao-btn-label">重新鑑定</span></button>
+              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton"><span class="sao-btn-symbol" aria-hidden="true">⌫</span><span class="sao-btn-label">清除手稿</span></button>
             </div>
           </div>
           <div id="analysisResult" class="analysis-result">
@@ -4430,7 +4801,7 @@
       deckY: 1.08,
       loginBackdrop: 1.16,
       loginPanel: 1.38,
-      mobileEnterClass: 1850
+      mobileEnterClass: 2800
     };
     document.documentElement.classList.toggle("motion-reduced", prefersReducedMotion);
     if (prefersReducedMotion) {
@@ -4695,9 +5066,76 @@
       return node;
     }
 
+    function resolveSaoButtonLabel(button) {
+      if (!(button instanceof HTMLElement)) return "";
+      const explicit = button.dataset.saoGlitchLabel || "";
+      if (explicit.trim()) return explicit.trim();
+      const labelNode = button.querySelector(".sao-btn-label, .btn-label, .nav-label, .history-time");
+      const label = labelNode?.textContent?.trim();
+      if (label) return label;
+      return (button.getAttribute("aria-label") || button.title || button.textContent || "").trim();
+    }
+
+    function resolveSaoButtonTag(button) {
+      if (!(button instanceof HTMLElement)) return "SYS";
+      if (button.dataset.saoTag) return button.dataset.saoTag;
+      if (button.id) {
+        const tag = button.id
+          .replace(/Button|Btn|Toggle|Clear|Close/gi, "")
+          .replace(/[a-z][A-Z]/g, (part) => `${part[0]}_${part[1]}`)
+          .split(/[^A-Za-z0-9]+|_/)
+          .filter(Boolean)
+          .map((part) => part[0])
+          .join("")
+          .slice(0, 4)
+          .toUpperCase();
+        if (tag) return tag;
+      }
+      if (button.dataset.op) return String(button.dataset.op).slice(0, 4).toUpperCase();
+      return "SYS";
+    }
+
+    function isCompactSaoButton(button) {
+      if (!(button instanceof HTMLElement)) return false;
+      return button.classList.contains("history-delete")
+        || button.classList.contains("history-close")
+        || (!button.querySelector(".sao-btn-label, .btn-label, .nav-label") && (button.textContent || "").trim().length <= 2);
+    }
+
+    function hydrateSaoButton(button) {
+      if (!(button instanceof HTMLElement) || !button.classList.contains("sao-btn")) return;
+      const label = resolveSaoButtonLabel(button) || "SYSTEM";
+      button.dataset.saoGlitch = label;
+      button.dataset.saoTag = resolveSaoButtonTag(button);
+      button.dataset.saoCompact = String(isCompactSaoButton(button));
+
+      let glitch = Array.from(button.children).find((child) => child.classList?.contains("sao-btn-glitch"));
+      if (!glitch) {
+        glitch = document.createElement("span");
+        glitch.className = "sao-btn-glitch";
+        glitch.setAttribute("aria-hidden", "true");
+        button.appendChild(glitch);
+      }
+      glitch.textContent = label;
+
+      let tag = Array.from(button.children).find((child) => child.classList?.contains("sao-btn-tag"));
+      if (!tag) {
+        tag = document.createElement("span");
+        tag.className = "sao-btn-tag";
+        tag.setAttribute("aria-hidden", "true");
+        button.appendChild(tag);
+      }
+      tag.textContent = button.dataset.saoTag;
+    }
+
+    function hydrateAllSaoButtons(root = document) {
+      root.querySelectorAll?.(".sao-btn").forEach((button) => hydrateSaoButton(button));
+    }
+
     function setButtonGlyph(button, symbol, label) {
       if (!(button instanceof HTMLElement)) return;
       button.replaceChildren(createButtonGlyph(symbol), createButtonLabel(label));
+      hydrateSaoButton(button);
     }
 
     function setButtonLabel(button, label) {
@@ -4708,6 +5146,7 @@
       } else {
         button.textContent = label;
       }
+      hydrateSaoButton(button);
     }
 
     function getButtonLabel(button, fallback = "") {
@@ -4731,7 +5170,7 @@
       copy.type = "button";
       copy.className = "result-section-copy sao-btn";
       copy.dataset.copySection = kind;
-      setButtonGlyph(copy, "⧉", "複製段落");
+      setButtonGlyph(copy, "⧉", "複製本段");
       const body = document.createElement("div");
       body.className = "result-section-body";
       body.innerHTML = renderMarkdownLite(content || "此段暫無回傳內容。");
@@ -6029,7 +6468,7 @@
           header: "GOOGLE_SIGN_IN",
           state: "OAUTH STANDBY",
           title: "西方奇幻手稿編修核心",
-          prompt: "以 Google 登入後，即可貼上手稿，取得全文重寫、語感審查與歷史卷宗同步。",
+          prompt: "完成 Google 授權後，可貼上手稿並同步取得全文重寫、語感審查與歷史卷宗。",
           button: "使用 Google 登入"
         });
         this.setStatus("Google 登入待命中");
@@ -6429,14 +6868,19 @@
           this.ritualStack.close();
         }
         document.body.classList.remove("login-modal-entering", "auth-handoff-collapsing");
+        const logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
         this.ritualStack.style.display = "none";
         this.overrideWindow.style.display = "none";
         this.connectionWindow.style.display = "none";
+        if (logoutConfirmWindow) logoutConfirmWindow.style.display = "none";
         this.ritualStack.setAttribute("aria-hidden", "true");
         this.overrideWindow.setAttribute("aria-hidden", "true");
         this.connectionWindow.setAttribute("aria-hidden", "true");
+        logoutConfirmWindow?.setAttribute("aria-hidden", "true");
+        logoutConfirmWindow?.setAttribute("hidden", "");
         this.setOperationalDeckAvailability(true);
         document.body.classList.add("operational");
+        document.body.classList.toggle("workbench-materializing", !prefersReducedMotion && !gsap);
         this.operationalDeck.style.filter = "none";
         this.operationalDeck.style.setProperty("backdrop-filter", "none");
         this.operationalDeck.style.setProperty("-webkit-backdrop-filter", "none");
@@ -6458,6 +6902,7 @@
           this.operationalDeck.style.removeProperty("transform");
           this.operationalDeck.style.removeProperty("scale");
           this.operationalDeck.style.removeProperty("filter");
+          document.body.classList.remove("workbench-materializing");
         };
         window.clearTimeout(this._workbenchRevealTimer);
         this._workbenchRevealTimer = window.setTimeout(ensureWorkbenchVisible, prefersReducedMotion ? 60 : 2600);
@@ -6475,8 +6920,10 @@
 
           const deckTl = gsap.timeline();
           deckTl
-            .set(this.operationalDeck, { opacity: 0, y: 12, scale: 0.986, clearProps: "filter" })
-            .to(this.operationalDeck, { opacity: 1, y: 0, scale: 1, duration: 0.88, ease: "power3.out", onComplete: ensureWorkbenchVisible }, 0.28)
+            .set(this.operationalDeck, { opacity: 0, y: 10, scaleX: 0.02, scaleY: 0.02, transformOrigin: "center top", filter: "blur(10px) brightness(1.8)" })
+            .to(this.operationalDeck, { opacity: 1, y: 0, scaleX: 1, scaleY: 0.025, filter: "blur(5px) brightness(1.55)", duration: 0.42, ease: "power2.out" }, 0.2)
+            .to(this.operationalDeck, { scaleX: 1, scaleY: 1.035, filter: "blur(1px) brightness(1.16)", duration: 0.72, ease: "power3.out" }, 0.62)
+            .to(this.operationalDeck, { scaleX: 1, scaleY: 1, filter: "blur(0px) brightness(1)", duration: 0.24, ease: "power2.out", onComplete: ensureWorkbenchVisible }, 1.34)
             .to(".tool-module", {
               opacity: 1,
               x: 0,
@@ -6707,6 +7154,7 @@
         gsap.set(".boot-sequence", { opacity: 0, scale: 0.94, y: 10 });
         gsap.set("#connectionWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
         gsap.set("#overrideWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
+        gsap.set("#logoutConfirmWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
         gsap.set("#bootVeil", { opacity: 1, display: "grid" });
         const tl = gsap.timeline({
           defaults: { ease: "power3.out" },
@@ -6822,6 +7270,10 @@
         this.historyDrawer = document.getElementById("historyDrawer");
         this.historyList = document.getElementById("historyList");
         this.logoutButton = document.getElementById("logoutButton");
+        this.logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
+        this.cancelLogoutButton = document.getElementById("cancelLogoutBtn");
+        this.confirmLogoutButton = document.getElementById("confirmLogoutBtn");
+        this.logoutConfirmController = new SaoWindowController({ lockDocument: true });
         this.copyButton = document.getElementById("copyAllButton");
         this.reanalyzeButton = document.getElementById("reanalyzeButton");
         this.clearDraftButton = document.getElementById("clearDraftButton");
@@ -6833,7 +7285,6 @@
         this.draftSaveTimer = 0;
         this.spellScanTimer = 0;
         this.historyClearTimer = 0;
-        this.logoutConfirmTimer = 0;
         this.pendingHistoryDeleteId = "";
         this.quotaRefreshTimer = 0;
         this.forbiddenWords = [];
@@ -6893,7 +7344,9 @@
         });
         this.historyClose?.addEventListener("click", () => this.toggleHistory(false));
         this.historyClear?.addEventListener("click", () => this.clearHistory());
-        this.logoutButton?.addEventListener("click", () => this.logout());
+        this.logoutButton?.addEventListener("click", () => this.openLogoutConfirm());
+        this.cancelLogoutButton?.addEventListener("click", () => this.closeLogoutConfirm());
+        this.confirmLogoutButton?.addEventListener("click", () => this.logout());
         this.copyButton?.addEventListener("click", () => this.copyDossier());
         this.reanalyzeButton?.addEventListener("click", () => this.loginController.runBusinessAnalysis());
         this.clearDraftButton?.addEventListener("click", () => this.clearDraft());
@@ -6922,16 +7375,22 @@
         const shouldOpen = typeof force === "boolean" ? force : this.accountMenu.hidden;
         this.accountMenu.hidden = !shouldOpen;
         this.accountToggle?.setAttribute("aria-expanded", String(shouldOpen));
-        this.accountToggle?.setAttribute("aria-label", shouldOpen ? "關閉帳號選單" : "開啟帳號選單");
-        if (!shouldOpen) this.resetLogoutConfirm();
+        this.accountToggle?.setAttribute("aria-label", shouldOpen ? "關閉帳號中樞" : "開啟帳號中樞");
       }
 
-      resetLogoutConfirm() {
-        window.clearTimeout(this.logoutConfirmTimer);
-        if (!this.logoutButton) return;
-        delete this.logoutButton.dataset.confirm;
-        setButtonGlyph(this.logoutButton, "⇥", "登出");
-        this.logoutButton.classList.remove("is-confirming");
+      openLogoutConfirm() {
+        if (!this.logoutConfirmWindow) return;
+        this.toggleAccount(false);
+        this.status.textContent = "請確認是否封存草稿並結束本次工作階段";
+        this.hud.showNotice("登出確認視窗已開啟");
+        this.logoutConfirmController.open(this.logoutConfirmWindow);
+      }
+
+      closeLogoutConfirm() {
+        if (!this.logoutConfirmWindow) return;
+        this.logoutConfirmController.close(this.logoutConfirmWindow);
+        this.status.textContent = "已取消登出，工作階段維持啟用";
+        this.hud.showNotice("已返回鑑定核心");
       }
 
       setSyncState(text) {
@@ -6987,7 +7446,7 @@
         try {
           const ok = await this.copyPlainText(text);
           if (!ok) throw new Error("clipboard-failed");
-          const original = getButtonLabel(this.copyButton, "複製卷宗");
+          const original = getButtonLabel(this.copyButton, "複製鑑定卷宗");
           setButtonLabel(this.copyButton, "已複製");
           this.status.textContent = "鑑定卷宗已寫入剪貼簿";
           this.hud.showNotice("鑑定卷宗已複製");
@@ -7133,10 +7592,10 @@
         const shouldOpen = typeof force === "boolean" ? force : this.historyDrawer.hidden;
         this.historyDrawer.hidden = !shouldOpen;
         this.historyToggle?.setAttribute("aria-expanded", String(shouldOpen));
-        this.historyToggle?.setAttribute("aria-label", shouldOpen ? "關閉歷史卷宗" : "開啟歷史卷宗");
+        this.historyToggle?.setAttribute("aria-label", shouldOpen ? "關閉鑑定紀錄" : "開啟鑑定紀錄");
         if (shouldOpen) {
           this.refreshHistory(true);
-          this.hud.showNotice("手稿檔案庫已展開");
+          this.hud.showNotice("鑑定紀錄面板已展開");
         } else {
           this.pendingHistoryDeleteId = "";
           this.renderHistory();
@@ -7168,7 +7627,7 @@
             localStorage.setItem(this.historyKey(), JSON.stringify(this.historyItems));
             this.renderHistory();
           } catch (error) {
-            if (showStatus) this.hud.showNotice("歷史卷宗同步受阻，已顯示本機封存");
+            if (showStatus) this.hud.showNotice("鑑定紀錄同步受阻，已顯示本機封存");
           }
         }
       }
@@ -7180,7 +7639,7 @@
           this.activeHistoryId = "";
           const empty = document.createElement("p");
           empty.className = "history-empty";
-          empty.textContent = "尚無封存卷宗。完成一次分析後，卷宗會自動收進此處。";
+          empty.textContent = "尚無鑑定紀錄。完成一次分析後，系統會自動封存於此。";
           this.historyList.appendChild(empty);
           return;
         }
@@ -7197,6 +7656,8 @@
           button.type = "button";
           button.className = "history-item sao-btn";
           button.dataset.id = item.id;
+          button.dataset.saoGlitchLabel = "鑑定紀錄";
+          button.dataset.saoTag = "ARC";
           if (item.id === this.activeHistoryId) {
             button.classList.add("is-active");
             button.setAttribute("aria-current", "true");
@@ -7221,13 +7682,14 @@
           deleteButton.className = "history-delete sao-btn is-danger";
           deleteButton.classList.toggle("is-confirming", this.pendingHistoryDeleteId === item.id);
           setButtonGlyph(deleteButton, this.pendingHistoryDeleteId === item.id ? "!" : "×", this.pendingHistoryDeleteId === item.id ? "確定" : "刪");
-          deleteButton.setAttribute("aria-label", this.pendingHistoryDeleteId === item.id ? "再次確認刪除此卷宗" : "刪除此卷宗");
+          deleteButton.setAttribute("aria-label", this.pendingHistoryDeleteId === item.id ? "再次確認刪除此筆鑑定紀錄" : "刪除此筆鑑定紀錄");
           deleteButton.addEventListener("click", () => this.deleteHistoryItem(item.id));
 
           row.append(button, deleteButton);
           fragment.appendChild(row);
         });
         this.historyList.appendChild(fragment);
+        hydrateAllSaoButtons(this.historyList);
       }
 
       loadHistoryItem(id) {
@@ -7239,8 +7701,8 @@
         renderAnalysisResult(this.resultBox, item.result || "此卷宗沒有保存鑑定結果。");
         this.saveDraft();
         this.updateDraftDiagnostics();
-        this.status.textContent = "歷史卷宗已載入";
-        this.hud.showNotice("歷史卷宗已載入");
+        this.status.textContent = "鑑定紀錄已載入";
+        this.hud.showNotice("鑑定紀錄已載入");
         this.loginController.syncProgress = clamp(this.draftField.value.length / 500, 0, 1);
         this.toggleHistory(false);
         this.draftField.focus();
@@ -7277,27 +7739,27 @@
           console.warn("Worldforge local history delete skipped:", error);
         }
         this.renderHistory();
-        this.hud.showNotice("歷史卷宗已刪除");
+        this.hud.showNotice("鑑定紀錄已刪除");
         await this.deleteHistoryRefs([id]);
       }
 
       async clearHistory() {
         if (!this.historyItems.length) {
-          this.hud.showNotice("尚無可清空的封存紀錄");
+          this.hud.showNotice("目前沒有可清空的鑑定紀錄");
           return;
         }
         if (this.historyClear?.dataset.confirm !== "1") {
           if (this.historyClear) {
             this.historyClear.dataset.confirm = "1";
-            setButtonGlyph(this.historyClear, "!", "再次確認");
+            setButtonGlyph(this.historyClear, "!", "確認清空");
             this.historyClear.classList.add("is-confirming");
           }
-          this.hud.showNotice("再次點擊以清空歷史卷宗");
+          this.hud.showNotice("再次點擊以清空全部鑑定紀錄");
           window.clearTimeout(this.historyClearTimer);
           this.historyClearTimer = window.setTimeout(() => {
             if (this.historyClear) {
               delete this.historyClear.dataset.confirm;
-              setButtonGlyph(this.historyClear, "×", "清空");
+              setButtonGlyph(this.historyClear, "×", "清空紀錄");
               this.historyClear.classList.remove("is-confirming");
             }
           }, 2600);
@@ -7314,11 +7776,11 @@
         }
         if (this.historyClear) {
           delete this.historyClear.dataset.confirm;
-          setButtonGlyph(this.historyClear, "×", "清空");
+          setButtonGlyph(this.historyClear, "×", "清空紀錄");
           this.historyClear.classList.remove("is-confirming");
         }
         this.renderHistory();
-        this.hud.showNotice("歷史卷宗已清空");
+        this.hud.showNotice("鑑定紀錄已清空");
         await this.deleteHistoryRefs(ids);
       }
 
@@ -7350,31 +7812,22 @@
         this.resultBox.append(empty);
         this.updateDraftDiagnostics();
         this.saveDraft();
-        this.setSyncState("草稿已清空");
-        this.status.textContent = "手稿已清空";
-        this.hud.showNotice("手稿已清空");
+        this.setSyncState("草稿記憶已清除");
+        this.status.textContent = "手稿內容已清除";
+        this.hud.showNotice("手稿內容已清除");
         this.reanalyzeButton.hidden = true;
         this.syncHudState();
         this.draftField.focus();
       }
 
       async logout() {
-        if (this.logoutButton?.dataset.confirm !== "1") {
-          if (this.logoutButton) {
-            this.logoutButton.dataset.confirm = "1";
-            setButtonGlyph(this.logoutButton, "!", "再次確認登出");
-            this.logoutButton.classList.add("is-confirming");
-          }
-          this.status.textContent = "再次確認後將封存草稿並退出書庫";
-          this.hud.showNotice("再次點擊以確認登出");
-          window.clearTimeout(this.logoutConfirmTimer);
-          this.logoutConfirmTimer = window.setTimeout(() => this.resetLogoutConfirm(), 3200);
-          return;
+        if (this.confirmLogoutButton) {
+          this.confirmLogoutButton.disabled = true;
+          setButtonGlyph(this.confirmLogoutButton, "⇥", "封存中");
         }
-        this.resetLogoutConfirm();
         this.saveDraft();
-        this.status.textContent = "正在封存草稿並退出書庫";
-        this.hud.showNotice("正在退出禁忌書庫");
+        this.status.textContent = "正在封存草稿並結束工作階段";
+        this.hud.showNotice("正在結束鑑定核心工作階段");
         try {
           firebaseRuntime.guest = false;
           localStorage.removeItem("worldforgeGuest");
@@ -7386,7 +7839,7 @@
             await firebaseRuntime.auth.signOut();
           }
         } catch (error) {
-          this.hud.showNotice("登出時發生異常，將重新開啟入口");
+          this.hud.showNotice("登出流程異常，將重新開啟授權入口");
         } finally {
           window.setTimeout(() => window.location.reload(), 420);
         }
@@ -7394,6 +7847,7 @@
     }
 
     bindVisualViewportInset();
+    hydrateAllSaoButtons();
 
     let signedInHandoffRetryCount = 0;
     function handoffSignedInUser() {
@@ -7438,6 +7892,11 @@
         const accountMenu = document.getElementById("accountMenu");
         const historyDrawer = document.getElementById("historyDrawer");
         const overrideWindow = document.getElementById("overrideWindow");
+        const logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
+        if (logoutConfirmWindow?.getAttribute("aria-hidden") === "false") {
+          document.getElementById("cancelLogoutBtn")?.click();
+          return;
+        }
         if (accountMenu && !accountMenu.hidden) {
           accountMenu.hidden = true;
           document.getElementById("accountToggle")?.setAttribute("aria-expanded", "false");
