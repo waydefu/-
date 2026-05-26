@@ -2555,6 +2555,9 @@
     }
 
     .notice {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
       min-height: 42px;
       padding: 10px 16px;
       border: 1px solid rgba(214, 166, 77, 0.22);
@@ -2569,6 +2572,27 @@
       box-shadow: 0 18px 52px rgba(0, 0, 0, 0.58), inset 0 0 26px rgba(214, 166, 77, 0.05);
       opacity: 0;
       transform: translateY(16px) scale(0.96);
+    }
+
+    .notice::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(transparent, transparent) padding-box,
+        linear-gradient(90deg, transparent, rgba(214, 166, 77, 0.92), transparent) border-box;
+      background-size: 200% 100%;
+      animation: noticeScan 2.4s linear infinite;
+    }
+
+    .notice.is-entering {
+      animation: noticeIn 0.62s var(--sao-easing-back) both;
+    }
+
+    .notice.is-leaving {
+      animation: noticeOut 0.56s var(--sao-easing-out) both;
     }
 
     .shockwave {
@@ -2714,6 +2738,18 @@
       .account-menu {
         transition: none !important;
         animation: none !important;
+      }
+      .notice::before,
+      .notice.is-entering,
+      .notice.is-leaving {
+        animation: none !important;
+      }
+      .notice.is-entering {
+        opacity: 1;
+        transform: none;
+      }
+      .notice.is-leaving {
+        opacity: 0;
       }
       body.operational .sao-window {
         animation: none !important;
@@ -3071,6 +3107,39 @@
       100% {
         opacity: 1;
         transform: scale(1) translateY(0);
+      }
+    }
+
+    @keyframes noticeScan {
+      to {
+        background-position: 200% 0;
+      }
+    }
+
+    @keyframes noticeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-26px) scale(0.92);
+        filter: blur(8px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: translateY(4px) scale(1.03);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes noticeOut {
+      to {
+        opacity: 0;
+        transform: translateY(-16px) scale(0.98);
+        filter: blur(3px);
       }
     }
 
@@ -5391,22 +5460,20 @@
         this.operationalMessages = ["可開始解析小說草稿"];
         this.noticeIndex = 0;
         this.lastHudTick = 0;
+        this.noticeFadeTimer = 0;
       }
 
       showNotice(text) {
         this.notice.textContent = text;
         this.announcer.textContent = text;
-        if (!gsap || prefersReducedMotion) {
-          this.notice.style.opacity = "1";
-          window.clearTimeout(this.noticeFadeTimer);
-          this.noticeFadeTimer = window.setTimeout(() => {
-            this.notice.style.opacity = "0";
-          }, 3000);
-          return;
-        }
-        gsap.killTweensOf(this.notice);
-        gsap.fromTo(this.notice, { opacity: 0, y: 14, scale: 0.96 }, { opacity: 1, y: 0, scale: 1, duration: 0.48, ease: "power2.out" });
-        gsap.to(this.notice, { opacity: 0, y: -12, duration: 0.72, delay: 2.45, ease: "power2.in" });
+        window.clearTimeout(this.noticeFadeTimer);
+        this.notice.classList.remove("is-entering", "is-leaving");
+        void this.notice.offsetWidth;
+        this.notice.classList.add("is-entering");
+        this.noticeFadeTimer = window.setTimeout(() => {
+          this.notice.classList.remove("is-entering");
+          this.notice.classList.add("is-leaving");
+        }, prefersReducedMotion ? 3000 : 2800);
       }
 
       cycleOperational() {

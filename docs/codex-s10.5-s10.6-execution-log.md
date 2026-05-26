@@ -252,3 +252,18 @@
 - `public/index.html`：account menu 加入 0.42s scale/translate opening motion 與 closed transform state。
 - `public/index.html`：history drawer 加入 0.58s scaleY/translate opening motion 與 closed transform state。
 - `public/index.html`：reduced-motion 下停用 drawer/menu transition 與 animation；既有 hidden/ARIA/toggle handler 未改。
+- Commit: `7e25a93 feat(s10.6/drawers): add SAO open motion to archive menus`
+
+## S10.6 Part 5 - Toast Notice Scan
+
+### 變更前確認
+
+- 範圍：`.notice` CSS scan/enter/leave class 與 `HUDSystem.showNotice` class 切換。
+- 保留 `role="status"`、`aria-live` announcer 更新與既有繁中訊息文字。
+- 移除 toast 的 GSAP tween 依賴，改用 CSS class；reduced-motion 下維持即時顯示/淡出，不跑動畫。
+
+### 變更後更新
+
+- `public/index.html`：notice 加入 scan border pseudo-element、0.62s enter、0.56s leave animation。
+- `public/index.html`：`HUDSystem.showNotice` 改為 class restart + 2800ms display timer；保留 announcer textContent 更新。
+- `public/index.html`：reduced-motion 下停用 scan/enter/leave animation，仍以 class 控制顯示與淡出。
