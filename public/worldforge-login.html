@@ -812,6 +812,26 @@
       transform-origin: center center;
     }
 
+    .ritual-stack[open] .auth-header {
+      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.55s both;
+    }
+
+    .ritual-stack[open] .seal-strip {
+      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both;
+    }
+
+    .ritual-stack[open] #authTitle {
+      animation: textGlow 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.85s both;
+    }
+
+    .ritual-stack[open] #authPrompt {
+      animation: contentSlideUp 0.5s cubic-bezier(0.22, 1, 0.36, 1) 1.05s both;
+    }
+
+    .ritual-stack[open] .auth-actions {
+      animation: ctaWake 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) 1.2s both;
+    }
+
     .auth-panel {
       pointer-events: auto;
       width: 100%;
@@ -2390,6 +2410,18 @@
         transform: none;
         filter: none;
       }
+      .ritual-stack[open] .auth-header,
+      .ritual-stack[open] .seal-strip,
+      .ritual-stack[open] #authTitle,
+      .ritual-stack[open] #authPrompt,
+      .ritual-stack[open] .auth-actions {
+        animation: none !important;
+        opacity: 1;
+        transform: none;
+        filter: none;
+        text-shadow: none;
+        box-shadow: none;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -2612,6 +2644,59 @@
         opacity: 1;
         transform: scaleX(1) scaleY(1);
         filter: blur(0) brightness(1) saturate(1);
+      }
+    }
+
+    @keyframes contentSlideUp {
+      0% {
+        opacity: 0;
+        transform: translateY(8px);
+        filter: blur(4px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes textGlow {
+      0% {
+        opacity: 0;
+        transform: translateY(6px);
+        text-shadow: 0 0 0 rgba(214, 166, 77, 0);
+      }
+
+      60% {
+        opacity: 1;
+        text-shadow: 0 0 28px rgba(214, 166, 77, 0.66);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+        text-shadow: 0 0 18px rgba(214, 166, 77, 0.42);
+      }
+    }
+
+    @keyframes ctaWake {
+      0% {
+        opacity: 0;
+        transform: scale(0.92);
+        box-shadow: 0 0 0 rgba(214, 166, 77, 0);
+      }
+
+      60% {
+        opacity: 1;
+        transform: scale(1.04);
+        box-shadow: 0 0 32px rgba(214, 166, 77, 0.48), inset 0 0 16px rgba(255, 226, 160, 0.32);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 226, 160, 0.32);
       }
     }
 

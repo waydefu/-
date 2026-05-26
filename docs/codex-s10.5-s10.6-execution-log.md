@@ -91,3 +91,19 @@
 - `package.json`：新增使用者指定的 `test:visual:update` script。
 - `public/worldforge-login.html`：已由 `npm.cmd run sync:login-mother` 同步。
 - 驗收：`Select-String` 找到 1.4s trigger 與六段 keyframe；`git diff --check` 通過。
+
+## S10.5 Part 2 - Dialog Stagger
+
+### 變更前確認
+
+- 範圍：新增 `contentSlideUp` / `textGlow` / `ctaWake` keyframes，並套用至 auth header、seal、title、prompt、actions。
+- 不改 button id、不改 native dialog DOM、不改繁中 UI 文字。
+- Reduced motion 必須讓所有 stagger 子動畫立即靜止。
+
+### 變更後更新
+
+- `public/index.html`：新增 auth header / seal / title / prompt / actions 五段 stagger selector。
+- `public/index.html`：新增 `contentSlideUp`、`textGlow`、`ctaWake` keyframes。
+- `public/index.html`：`prefers-reduced-motion` 中對五個子動畫明確 `animation: none`。
+- `public/worldforge-login.html`：已同步。
+- 驗收：`Select-String` 找到 stagger selectors 與三個 keyframes；`git diff --check` 通過。
