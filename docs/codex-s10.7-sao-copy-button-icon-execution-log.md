@@ -233,3 +233,28 @@ DOM metric check:
 
 Known note:
 - test:a11y initially failed once because it was launched in parallel with another Playwright webServer on port 5173. Sequential rerun passed.
+
+## Deploy Follow-Up
+
+User requested deploy after S10.7.
+
+Pre-deploy:
+- git status --short: clean.
+- npm run build: passed.
+
+Deploy:
+- firebase deploy --only hosting --project project-7276420283723642146: passed.
+- Hosting URL: https://project-7276420283723642146.web.app
+
+Smoke finding:
+- Initial npm run smoke:hosting failed because scripts/smoke-hosting.mjs still asserted the old analysis CTA copy "啟動奧術解析引擎".
+- S10.7 intentionally changed the visible CTA to "啟動手稿鑑定引擎".
+- This is a smoke assertion drift, not a hosting deploy failure.
+
+Planned fix:
+- Update smoke assertion to verify the stable `data-op="analyze"` action and the new S10.7 CTA copy.
+- Update editorial copy assertion to match S10.7 metadata.
+
+After fix:
+- npm run smoke:hosting: passed.
+- Only scripts/smoke-hosting.mjs and this log changed after deploy; deployed public assets were already current.

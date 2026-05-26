@@ -33,9 +33,10 @@ const main = async () => {
   assert.doesNotMatch(home.text, /id="guestScribeBtn"/, "Guest login fallback should be removed");
   assert.doesNotMatch(home.text, /id="sealPanel"/, "Dead external seal panel should be removed");
   assert.doesNotMatch(home.text, /login-modal-backdrop/, "Dead login backdrop should be removed");
-  assert.match(home.text, /啟動奧術解析引擎/, "Home should include the operational analysis action");
+  assert.match(home.text, /data-op="analyze"/, "Home should include the stable operational analysis action hook");
+  assert.match(home.text, /啟動手稿鑑定引擎/, "Home should include the S10.7 operational analysis action copy");
   assert.match(home.text, /codex-session/, "Home should include the operational account controls");
-  assert.match(home.text, /西方奇幻小說 AI 編修系統/, "Home should include Worldforge editorial copy");
+  assert.match(home.text, /西方奇幻小說 AI 重寫與審稿系統/, "Home should include S10.7 Worldforge editorial copy");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
   ok("hosting Worldforge inline shell, Google-only modal, and App Check SDK");
 
