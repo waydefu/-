@@ -5766,6 +5766,48 @@
       `
     };
 
+    const chromaticAberrationShader = {
+      uniforms: {
+        tDiffuse: { value: null },
+        uAmount: { value: 0 },
+        uTime: { value: 0 },
+        uResolution: { value: new THREE.Vector2(1, 1) }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform float uAmount;
+        uniform float uTime;
+        uniform vec2 uResolution;
+        varying vec2 vUv;
+        float hash(vec2 p) { return fract(sin(dot(p, vec2(41.17, 289.33))) * 143758.5453); }
+        void main() {
+          vec2 uv = vUv;
+          vec2 center = uv - 0.5;
+          float dist = dot(center, center);
+          float slice = floor(uv.y * 88.0);
+          float gate = step(0.92, hash(vec2(slice, floor(uTime * 18.0))));
+          float tear = gate * (hash(vec2(slice + 17.0, floor(uTime * 9.0))) - 0.5) * uAmount * 1.8;
+          vec2 direction = normalize(center + vec2(0.0001));
+          vec2 radial = direction * (dist * uAmount);
+          vec2 lateral = vec2(uAmount * 0.42 + tear, 0.0);
+          float r = texture2D(tDiffuse, uv + radial + lateral).r;
+          float g = texture2D(tDiffuse, uv).g;
+          float b = texture2D(tDiffuse, uv - radial - lateral).b;
+          vec3 color = vec3(r, g, b);
+          float scan = sin(uv.y * uResolution.y * 1.35 + uTime * 20.0) * 0.5 + 0.5;
+          color += vec3(1.0, 0.72, 0.25) * scan * uAmount * 0.18;
+          gl_FragColor = vec4(color, 1.0);
+        }
+      `
+    };
+
     class SceneManager {
       constructor(container) {
         this.container = container;
@@ -5871,6 +5913,8 @@
         this.hoverEnergy = 0;
         this.targetHoverEnergy = 0;
         this.shockEnergy = 0;
+        this.caPulse = 0;
+        this.caPulseDecay = 0;
         this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.baseBloom, 0.42, 0.94);
         this.bloomPass.threshold = 0.72;
         this.bloomPass.strength = this.baseBloom;
@@ -5894,6 +5938,9 @@
         this.bloomMixPass = new ShaderPass(selectiveBloomCompositeShader);
         this.bloomMixPass.uniforms.bloomTexture.value = this.bloomComposer.renderTarget2.texture;
         this.composer.addPass(this.bloomMixPass);
+        this.chromaticAberrationPass = new ShaderPass(chromaticAberrationShader);
+        this.chromaticAberrationPass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+        this.composer.addPass(this.chromaticAberrationPass);
         this.composer.addPass(new OutputPass());
       }
 
@@ -5903,6 +5950,7 @@
         this.composer.setSize(window.innerWidth, window.innerHeight);
         this.bloomPass.resolution.set(window.innerWidth, window.innerHeight);
         this.cinematicPass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
+        this.chromaticAberrationPass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
       }
 
       setShock(value) {
@@ -5912,6 +5960,12 @@
 
       setHoverEnergy(value) {
         this.targetHoverEnergy = value;
+      }
+
+      triggerChromaticAberration(amount = 0.006, duration = 0.62) {
+        if (prefersReducedMotion) return;
+        this.caPulse = Math.max(this.caPulse, amount);
+        this.caPulseDecay = amount / Math.max(duration, 0.16);
       }
 
       getDarkMaterial(object) {
@@ -5943,11 +5997,15 @@
 
       update(time, delta) {
         this.cinematicPass.uniforms.uTime.value = time;
+        this.chromaticAberrationPass.uniforms.uTime.value = time;
         this.hoverEnergy += (this.targetHoverEnergy - this.hoverEnergy) * clamp(delta * 7, 0, 1);
+        this.caPulse = Math.max(0, this.caPulse - delta * this.caPulseDecay);
         const touchBloom = this.baseBloom + this.hoverEnergy * (isCompactStage() ? 0.12 : 0.24);
         this.bloomPass.strength = touchBloom + this.shockEnergy * (3.1 - touchBloom);
         this.bloomPass.radius = 0.28 + this.shockEnergy * 0.22;
         this.bloomMixPass.uniforms.uMixStrength.value = prefersReducedMotion ? 0.62 : 0.92;
+        const idleAberration = prefersReducedMotion ? 0 : 0.00045;
+        this.chromaticAberrationPass.uniforms.uAmount.value = idleAberration + this.caPulse + this.shockEnergy * 0.0048;
         this.renderSelectiveBloom(delta);
       }
     }
@@ -7256,6 +7314,7 @@
 
       triggerSmallPulse() {
         const driver = { shock: 0 };
+        this.post.triggerChromaticAberration(0.0038, 0.46);
         if (!gsap) return;
         gsap.to(driver, {
           shock: 0.32,
@@ -8102,6 +8161,7 @@
     const runes = new RuneSystem(manager.systemRoot);
     const particles = new ParticleSystem(manager.systemRoot, manager);
     const post = new PostProcessingPipeline(manager);
+    window.__FLG_TRIGGER_CA__ = (amount, duration) => post.triggerChromaticAberration(amount, duration);
     const hud = new HUDSystem();
     const login = new LoginController(core, runes, particles, post, hud);
     window.__FLG_LOGIN_CONTROLLER__ = login;

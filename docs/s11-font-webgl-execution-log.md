@@ -112,3 +112,34 @@ Risk:
 
 - Medium: bloom target list is intentionally selective; any future luminous WebGL module must call `enableBloomLayer()` or opt in explicitly.
 - Low: DOM CTA changes are visual-only and keep existing button id, label, form submit behavior, and focus path.
+
+## Phase C - Before
+
+- Existing `cinematicShader` has a small built-in RGB offset tied to `uShock`, but there is no standalone chromatic aberration pass with controllable runtime pulses.
+- Confirmed edit scope before changes: add a final post-processing shader pass and runtime trigger only. No Firebase/Auth semantics, DOM ids, draft/history storage, native dialog structure, or Traditional Chinese copy will be changed.
+
+## Phase C - Completed
+
+- Added `chromaticAberrationShader` as a standalone `ShaderPass` after the selective bloom mix and before `OutputPass`.
+- Added `PostProcessingPipeline.triggerChromaticAberration()` with reduced-motion guard and a decay-based pulse.
+- Routed small WebGL pulses through the CA pulse path and exposed `window.__FLG_TRIGGER_CA__` for later Link Start/auth handoff phases.
+- Kept idle CA very low and disabled idle/pulse CA under `prefers-reduced-motion`.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366`: title, copy, CTA, and HUD labels remain readable; no heavy RGB split.
+- `workbench-1366`: textarea and workbench title remain sharp enough for editing.
+- `history-drawer-1366` / `logout-confirm-1366`: overlay text remains readable and aligned.
+
+Risk:
+
+- Medium: CA is a full-screen pass, so future pulse intensities must stay low around text-heavy states.
+- Low: reduced-motion disables CA pulses and idle offset.
