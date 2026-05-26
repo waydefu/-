@@ -297,3 +297,18 @@
 - `public/index.html`：primary hover 加強為 SAO active glow + hover sweep / conic scan。
 - `public/index.html`：analyze loading text 改 inline-flex 並加 14px spinner；仍使用既有 `.btn-loading` hidden 切換。
 - `public/index.html`：reduced-motion 下停用 primary hover conic animation 與 loading spinner rotation。
+- Commit: `fc97fe5 feat(s10.6/analyze): enhance SAO loading button states`
+
+## S10.6 Part 8 - Nav Chip Hover And Expanded State
+
+### 變更前確認
+
+- 範圍：history/account chip hover icon/avatar glow 與 `[aria-expanded="true"]` 視覺。
+- 不改 button id、toolbar、aria-expanded 寫入邏輯或帳號資訊文字。
+- 只用 transform/filter/box-shadow，避免影響 layout。
+
+### 變更後更新
+
+- `public/index.html`：history glyph / account avatar hover/focus 加入 1.08 scale 與 gold drop-shadow。
+- `public/index.html`：history/account chip expanded 狀態加強 border/inset glow；ARIA 寫入邏輯未改。
+- `public/index.html`：reduced-motion 下停用 glyph/avatar transition。

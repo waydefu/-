@@ -1664,6 +1664,9 @@
       font-weight: 900;
       line-height: 1;
       box-shadow: 0 0 18px rgba(214, 166, 77, 0.12);
+      transition:
+        transform var(--sao-dur-mid) var(--sao-easing-back),
+        filter var(--sao-dur-mid) var(--sao-easing-out);
     }
 
     .nav-label {
@@ -1699,6 +1702,9 @@
       color: var(--gold-hot);
       font: 900 14px/1 var(--font-tw);
       box-shadow: 0 0 20px rgba(214, 166, 77, 0.16);
+      transition:
+        transform var(--sao-dur-mid) var(--sao-easing-back),
+        filter var(--sao-dur-mid) var(--sao-easing-out);
     }
 
     .account-avatar img {
@@ -1762,6 +1768,22 @@
     .workbench-nav-actions > button:focus-visible::after {
       opacity: 1;
       transform: translateX(120%);
+    }
+
+    .history-chip:hover .nav-glyph,
+    .history-chip:focus-visible .nav-glyph,
+    .account-chip:hover .account-avatar,
+    .account-chip:focus-visible .account-avatar {
+      filter: drop-shadow(0 0 14px rgba(214, 166, 77, 0.68));
+      transform: scale(1.08);
+    }
+
+    .history-chip[aria-expanded="true"],
+    .account-chip[aria-expanded="true"] {
+      border-color: rgba(255, 226, 160, 0.72);
+      box-shadow:
+        0 0 0 1px rgba(255, 226, 160, 0.46) inset,
+        0 0 26px rgba(214, 166, 77, 0.28);
     }
 
     .account-menu {
@@ -2798,6 +2820,10 @@
       .primary-btn:hover::after,
       .analyze-ritual-btn .btn-loading::before {
         animation: none !important;
+      }
+      .nav-glyph,
+      .account-avatar {
+        transition: none !important;
       }
       body.operational .sao-window {
         animation: none !important;
