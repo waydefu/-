@@ -51,3 +51,35 @@ Risk:
 
 - Medium: Playwright baselines changed because typography tokens affect every major surface.
 - Low: status brightness flash is a visual-only class and does not change ARIA semantics.
+
+## Phase B1 - Before
+
+- Current WebGL pipeline applies `UnrealBloomPass` directly inside the main `EffectComposer`, so bright non-system geometry can bloom together with intended luminous UI elements.
+- The S11 plan and `sao.txt` reference recommend selective bloom with a dedicated layer, temporary dark-material masking, and a final additive mix pass.
+- Confirmed edit scope before changes: post-processing only in `public/index.html`; no Firebase/Auth/draft/history logic and no DOM ids are changed.
+
+## Phase B1 - Completed
+
+- Added `BLOOM_SCENE` and a dedicated `THREE.Layers` bloom mask for the post-processing pipeline.
+- Split bloom into `bloomComposer` plus the original main `composer`, then mixed the bloom render target back through `selectiveBloomCompositeShader`.
+- Added temporary dark-material masking for non-bloom meshes, lines, line segments, and points during the bloom pass, then restored original materials before final rendering.
+- Kept `prefers-reduced-motion` respected by reducing final bloom mix strength on reduced-motion sessions.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366`: dialog remains centered; WebGL background is not black and no longer over-blooms the panel text.
+- `workbench-1366`: workbench title, textarea, and CTA remain clear with restrained background glow.
+- `history-drawer-1366` / `account-menu-1366`: floating layers remain readable and unaffected by the WebGL masking pass.
+
+Risk:
+
+- Medium: pipeline now renders bloom and final scene separately, so later luminous objects must opt into `BLOOM_SCENE`.
+- Low: the dark-material swap is limited to render-time and restores original material references immediately after bloom rendering.

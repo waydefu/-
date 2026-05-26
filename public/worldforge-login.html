@@ -4823,6 +4823,7 @@
     const loginIdleIntensity = () => isCompactStage() ? 0.46 : 0.64;
     const loginHoverEnergy = () => isCompactStage() ? 0.34 : 0.74;
     const bloomBaseForStage = () => isCompactStage() ? 0.48 : 0.68;
+    const BLOOM_SCENE = 1;
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
     const isLowPowerDevice = () => (
       prefersReducedMotion ||
@@ -5713,6 +5714,32 @@
       `
     };
 
+    const selectiveBloomCompositeShader = {
+      uniforms: {
+        tDiffuse: { value: null },
+        bloomTexture: { value: null },
+        uMixStrength: { value: 1.0 }
+      },
+      vertexShader: `
+        varying vec2 vUv;
+        void main() {
+          vUv = uv;
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        uniform sampler2D tDiffuse;
+        uniform sampler2D bloomTexture;
+        uniform float uMixStrength;
+        varying vec2 vUv;
+        void main() {
+          vec4 baseColor = texture2D(tDiffuse, vUv);
+          vec4 bloomColor = texture2D(bloomTexture, vUv);
+          gl_FragColor = baseColor + bloomColor * uMixStrength;
+        }
+      `
+    };
+
     class SceneManager {
       constructor(container) {
         this.container = container;
@@ -5800,6 +5827,30 @@
       constructor(manager) {
         this.manager = manager;
         const { renderer, scene, camera } = manager;
+        this.scene = scene;
+        this.bloomLayer = new THREE.Layers();
+        this.bloomLayer.set(BLOOM_SCENE);
+        this.originalMaterials = new Map();
+        this.darkMaterials = {
+          mesh: new THREE.MeshBasicMaterial({ color: 0x000000 }),
+          line: new THREE.LineBasicMaterial({ color: 0x000000 }),
+          points: new THREE.PointsMaterial({ color: 0x000000, size: 0.01, sizeAttenuation: false })
+        };
+
+        this.bloomComposer = new EffectComposer(renderer);
+        this.bloomComposer.renderToScreen = false;
+        this.bloomComposer.addPass(new RenderPass(scene, camera));
+
+        this.baseBloom = bloomBaseForStage();
+        this.hoverEnergy = 0;
+        this.targetHoverEnergy = 0;
+        this.shockEnergy = 0;
+        this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.baseBloom, 0.42, 0.94);
+        this.bloomPass.threshold = 0.72;
+        this.bloomPass.strength = this.baseBloom;
+        this.bloomPass.radius = 0.28;
+        this.bloomComposer.addPass(this.bloomPass);
+
         this.composer = new EffectComposer(renderer);
         this.composer.addPass(new RenderPass(scene, camera));
 
@@ -5811,25 +5862,20 @@
         this.saoPass.params.saoMinResolution = 0;
         this.composer.addPass(this.saoPass);
 
-        this.baseBloom = bloomBaseForStage();
-        this.hoverEnergy = 0;
-        this.targetHoverEnergy = 0;
-        this.shockEnergy = 0;
-        this.bloomPass = new UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), this.baseBloom, 0.42, 0.94);
-        this.bloomPass.threshold = 0.72;
-        this.bloomPass.strength = this.baseBloom;
-        this.bloomPass.radius = 0.28;
-        this.composer.addPass(this.bloomPass);
-
         this.cinematicPass = new ShaderPass(cinematicShader);
         this.cinematicPass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
         this.composer.addPass(this.cinematicPass);
+        this.bloomMixPass = new ShaderPass(selectiveBloomCompositeShader);
+        this.bloomMixPass.uniforms.bloomTexture.value = this.bloomComposer.renderTarget2.texture;
+        this.composer.addPass(this.bloomMixPass);
         this.composer.addPass(new OutputPass());
       }
 
       resize() {
         this.baseBloom = bloomBaseForStage();
+        this.bloomComposer.setSize(window.innerWidth, window.innerHeight);
         this.composer.setSize(window.innerWidth, window.innerHeight);
+        this.bloomPass.resolution.set(window.innerWidth, window.innerHeight);
         this.cinematicPass.uniforms.uResolution.value.set(window.innerWidth, window.innerHeight);
       }
 
@@ -5842,13 +5888,41 @@
         this.targetHoverEnergy = value;
       }
 
+      getDarkMaterial(object) {
+        if (object.isPoints) return this.darkMaterials.points;
+        if (object.isLine || object.isLineSegments) return this.darkMaterials.line;
+        return this.darkMaterials.mesh;
+      }
+
+      darkenNonBloomed(object) {
+        if (!object.material || !object.layers || this.bloomLayer.test(object.layers)) return;
+        if (!(object.isMesh || object.isLine || object.isLineSegments || object.isPoints)) return;
+        this.originalMaterials.set(object.uuid, object.material);
+        object.material = this.getDarkMaterial(object);
+      }
+
+      restoreMaterial(object) {
+        const material = this.originalMaterials.get(object.uuid);
+        if (!material) return;
+        object.material = material;
+        this.originalMaterials.delete(object.uuid);
+      }
+
+      renderSelectiveBloom(delta) {
+        this.scene.traverse((object) => this.darkenNonBloomed(object));
+        this.bloomComposer.render(delta);
+        this.scene.traverse((object) => this.restoreMaterial(object));
+        this.composer.render(delta);
+      }
+
       update(time, delta) {
         this.cinematicPass.uniforms.uTime.value = time;
         this.hoverEnergy += (this.targetHoverEnergy - this.hoverEnergy) * clamp(delta * 7, 0, 1);
         const touchBloom = this.baseBloom + this.hoverEnergy * (isCompactStage() ? 0.12 : 0.24);
         this.bloomPass.strength = touchBloom + this.shockEnergy * (3.1 - touchBloom);
         this.bloomPass.radius = 0.28 + this.shockEnergy * 0.22;
-        this.composer.render(delta);
+        this.bloomMixPass.uniforms.uMixStrength.value = prefersReducedMotion ? 0.62 : 0.92;
+        this.renderSelectiveBloom(delta);
       }
     }
 
