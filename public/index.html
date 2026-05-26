@@ -2492,12 +2492,29 @@
     }
 
     .analysis-progress-bar {
+      --progress-scale: 0.08;
+      position: relative;
       grid-column: 1 / -1;
       height: 8px;
-      overflow: hidden;
+      overflow: visible;
       border: 1px solid rgba(214, 166, 77, 0.18);
       background: rgba(0, 0, 0, 0.5);
       transform: translateZ(0);
+    }
+
+    .analysis-progress-bar::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: calc(var(--progress-scale, 0.08) * 100%);
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 226, 160, 1) 0 30%, rgba(214, 166, 77, 0.66) 50%, transparent 80%);
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 18px rgba(214, 166, 77, 0.9);
+      transition: left 0.85s linear;
+      animation: saoLeadingPulse 1.8s ease-in-out infinite;
     }
 
     .analysis-progress-bar i {
@@ -2750,6 +2767,9 @@
       }
       .notice.is-leaving {
         opacity: 0;
+      }
+      .analysis-progress-bar::after {
+        animation: none !important;
       }
       body.operational .sao-window {
         animation: none !important;
@@ -3140,6 +3160,18 @@
         opacity: 0;
         transform: translateY(-16px) scale(0.98);
         filter: blur(3px);
+      }
+    }
+
+    @keyframes saoLeadingPulse {
+      0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 0.88;
+      }
+
+      50% {
+        transform: translate(-50%, -50%) scale(1.4);
+        opacity: 1;
       }
     }
 
@@ -4362,6 +4394,7 @@
         this.value = 8;
         this.timer = null;
         this.bar = null;
+        this.barShell = null;
         this.valueNode = null;
         this.noteNode = null;
         this.reduced = prefersReducedMotion;
@@ -4374,22 +4407,23 @@
             <div class="analysis-progress-meter">
               <b>並列演算進度</b>
               <span class="analysis-progress-value" data-analysis-progress-value>8%</span>
-              <div class="analysis-progress-bar"><i data-analysis-progress-bar style="--progress-scale: 0.08"></i></div>
+              <div class="analysis-progress-bar" style="--progress-scale: 0.08"><i data-analysis-progress-bar></i></div>
             </div>
             <div class="analysis-progress-row">
               <b>手稿脈絡讀取</b>
               <span>穩定解析中</span>
-              <div class="analysis-progress-bar"><i style="--progress-scale: 0.36"></i></div>
+              <div class="analysis-progress-bar" style="--progress-scale: 0.36"><i></i></div>
             </div>
             <div class="analysis-progress-row">
               <b>世界觀一致性</b>
               <span>等待回傳</span>
-              <div class="analysis-progress-bar"><i style="--progress-scale: 0.24"></i></div>
+              <div class="analysis-progress-bar" style="--progress-scale: 0.24"><i></i></div>
             </div>
             <div class="analysis-progress-note" data-analysis-progress-note>大賢者核心正在讀取草稿，進度會單調推進直到診斷卷宗完成。</div>
           </div>
         `;
         this.bar = this.resultBox.querySelector("[data-analysis-progress-bar]");
+        this.barShell = this.bar?.closest(".analysis-progress-bar") || null;
         this.valueNode = this.resultBox.querySelector("[data-analysis-progress-value]");
         this.noteNode = this.resultBox.querySelector("[data-analysis-progress-note]");
         this.set(8, "已建立解析通道。");
@@ -4413,6 +4447,7 @@
         const value = clamp(Math.max(this.value, next), 0, 100);
         this.value = value;
         const scale = (value / 100).toFixed(3);
+        if (this.barShell) this.barShell.style.setProperty("--progress-scale", scale);
         if (this.bar) this.bar.style.setProperty("--progress-scale", scale);
         if (this.valueNode) this.valueNode.textContent = `${Math.round(value)}%`;
         if (note && this.noteNode) this.noteNode.textContent = note;

@@ -267,3 +267,18 @@
 - `public/index.html`：notice 加入 scan border pseudo-element、0.62s enter、0.56s leave animation。
 - `public/index.html`：`HUDSystem.showNotice` 改為 class restart + 2800ms display timer；保留 announcer textContent 更新。
 - `public/index.html`：reduced-motion 下停用 scan/enter/leave animation，仍以 class 控制顯示與淡出。
+- Commit: `17773cd feat(s10.6/toast): add SAO scan notice motion`
+
+## S10.6 Part 6 - Progress Endpoint Pulse
+
+### 變更前確認
+
+- 範圍：analysis progress bar CSS endpoint pulse 與 progress scale CSS var 所在位置。
+- 不改分析 API、進度推進公式、文字或完成/錯誤流程。
+- 端點使用 pseudo-element，尺寸固定，不影響 layout；reduced-motion 下停用 pulse。
+
+### 變更後更新
+
+- `public/index.html`：analysis progress bar 加入固定 16px leading pulse endpoint 與 1.8s pulse keyframe。
+- `public/index.html`：progress scale CSS var 改由 bar shell 持有，fill 與 endpoint 同步讀取，不改進度數值公式。
+- `public/index.html`：reduced-motion 下停用 endpoint pulse animation。
