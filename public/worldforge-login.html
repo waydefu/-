@@ -1333,6 +1333,18 @@
       box-shadow: 0 0 0 2px rgba(255, 156, 100, 0.82), 0 0 26px rgba(185, 75, 25, 0.68);
     }
 
+    .primary-btn:hover:not(:disabled) {
+      transform: translateY(-2px) scale(1.02);
+      box-shadow: var(--sao-glow-active);
+    }
+
+    .primary-btn:hover::after {
+      background:
+        linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%),
+        conic-gradient(from var(--sao-spin-angle, 0deg), transparent 0 80deg, rgba(255, 226, 160, 0.42) 88deg 92deg, transparent 100deg 360deg);
+      animation: saoSpinAngle 2.4s linear infinite;
+    }
+
     html.sao-modal-open,
     body.sao-modal-open {
       overflow: hidden;
@@ -2256,7 +2268,19 @@
     }
 
     .analyze-ritual-btn.is-loading .btn-loading {
-      display: inline;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .analyze-ritual-btn .btn-loading::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 226, 160, 0.32);
+      border-top-color: rgba(255, 226, 160, 1);
+      border-radius: 50%;
+      animation: saoSpinnerRotate 1.1s linear infinite;
     }
 
     .analyze-ritual-btn.is-loading::after {
@@ -2771,6 +2795,10 @@
       .analysis-progress-bar::after {
         animation: none !important;
       }
+      .primary-btn:hover::after,
+      .analyze-ritual-btn .btn-loading::before {
+        animation: none !important;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -3172,6 +3200,12 @@
       50% {
         transform: translate(-50%, -50%) scale(1.4);
         opacity: 1;
+      }
+    }
+
+    @keyframes saoSpinnerRotate {
+      to {
+        transform: rotate(360deg);
       }
     }
 

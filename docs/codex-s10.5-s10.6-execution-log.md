@@ -282,3 +282,18 @@
 - `public/index.html`：analysis progress bar 加入固定 16px leading pulse endpoint 與 1.8s pulse keyframe。
 - `public/index.html`：progress scale CSS var 改由 bar shell 持有，fill 與 endpoint 同步讀取，不改進度數值公式。
 - `public/index.html`：reduced-motion 下停用 endpoint pulse animation。
+- Commit: `fb895ee feat(s10.6/progress): add SAO leading pulse to analysis bars`
+
+## S10.6 Part 7 - Primary Analyze Loading
+
+### 變更前確認
+
+- 範圍：primary button hover glow/sweep 與 analyze loading spinner CSS。
+- 不改 `[data-op="analyze"]`、click handler、loading span HTML 或 disabled 切換。
+- Spinner 只掛在既有 `.btn-loading` span；reduced-motion 下停用旋轉。
+
+### 變更後更新
+
+- `public/index.html`：primary hover 加強為 SAO active glow + hover sweep / conic scan。
+- `public/index.html`：analyze loading text 改 inline-flex 並加 14px spinner；仍使用既有 `.btn-loading` hidden 切換。
+- `public/index.html`：reduced-motion 下停用 primary hover conic animation 與 loading spinner rotation。
