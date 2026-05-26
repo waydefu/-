@@ -230,3 +230,59 @@ Screenshot review:
 Risk:
 
 - Low: unused module only; actual visual and lifecycle risk moves to Phase E2 integration.
+
+## Phase E2 - Before
+
+- `ModalGlass` module exists but is not imported or displayed.
+- Confirmed edit scope before changes: integrate WebGL show/hide calls around existing modal/window lifecycle only. Native dialog DOM, `SaoWindowController` focus behavior, button ids, Firebase/Auth, drafts, history, ARIA, and Traditional Chinese copy remain unchanged.
+
+## Phase E2 - Completed
+
+- Imported `ModalGlass` into `public/index.html`.
+- Added `showModalGlass()` and `hideModalGlass()` helpers around existing modal/window lifecycle.
+- Displayed the glass backplate for login dialog boot/open paths and `SaoWindowController.open()` targets, including connection, override, and logout confirmation windows.
+- Hid the glass on auth handoff and operational entry; restored the login glass when a transient login-side window closes while the login dialog is still open.
+- Added `window.__FLG_MODAL_GLASS__`, `data-modal-glass`, and `modalGlass.update()` in the animation loop.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366` / `login-390`: login dialog remains centered, readable, and reflow-safe.
+- `logout-confirm-1366`: confirmation modal remains centered and readable.
+- `workbench-390`: mobile workbench layout remains contained; no new horizontal overflow.
+
+Risk:
+
+- Medium: live WebGL glass visibility depends on runtime script loading, while the existing Playwright visual baselines intentionally strip scripts for stable DOM snapshots.
+- Low: integration does not alter native dialog structure, focus handling, Firebase/Auth, drafts, history, button ids, or Traditional Chinese copy.
+
+## Final Validation And Deploy
+
+Completed after all 8 S11 commits:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed.
+- `npm run check:frontend` passed.
+- `npm run check:functions` passed.
+- `npm test` passed: 22/22.
+- `npm run test:a11y` passed: 3/3, no critical/serious axe findings.
+- `npm run test:visual:update` passed: 14/14.
+- `npm run build` passed.
+- `npm audit --omit=dev` passed with 0 vulnerabilities.
+- `firebase deploy --only hosting --project project-7276420283723642146` passed.
+- `npm run smoke:hosting` passed.
+
+Deployment:
+
+- Hosting URL: `https://project-7276420283723642146.web.app`
+
+Known residual risk:
+
+- `npm run audit:functions` reports existing moderate transitive dependency advisories in the Functions dependency tree (`qs`, `uuid`, and related `firebase-admin` / Google Cloud packages). The suggested force path would install a breaking `firebase-admin` version, so no automatic dependency upgrade was made in this UI/WebGL task.
