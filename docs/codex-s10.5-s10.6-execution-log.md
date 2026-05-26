@@ -137,3 +137,43 @@
 - `public/index.html`：`prefers-reduced-motion` 內明確停用 backdrop animation。
 - `public/worldforge-login.html`：已同步。
 - 驗收：`Select-String` 找到 `backdropRipple` animation property 與 keyframes；`git diff --check` 通過。
+
+## S10.5 Part 5 - Audio Chime
+
+### 變更前確認
+
+- 範圍：新增輕量 `SaoAudio` Web Audio helper，dialog open trigger 呼叫 chime。
+- 不新增靜音按鈕，避免新增 UI 文字與 touch target 檢查負擔；音效只在 user gesture 解鎖後播放，未解鎖時安靜略過。
+- `prefers-reduced-motion` 時不播放音效，避免動效與聲效同時干擾。
+
+### 變更後更新
+
+- `public/index.html`：新增 `SaoAudio` helper，使用 user gesture 建立 `AudioContext`，以三個 oscillator/gain envelope 形成短促 chime。
+- `public/index.html`：dialog 正常 boot open 與 forceBootComplete open 後呼叫 `window.__FLG_SAO_AUDIO__?.playOpenChime()`。
+- `public/index.html`：`prefersReducedMotion` 為 true 或 AudioContext 未解鎖時不播放。
+- `public/worldforge-login.html`：已同步。
+- 驗收：`Select-String` 找到 `SaoAudio` / `playOpenChime` / `__FLG_SAO_AUDIO__`；`git diff --check` 通過。
+
+## S10.5 Validation
+
+- `npm.cmd run sync:login-mother`：通過。
+- `git diff --check`：通過。
+- `npm.cmd run check:frontend`：通過。
+- `npm.cmd run check:functions`：通過。
+- `npm.cmd test`：通過，22 tests passed。
+- `npm.cmd run test:visual:update`：通過，12 tests passed；本輪 reduced-motion baseline 未產生 snapshot diff。
+- 截圖 review：`login-1366`、`login-390`、`workbench-1366`、`history-drawer-1366`、`account-menu-1366` 均無重疊、無跑版、手機 reflow 正常。
+- 動態定格 review：`artifacts/s10.5/frozen/01-spawn.png`、`02-extend.png`、`03-unfold.png`、`04-settle.png`、`05-final.png`；確認 panel 具備中心亮點、水平細線、垂直過衝、落定。
+- `npm.cmd run test:visual`：通過，12 tests passed。第一次與 a11y 並行時出現 5173 port warning，已立即改回 sequential 並重新跑 a11y。
+- `npm.cmd run test:a11y`：sequential 重跑通過，3 tests passed，axe impact counts `{}`。
+- `npm.cmd run build`：通過。
+- `firebase.cmd deploy --only hosting --project project-7276420283723642146`：通過。
+- `npm.cmd run smoke:hosting`：通過。
+
+### S10.5 Commits
+
+- `6e8011b feat(s10.5/materialize): five-stage SAO system window animation`
+- `e37686a feat(s10.5/stagger): cascade auth-header h2 button on dialog open`
+- `f8e09d3 feat(s10.5/sweep): sync frame sweep with panel materialize`
+- `241be31 feat(s10.5/backdrop): radial pulse and scan-line on dialog open`
+- Part 5 `feat(s10.5/audio): add gesture-unlocked SAO open chime`（最新 hash 以 final 回報與 `git log` 為準，避免 commit 自我引用造成 hash 變動）

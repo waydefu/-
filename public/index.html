@@ -3526,6 +3526,79 @@
     }
     const shouldAutoFocusAuth = () => !mobileQuery.matches && window.innerWidth >= 980 && window.innerHeight >= 780;
 
+    const SaoAudio = (() => {
+      let ctx = null;
+      let unlocked = false;
+
+      function unlock() {
+        if (unlocked || !(window.AudioContext || window.webkitAudioContext)) return;
+        try {
+          const Ctor = window.AudioContext || window.webkitAudioContext;
+          ctx = new Ctor();
+          unlocked = true;
+          if (document.getElementById("ritualStack")?.open) {
+            window.setTimeout(playOpenChime, 0);
+          }
+        } catch (error) {
+          console.warn("[FLG] AudioContext init failed:", error?.message);
+        }
+      }
+
+      function playOpenChime() {
+        if (prefersReducedMotion || !ctx || ctx.state !== "running") return;
+        const now = ctx.currentTime;
+
+        const osc1 = ctx.createOscillator();
+        const gain1 = ctx.createGain();
+        osc1.type = "sine";
+        osc1.frequency.setValueAtTime(880, now);
+        osc1.frequency.exponentialRampToValueAtTime(1760, now + 0.18);
+        gain1.gain.setValueAtTime(0.001, now);
+        gain1.gain.linearRampToValueAtTime(0.06, now + 0.02);
+        gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.32);
+        osc1.connect(gain1).connect(ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.34);
+
+        const osc2 = ctx.createOscillator();
+        const gain2 = ctx.createGain();
+        osc2.type = "triangle";
+        osc2.frequency.setValueAtTime(2200, now);
+        gain2.gain.setValueAtTime(0.001, now);
+        gain2.gain.linearRampToValueAtTime(0.03, now + 0.005);
+        gain2.gain.exponentialRampToValueAtTime(0.0001, now + 0.08);
+        osc2.connect(gain2).connect(ctx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.1);
+
+        const osc3 = ctx.createOscillator();
+        const gain3 = ctx.createGain();
+        osc3.type = "sine";
+        osc3.frequency.setValueAtTime(1320, now + 0.1);
+        gain3.gain.setValueAtTime(0.001, now + 0.1);
+        gain3.gain.linearRampToValueAtTime(0.025, now + 0.13);
+        gain3.gain.exponentialRampToValueAtTime(0.0001, now + 0.6);
+        osc3.connect(gain3).connect(ctx.destination);
+        osc3.start(now + 0.1);
+        osc3.stop(now + 0.62);
+      }
+
+      function bindUnlock() {
+        const handler = () => {
+          unlock();
+          document.removeEventListener("pointerdown", handler);
+          document.removeEventListener("keydown", handler);
+        };
+        document.addEventListener("pointerdown", handler, { once: true, passive: true });
+        document.addEventListener("keydown", handler, { once: true, passive: true });
+      }
+
+      bindUnlock();
+      return { playOpenChime };
+    })();
+
+    window.__FLG_SAO_AUDIO__ = SaoAudio;
+
     function bindVisualViewportInset() {
       const viewport = window.visualViewport;
       if (!viewport) return;
@@ -5753,6 +5826,7 @@
             if (dlg) {
               dlg.style.opacity = "1";
               dlg.style.transform = "";
+              window.__FLG_SAO_AUDIO__?.playOpenChime();
             }
           }, null, 2.4);
       }
@@ -5787,6 +5861,7 @@
           ritualStack.style.opacity = "1";
           ritualStack.style.scale = "";
           ritualStack.style.transform = "";
+          window.__FLG_SAO_AUDIO__?.playOpenChime();
         }
         document.body.classList.remove("is-booting");
         document.body.classList.add("boot-complete");
