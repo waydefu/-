@@ -312,3 +312,18 @@
 - `public/index.html`：history glyph / account avatar hover/focus 加入 1.08 scale 與 gold drop-shadow。
 - `public/index.html`：history/account chip expanded 狀態加強 border/inset glow；ARIA 寫入邏輯未改。
 - `public/index.html`：reduced-motion 下停用 glyph/avatar transition。
+- Commit: `d7d4e07 feat(s10.6/chips): add SAO nav chip hover states`
+
+## S10.6 Part 9 - Danger Confirm State
+
+### 變更前確認
+
+- 範圍：既有確認流程的 `.is-confirming` 視覺狀態（history clear、history delete、logout）。
+- 不改清空草稿行為，避免觸碰草稿紅線；不改確認條件或刪除/登出 handler。
+- 動畫為 0.62s shake，reduced-motion 下停用。
+
+### 變更後更新
+
+- `public/index.html`：新增 `.sao-btn.is-confirming` ember red bracket、shake、danger glow。
+- `public/index.html`：history delete pending row、history clear confirm、logout confirm 使用同一個 `.is-confirming` 視覺。
+- `public/index.html`：清空/timeout 後移除 history clear confirming class；草稿清空流程未改。

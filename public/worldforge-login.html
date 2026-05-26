@@ -1333,6 +1333,27 @@
       box-shadow: 0 0 0 2px rgba(255, 156, 100, 0.82), 0 0 26px rgba(185, 75, 25, 0.68);
     }
 
+    .sao-btn.is-confirming {
+      border-color: rgba(255, 126, 84, 0.82);
+      background: rgba(110, 35, 15, 0.66);
+      color: rgba(255, 226, 160, 0.96);
+      animation: saoConfirmShake 0.62s ease both;
+      box-shadow: 0 0 28px rgba(185, 75, 25, 0.52);
+    }
+
+    .sao-btn.is-confirming::before {
+      background:
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top left/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top left/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top right/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) top right/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom left/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom left/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom right/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 156, 100, 0.96), rgba(255, 156, 100, 0.96)) bottom right/var(--sao-edge) var(--sao-edge-len) no-repeat;
+      opacity: 1;
+    }
+
     .primary-btn:hover:not(:disabled) {
       transform: translateY(-2px) scale(1.02);
       box-shadow: var(--sao-glow-active);
@@ -2825,6 +2846,9 @@
       .account-avatar {
         transition: none !important;
       }
+      .sao-btn.is-confirming {
+        animation: none !important;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -3233,6 +3257,15 @@
       to {
         transform: rotate(360deg);
       }
+    }
+
+    @keyframes saoConfirmShake {
+      0%, 100% { transform: translateX(0); }
+      16% { transform: translateX(-5px); }
+      32% { transform: translateX(5px); }
+      48% { transform: translateX(-4px); }
+      64% { transform: translateX(3px); }
+      80% { transform: translateX(-2px); }
     }
 
     @keyframes frameSweep {
@@ -6822,6 +6855,7 @@
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "history-delete sao-btn is-danger";
+          deleteButton.classList.toggle("is-confirming", this.pendingHistoryDeleteId === item.id);
           deleteButton.textContent = this.pendingHistoryDeleteId === item.id ? "確定" : "刪";
           deleteButton.setAttribute("aria-label", this.pendingHistoryDeleteId === item.id ? "再次確認刪除此卷宗" : "刪除此卷宗");
           deleteButton.addEventListener("click", () => this.deleteHistoryItem(item.id));
@@ -6892,6 +6926,7 @@
           if (this.historyClear) {
             this.historyClear.dataset.confirm = "1";
             this.historyClear.textContent = "再次確認";
+            this.historyClear.classList.add("is-confirming");
           }
           this.hud.showNotice("再次點擊以清空歷史卷宗");
           window.clearTimeout(this.historyClearTimer);
@@ -6899,6 +6934,7 @@
             if (this.historyClear) {
               delete this.historyClear.dataset.confirm;
               this.historyClear.textContent = "清空";
+              this.historyClear.classList.remove("is-confirming");
             }
           }, 2600);
           return;
@@ -6915,6 +6951,7 @@
         if (this.historyClear) {
           delete this.historyClear.dataset.confirm;
           this.historyClear.textContent = "清空";
+          this.historyClear.classList.remove("is-confirming");
         }
         this.renderHistory();
         this.hud.showNotice("歷史卷宗已清空");
