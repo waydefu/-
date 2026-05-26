@@ -203,3 +203,30 @@ Risk:
 
 - Medium: Link Start overlay is intentionally full-screen during successful auth handoff; trigger is guarded after auth success and reduced-motion still disables it.
 - Low: no auth provider, Firebase config, persistence, or DOM id changes.
+
+## Phase E1 - Before
+
+- Modal/login surfaces are currently DOM and CSS only; there is no WebGL glass backplate class available for optional modal depth.
+- Confirmed edit scope before changes: add a standalone WebGL module only. No existing modal open/close logic, native dialog structure, button ids, Firebase/Auth, drafts, history, or Traditional Chinese copy will be changed.
+
+## Phase E1 - Completed
+
+- Added `public/js/webgl/modal-glass.js` exporting `ModalGlass`.
+- Implemented a `MeshPhysicalMaterial` glass backplate with transmission, roughness, thickness, ior, clearcoat, transparency, and non-depth-writing behavior.
+- Added additive holographic shade and rim layers plus `fitToRect()`, `show()`, `hide()`, `update()`, `setBloomLayer()`, and `dispose()`.
+- Kept the module standalone; it is not imported or shown until Phase E2.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366` / `workbench-1366`: baseline unchanged, as expected for a non-integrated module.
+
+Risk:
+
+- Low: unused module only; actual visual and lifecycle risk moves to Phase E2 integration.
