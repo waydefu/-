@@ -121,3 +121,35 @@ What changed:
 Next required action:
 - Run npm run sync:login-mother.
 - Run git diff --check before committing Part 3.
+
+Part 3 commit: 8e634cc feat(s10.7/icons): add SAO glyphs to action buttons.
+
+## Before Edit Confirmation - Part 4 Button VFX
+
+Planned runtime file: public/index.html.
+
+Constraints checked:
+- CSS-only visual finishing; no button ids, handlers, Firebase/Auth/draft/history/native dialog changes.
+- Keep 44x44 touch minimum and reduced-motion support.
+- Avoid layout-shifting hover effects. Transforms and opacity only for motion.
+- Keep Cyberpunk reference as technique inspiration, not a red/blue palette shift.
+
+Target changes:
+- Add black-gold clipped-corner finishing to `.sao-btn`.
+- Add glitch/slice shimmer layer inspired by Cyberpunk button technique.
+- Tighten button typography with label text-shadow and icon hover state.
+- Preserve SAO frame corner lines from S10.6.
+
+## After Edit - Part 4 Button VFX
+
+Changed public/index.html only.
+
+What changed:
+- Added clipped-corner treatment to `.sao-btn`.
+- Added label slice shimmer and short transform-only glitch animation.
+- Strengthened black-gold icon/label hover glow without changing layout dimensions.
+- Added reduced-motion coverage for the new label and glyph motion.
+
+Next required action:
+- Run npm run sync:login-mother.
+- Run git diff --check and check:frontend before committing Part 4.

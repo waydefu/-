@@ -1230,9 +1230,11 @@
       overflow: hidden;
       min-height: 44px;
       min-width: 44px;
+      clip-path: var(--edge-sm);
       cursor: pointer;
       font-family: var(--font-tw);
       letter-spacing: 0.02em;
+      text-shadow: 0 0 10px rgba(255, 226, 160, 0.16);
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
       transition:
@@ -1250,9 +1252,32 @@
     }
 
     .sao-btn .sao-btn-label {
+      position: relative;
       display: inline-flex;
       align-items: center;
       min-width: 0;
+      text-wrap: balance;
+      transition:
+        color var(--sao-dur-mid) var(--sao-easing-out),
+        text-shadow var(--sao-dur-mid) var(--sao-easing-out),
+        transform var(--sao-dur-fast) var(--sao-easing-out);
+    }
+
+    .sao-btn .sao-btn-label::after {
+      content: "";
+      position: absolute;
+      left: -0.18em;
+      right: -0.18em;
+      top: 52%;
+      height: 1px;
+      pointer-events: none;
+      background: linear-gradient(90deg, transparent, rgba(255, 246, 203, 0.78), rgba(214, 166, 77, 0.58), transparent);
+      opacity: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition:
+        opacity var(--sao-dur-fast) var(--sao-easing-out),
+        transform var(--sao-dur-mid) var(--sao-easing-out);
     }
 
     .sao-btn .sao-btn-symbol {
@@ -1286,6 +1311,21 @@
       box-shadow: 0 0 20px rgba(255, 226, 160, 0.34), inset 0 0 12px rgba(255, 226, 160, 0.22);
     }
 
+    .sao-btn:hover:not(:disabled) .sao-btn-label,
+    .sao-btn:focus-visible .sao-btn-label {
+      color: rgba(255, 246, 203, 0.98);
+      text-shadow:
+        0 0 8px rgba(255, 246, 203, 0.42),
+        0 0 22px rgba(214, 166, 77, 0.32);
+      animation: saoLabelGlitch 0.54s steps(2, end) both;
+    }
+
+    .sao-btn:hover:not(:disabled) .sao-btn-label::after,
+    .sao-btn:focus-visible .sao-btn-label::after {
+      opacity: 0.86;
+      transform: scaleX(1);
+    }
+
     .sao-btn.is-danger .sao-btn-symbol {
       border-color: rgba(255, 156, 100, 0.52);
       color: rgba(255, 216, 184, 0.94);
@@ -1317,7 +1357,9 @@
     }
 
     .sao-btn::after {
-      background: linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%);
+      background:
+        linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%),
+        repeating-linear-gradient(0deg, transparent 0 5px, rgba(255, 226, 160, 0.12) 5px 6px, transparent 6px 10px);
       transform: translateX(-120%);
       opacity: 0;
     }
@@ -2975,6 +3017,8 @@
       .sao-btn::before,
       .sao-btn::after,
       .sao-btn .sao-btn-symbol,
+      .sao-btn .sao-btn-label,
+      .sao-btn .sao-btn-label::after,
       .sao-btn .sao-ripple {
         transition: none !important;
         animation: none !important;
@@ -3353,6 +3397,15 @@
         transform: scale(8);
         opacity: 0;
       }
+    }
+
+    @keyframes saoLabelGlitch {
+      0%, 100% { transform: translate3d(0, 0, 0); }
+      18% { transform: translate3d(1px, 0, 0) skewX(-3deg); }
+      34% { transform: translate3d(-1px, 0, 0) skewX(2deg); }
+      48% { transform: translate3d(0, -1px, 0); }
+      64% { transform: translate3d(1px, 0, 0); }
+      82% { transform: translate3d(0, 0, 0) skewX(0deg); }
     }
 
     @keyframes saoActiveTriangle {
