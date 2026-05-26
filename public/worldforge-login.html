@@ -595,6 +595,21 @@
       animation: sweep 2.4s ease-in-out infinite;
     }
 
+    .connection-window[aria-hidden="false"] {
+      display: block;
+      pointer-events: auto;
+      animation: connectionConjure 0.62s var(--sao-easing-back) both;
+    }
+
+    .connection-window[data-closing="true"] {
+      pointer-events: none;
+      animation: connectionDismiss 0.42s var(--sao-easing-out) both !important;
+    }
+
+    .connection-window[aria-hidden="false"] .connection-state {
+      animation: connectionStateBlink 1.2s ease-in-out infinite;
+    }
+
     .connection-header {
       display: flex;
       justify-content: space-between;
@@ -1354,6 +1369,14 @@
       opacity: 1;
     }
 
+    .sao-btn.is-success {
+      animation: saoSuccessFlash 0.86s var(--sao-easing-out) both;
+    }
+
+    .sao-btn.is-error {
+      animation: saoErrorFlash 0.6s var(--sao-easing-out) both;
+    }
+
     .primary-btn:hover:not(:disabled) {
       transform: translateY(-2px) scale(1.02);
       box-shadow: var(--sao-glow-active);
@@ -1387,6 +1410,7 @@
       pointer-events: auto;
       display: none;
       opacity: 0;
+      isolation: isolate;
       padding: 0;
       border-color: rgba(185, 75, 25, 0.74);
       background:
@@ -1403,6 +1427,40 @@
 
     .override-window[aria-hidden="false"] {
       display: block;
+      animation: overrideMaterialize 1.6s var(--sao-easing-back) both;
+    }
+
+    .override-window[data-closing="true"] {
+      pointer-events: none;
+      animation: overrideDissolve 0.6s var(--sao-easing-out) both !important;
+    }
+
+    .override-window .frame-sweep {
+      inset: -2px;
+      background: conic-gradient(
+        from var(--sweep-angle, 0deg),
+        transparent 0deg 80deg,
+        rgba(185, 75, 25, 0.78) 88deg 92deg,
+        transparent 100deg 360deg
+      );
+      animation: frameSweep 3.6s linear infinite, frameSweepFade 0.8s 0.3s ease-out forwards;
+    }
+
+    .override-window[aria-hidden="false"] .override-header {
+      animation: contentSlideUp 0.5s var(--sao-easing-out) 0.6s both;
+    }
+
+    .override-window[aria-hidden="false"] .override-body > b {
+      animation: textGlow 0.7s var(--sao-easing-out) 0.85s both;
+      text-shadow: 0 0 22px rgba(185, 75, 25, 0.68);
+    }
+
+    .override-window[aria-hidden="false"] .override-body > p {
+      animation: contentSlideUp 0.5s var(--sao-easing-out) 1.05s both;
+    }
+
+    .override-window[aria-hidden="false"] .override-actions {
+      animation: ctaWake 0.6s var(--sao-easing-back) 1.2s both;
     }
 
     .override-header {
@@ -2258,6 +2316,7 @@
     }
 
     .spell-list {
+      position: relative;
       min-height: 0;
       display: flex;
       flex-wrap: wrap;
@@ -2272,10 +2331,38 @@
     }
 
     .spell-list span {
-      border: 1px solid rgba(214, 166, 77, 0.18);
-      background: rgba(0, 0, 0, 0.24);
-      padding: 3px 7px;
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border: 1px solid rgba(255, 156, 100, 0.62);
+      background: linear-gradient(180deg, rgba(110, 35, 15, 0.48), rgba(46, 14, 4, 0.62));
+      color: rgba(255, 226, 160, 0.94);
+      font-size: 11px;
+      letter-spacing: 0.04em;
       clip-path: var(--edge-sm);
+      opacity: 0;
+      animation: spellChipIn 0.5s var(--sao-easing-back) both;
+      box-shadow: 0 0 12px rgba(185, 75, 25, 0.28), inset 0 0 8px rgba(255, 156, 100, 0.12);
+    }
+
+    .spell-list span:nth-child(1) { animation-delay: 0s; }
+    .spell-list span:nth-child(2) { animation-delay: 0.08s; }
+    .spell-list span:nth-child(3) { animation-delay: 0.16s; }
+    .spell-list span:nth-child(4) { animation-delay: 0.24s; }
+    .spell-list span:nth-child(5) { animation-delay: 0.32s; }
+    .spell-list span:nth-child(6) { animation-delay: 0.4s; }
+    .spell-list span:nth-child(7) { animation-delay: 0.48s; }
+    .spell-list span:nth-child(8) { animation-delay: 0.56s; }
+
+    .spell-list span:hover {
+      border-color: rgba(255, 156, 100, 0.96);
+      background: linear-gradient(180deg, rgba(140, 45, 15, 0.62), rgba(60, 18, 6, 0.78));
+      box-shadow: 0 0 18px rgba(185, 75, 25, 0.48), inset 0 0 12px rgba(255, 156, 100, 0.22);
+      transition:
+        border-color var(--sao-dur-mid) var(--sao-easing-out),
+        background var(--sao-dur-mid) var(--sao-easing-out),
+        box-shadow var(--sao-dur-mid) var(--sao-easing-out);
     }
 
     .operational-actions button {
@@ -2849,6 +2936,27 @@
       .sao-btn.is-confirming {
         animation: none !important;
       }
+      .sao-btn.is-success,
+      .sao-btn.is-error,
+      .override-window[aria-hidden="false"],
+      .override-window[data-closing="true"],
+      .override-window .frame-sweep,
+      .override-window[aria-hidden="false"] .override-header,
+      .override-window[aria-hidden="false"] .override-body > b,
+      .override-window[aria-hidden="false"] .override-body > p,
+      .override-window[aria-hidden="false"] .override-actions,
+      .connection-window::before,
+      .connection-window[aria-hidden="false"],
+      .connection-window[data-closing="true"],
+      .connection-window[aria-hidden="false"] .connection-state,
+      .spell-list span {
+        animation: none !important;
+      }
+      .spell-list span {
+        opacity: 1;
+        transform: none;
+        filter: none;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -3266,6 +3374,129 @@
       48% { transform: translateX(-4px); }
       64% { transform: translateX(3px); }
       80% { transform: translateX(-2px); }
+    }
+
+    @keyframes saoSuccessFlash {
+      0% { filter: brightness(1); box-shadow: var(--sao-glow-default); }
+      20% { filter: brightness(2.5); box-shadow: 0 0 48px rgba(255, 246, 203, 1); }
+      100% { filter: brightness(1); box-shadow: var(--sao-glow-default); }
+    }
+
+    @keyframes saoErrorFlash {
+      0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); }
+      20% { transform: translateX(-8px); filter: hue-rotate(-14deg) brightness(1.5); }
+      40% { transform: translateX(8px); filter: hue-rotate(-10deg); }
+      60% { transform: translateX(-5px); }
+      80% { transform: translateX(4px); }
+    }
+
+    @keyframes overrideMaterialize {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scaleX(0) scaleY(0);
+        filter: blur(14px) brightness(2.2) saturate(0.6);
+      }
+
+      10% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleX(0.02) scaleY(0.02);
+        filter: blur(7px) brightness(2.4) saturate(0.8);
+      }
+
+      32% {
+        transform: translate(-50%, -50%) scaleX(1) scaleY(0.02);
+        filter: blur(3px) brightness(1.7) saturate(1);
+      }
+
+      64% {
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1.08);
+        filter: blur(1px) brightness(1.24) saturate(1.06);
+      }
+
+      84% {
+        transform: translate(-50%, -50%) scaleX(1) scaleY(0.97);
+        filter: blur(0) brightness(1.06) saturate(1.02);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+        filter: blur(0) brightness(1) saturate(1);
+      }
+    }
+
+    @keyframes overrideDissolve {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scaleX(0.96) scaleY(0.04);
+        filter: blur(8px) brightness(1.4);
+      }
+    }
+
+    @keyframes connectionConjure {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.86);
+        filter: blur(8px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.04);
+        filter: blur(1px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: blur(0);
+      }
+    }
+
+    @keyframes connectionDismiss {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.92);
+        filter: blur(4px);
+      }
+    }
+
+    @keyframes connectionStateBlink {
+      0%, 100% { opacity: 0.62; }
+      50% {
+        opacity: 1;
+        text-shadow: 0 0 12px rgba(110, 231, 255, 0.6);
+      }
+    }
+
+    @keyframes spellChipIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-8px) scale(0.86);
+        filter: blur(4px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: translateY(2px) scale(1.04);
+        filter: blur(0);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
     }
 
     @keyframes frameSweep {
@@ -3830,6 +4061,7 @@
   </div>
 
   <div class="override-window" id="overrideWindow" role="alertdialog" aria-modal="true" aria-labelledby="overrideTitle" aria-describedby="overrideBody" aria-hidden="true">
+    <div class="frame-sweep" aria-hidden="true"></div>
     <div class="override-header">
       <span>SYSTEM_OVERRIDE</span>
       <span>MULTILAYER BARRIER</span>
@@ -4383,58 +4615,24 @@
         this.lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         this.setLock(true);
         target.hidden = false;
+        target.removeAttribute("data-closing");
+        target.style.removeProperty("display");
+        target.style.removeProperty("opacity");
+        target.style.removeProperty("transform");
+        target.style.removeProperty("scale");
+        target.style.removeProperty("filter");
         target.setAttribute("aria-hidden", "false");
         const focusFirst = () => {
           const first = target.querySelector("button, [href], input, textarea, [tabindex]:not([tabindex='-1'])");
           if (first instanceof HTMLElement) first.focus();
         };
-        if (!gsap) {
-          target.style.display = "block";
-          target.style.opacity = "1";
-          target.style.transform = "translate(-50%, -50%) scale(1)";
-          focusFirst();
+        const focusDelay = target.classList.contains("override-window") ? 1260 : 620;
+        window.setTimeout(() => {
+          if (token !== this.token) return;
           this.state = "open";
-          return null;
-        }
-        gsap.killTweensOf(target);
-        const tl = gsap.timeline();
-        this.timeline = tl;
-        tl.set(target, {
-          xPercent: -50,
-          yPercent: -50,
-          x: 0,
-          y: 0,
-          opacity: 0,
-          scaleX: 0.72,
-          scaleY: 0.9,
-          display: "block"
-        })
-          .to(target, {
-            xPercent: -50,
-            yPercent: -50,
-            x: 0,
-            y: 0,
-            scaleX: 1,
-            opacity: 1,
-            duration: uiMotion.manifestX,
-            ease: "power2.out"
-          })
-          .to(target, {
-            xPercent: -50,
-            yPercent: -50,
-            x: 0,
-            y: 0,
-            scaleY: 1,
-            duration: uiMotion.manifestY,
-            ease: "back.out(1.12)"
-          })
-          .call(() => {
-            if (token !== this.token) return;
-            this.state = "open";
-            this.timeline = null;
-            focusFirst();
-          });
-        return tl;
+          focusFirst();
+        }, prefersReducedMotion ? 0 : focusDelay);
+        return null;
       }
 
       close(target, duration = uiMotion.collapse) {
@@ -4446,38 +4644,26 @@
           this.timeline = null;
         }
         this.state = "closing";
+        target.setAttribute("data-closing", "true");
         const finish = () => {
           if (token !== this.token) return;
           target.setAttribute("aria-hidden", "true");
           target.hidden = true;
+          target.removeAttribute("data-closing");
+          target.style.removeProperty("display");
+          target.style.removeProperty("opacity");
+          target.style.removeProperty("transform");
+          target.style.removeProperty("scale");
+          target.style.removeProperty("filter");
           this.setLock(false);
           this.state = "closed";
           this.timeline = null;
           if (this.lastFocus instanceof HTMLElement) this.lastFocus.focus();
         };
-        if (!gsap) {
-          target.style.display = "none";
-          target.style.opacity = "0";
-          target.style.transform = "translate(-50%, -50%) scaleX(0) scaleY(0.02)";
-          finish();
-          return null;
-        }
-        gsap.killTweensOf(target);
-        this.timeline = gsap.timeline();
-        return this.timeline
-          .to(target, {
-            xPercent: -50,
-            yPercent: -50,
-            x: 0,
-            y: 0,
-            scaleY: 0.9,
-            scaleX: 0.72,
-            opacity: 0,
-            duration,
-            ease: "power2.in"
-          })
-          .set(target, { display: "none" })
-          .call(finish);
+        const fallbackMs = Math.max(0, Math.round(duration * 1000));
+        const cssMs = target.classList.contains("override-window") ? 600 : 420;
+        window.setTimeout(finish, prefersReducedMotion ? 0 : Math.max(cssMs, fallbackMs));
+        return null;
       }
     }
 
@@ -5807,14 +5993,7 @@
           title: "Google 印章授權中",
           copy: "異界封印通道已開啟，魔導核心正降頻等待權杖回傳"
         });
-        if (gsap) {
-          this.manifestWindow(this.connectionWindow);
-        } else {
-          this.connectionWindow.style.display = "block";
-          this.connectionWindow.style.opacity = "1";
-          this.connectionWindow.style.transform = "translate(-50%, -50%)";
-          this.connectionWindow.setAttribute("aria-hidden", "false");
-        }
+        this.manifestWindow(this.connectionWindow);
         this.performGoogleSignIn();
       }
 
@@ -5833,10 +6012,10 @@
           const pending = auth.signInWithPopup(provider);
           await pending;
           this.googlePopupClosedCount = 0;
-          if (gsap) this.collapseWindow(this.connectionWindow, uiMotion.collapse);
+          this.collapseWindow(this.connectionWindow, uiMotion.collapse);
           this.beginAuthentication("Google 印章授權完成", { skipAuth: true });
         } catch (error) {
-          if (gsap) this.collapseWindow(this.connectionWindow, uiMotion.collapse);
+          this.collapseWindow(this.connectionWindow, uiMotion.collapse);
           const code = error?.code || "";
           this.googlePopupClosedCount = code === "auth/popup-closed-by-user" ? this.googlePopupClosedCount + 1 : 0;
           this.restoreLoginControls();
@@ -6183,6 +6362,7 @@
           quota: AppState.get("quotaInfo") || null,
           analyzing: true
         });
+        analyzeButton?.classList.remove("is-success", "is-error");
         analyzeButton?.classList.add("is-loading");
         analyzeButton?.querySelector(".btn-loading")?.removeAttribute("hidden");
         analyzeButton?.setAttribute("disabled", "true");
@@ -6220,6 +6400,8 @@
           this.scrollWorkbenchToDossier(80);
           this.operationalStatus.textContent = fromCache ? "已讀取封存診斷卷宗" : "魔導診斷卷宗已完成";
           this.hud.showNotice(fromCache ? MSG.CACHE_HIT : "魔導診斷卷宗已完成");
+          analyzeButton?.classList.add("is-success");
+          window.setTimeout(() => analyzeButton?.classList.remove("is-success"), 900);
           this.persistHistory({ draft, result, ts: startedAt });
           window.dispatchEvent(new CustomEvent("worldforge:analysis-complete", { detail: { fromCache } }));
         } catch (error) {
@@ -6228,6 +6410,8 @@
           this.scrollWorkbenchToDossier(80);
           this.operationalStatus.textContent = "分析中斷，請重試";
           this.hud.showNotice("分析中斷，請重試");
+          analyzeButton?.classList.add("is-error");
+          window.setTimeout(() => analyzeButton?.classList.remove("is-error"), 650);
         } finally {
           progress?.dispose();
           window.clearTimeout(timeout);

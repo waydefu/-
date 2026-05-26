@@ -327,3 +327,60 @@
 - `public/index.html`：新增 `.sao-btn.is-confirming` ember red bracket、shake、danger glow。
 - `public/index.html`：history delete pending row、history clear confirm、logout confirm 使用同一個 `.is-confirming` 視覺。
 - `public/index.html`：清空/timeout 後移除 history clear confirming class；草稿清空流程未改。
+- Commit: `165e822 feat(s10.6/danger): add SAO confirm button state`
+
+## S10.6 Part 10 - Final SAO Integration
+
+### 變更前確認
+
+- 範圍：success/error flash、override/connection overlay materialize、spell-list chip stagger。
+- 不改 native login `<dialog>` 結構；overlay controller 只管既有 `#overrideWindow` / `#connectionWindow`。
+- 不改 Firebase/Auth/草稿/歷史資料契約；分析成功/失敗只加暫態 class flash。
+
+### 變更後更新
+
+- `public/index.html`：新增 analyze button success/error flash；成功/失敗只加暫態 class 並自動移除。
+- `public/index.html`：`#overrideWindow` 加入 ember materialize/dissolve、frame sweep 與內容 stagger；未碰 native login dialog。
+- `public/index.html`：`#connectionWindow` 加入 transient conjure/dismiss 與 cyan state blink。
+- `public/index.html`：`SaoWindowController` 改由 CSS animation 控制 overlay open/close，仍保留 focus restore 與 document lock。
+- `public/index.html`：spell-list chips 加入 0.08s stagger、ember hover 與 reduced-motion fallback。
+
+## S10.6 Validation
+
+- `npm.cmd run sync:login-mother`：通過。
+- `git diff --check`：通過。
+- static button class check：所有含 `class` 的靜態 `<button>` 均包含 `sao-btn`。
+- `npm.cmd run check`：通過（frontend + functions）。
+- `npm.cmd test`：通過，22 tests passed。
+- `npm.cmd run test:visual:update`：通過，12 tests passed；沒有 snapshot 變動。
+- `npm.cmd run test:visual`：通過，12 tests passed。
+- `npm.cmd run test:a11y`：通過，3 tests passed；axe impact counts `{}`。
+- `npm.cmd run build`：通過。
+- `firebase.cmd deploy --only hosting --project project-7276420283723642146`：通過，Hosting URL `https://project-7276420283723642146.web.app`。
+- `npm.cmd run smoke:hosting`：通過。
+
+### S10.6 Screenshot Review
+
+- Baseline reviewed：`login-1366`、`login-390`、`workbench-1366`、`history-drawer-1366`、`account-menu-1366`。
+- Interaction artifacts reviewed：
+  - `artifacts/s10.6/review/01-login-dialog.png`
+  - `artifacts/s10.6/review/02-progress-spell-chips.png`
+  - `artifacts/s10.6/review/03-button-loading-success.png`
+  - `artifacts/s10.6/review/04-override-materialize.png`
+  - `artifacts/s10.6/review/05-connection-window.png`
+- 結論：登入 modal 位置恢復置中；workbench / drawer / menu 無重疊；progress endpoint、loading button、override、connection 狀態皆有 SAO 金黑掃描/脈衝語彙；zoom / reflow / CLS / axe 驗收通過。
+
+## S10.6 Final SAO Comparison
+
+- 追加搜尋來源：
+  - CodePen Sword Art Online Menu UI：staggered transform/opacity menu、暗色 overlay、0.4-0.6s item cascade。
+  - CodePen Sword Art Online Inspired Menu：垂直 menu、line/hover affordance、scroll-hidden panel。
+  - SAO Hollow Realization manual：遊戲內 menu 使用 framed/translucent panels、list + status side panel。
+  - web.dev high-performance CSS animations：動畫優先使用 `transform` / `opacity`，避免 layout-heavy 動畫。
+  - MDN `prefers-reduced-motion`：以使用者系統偏好覆寫/降低 motion。
+  - W3C WCAG 2.5.5：pointer target 以 44x44 CSS px 為紅線。
+- 比對結果：
+  - S10.6 已具備 SAO 系統 UI 關鍵語彙：staggered entrance、panel materialize、scan/sweep、glowing frame、hover/active/focus/confirm/success/error states、translucent dark panels。
+  - S10.6 色彩方向是「黑金 SAO 接管版」，不是原作藍白 radial / sprite menu 的 1:1 replica；此差異符合本執行單命名與既有 Great Sage Manuscript System 品牌。
+  - Accessibility / performance 對照：touch target、reduced-motion、zoom/reflow、CLS、axe 均通過；動畫大多使用 transform/opacity，少量 blur/filter 限於 overlay 儀式狀態。
+- 結論：符合目前黑金 SAO 系統 UI 最高標準；若未來要再逼近原作 1:1，建議另開 S10.7 做 radial/floating menu sprite layer，不應混入本次已驗收部署。
