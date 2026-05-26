@@ -870,7 +870,7 @@
       mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
       mask-composite: exclude;
       opacity: 0;
-      animation: frameSweep 4.8s linear infinite, frameSweepFade 1.2s 1s ease-out forwards;
+      animation: frameSweep 4.8s linear infinite, frameSweepFade 0.8s 0.3s ease-out forwards;
     }
 
     .auth-panel::after {
@@ -2705,7 +2705,9 @@
     }
 
     @keyframes frameSweepFade {
-      to { opacity: 0.84; }
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0.84; }
     }
 
     @keyframes mobileRitualStackConjure {

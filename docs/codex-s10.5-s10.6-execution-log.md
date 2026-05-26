@@ -107,3 +107,17 @@
 - `public/index.html`：`prefers-reduced-motion` 中對五個子動畫明確 `animation: none`。
 - `public/worldforge-login.html`：已同步。
 - 驗收：`Select-String` 找到 stagger selectors 與三個 keyframes；`git diff --check` 通過。
+
+## S10.5 Part 3 - Frame Sweep Sync
+
+### 變更前確認
+
+- 範圍：`.frame-sweep` animation timing 與 `frameSweepFade` keyframe。
+- 不改 DOM、不改 dialog 結構、不改互動 handler。
+
+### 變更後更新
+
+- `public/index.html`：`.frame-sweep` 改為 `frameSweepFade 0.8s 0.3s`，使邊框掃描在 panel 展開初期淡入。
+- `public/index.html`：`frameSweepFade` 增加 0 / 50 / 100 三段亮度節奏。
+- `public/worldforge-login.html`：已同步。
+- 驗收：`Select-String` 找到新 timing 與 keyframe；`git diff --check` 通過。
