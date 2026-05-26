@@ -121,3 +121,19 @@
 - `public/index.html`：`frameSweepFade` 增加 0 / 50 / 100 三段亮度節奏。
 - `public/worldforge-login.html`：已同步。
 - 驗收：`Select-String` 找到新 timing 與 keyframe；`git diff --check` 通過。
+
+## S10.5 Part 4 - Backdrop Ripple
+
+### 變更前確認
+
+- 範圍：`.ritual-stack::backdrop` background / blur / animation，替換 `backdropFadeIn` 為 `backdropRipple`。
+- 保留 native dialog backdrop，不新增自製 modal backdrop。
+- Reduced motion 要短路 backdrop 動畫。
+
+### 變更後更新
+
+- `public/index.html`：`.ritual-stack::backdrop` 新增中心金色微光、暗化 vignette、scan-line 與 3px blur/saturate。
+- `public/index.html`：`backdropFadeIn` 改為 `backdropRipple`，以 background-size 做中心擴散。
+- `public/index.html`：`prefers-reduced-motion` 內明確停用 backdrop animation。
+- `public/worldforge-login.html`：已同步。
+- 驗收：`Select-String` 找到 `backdropRipple` animation property 與 keyframes；`git diff --check` 通過。

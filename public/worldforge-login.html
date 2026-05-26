@@ -800,11 +800,13 @@
 
     .ritual-stack::backdrop {
       background:
-        radial-gradient(circle at 50% 50%, transparent 0 23%, rgba(0, 0, 0, 0.18) 46%, rgba(0, 0, 0, 0.7) 100%),
-        linear-gradient(180deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.44));
-      backdrop-filter: blur(2px) saturate(1.08);
-      -webkit-backdrop-filter: blur(2px) saturate(1.08);
-      animation: backdropFadeIn 0.4s ease-out both;
+        radial-gradient(circle at 50% 50%, rgba(214, 166, 77, 0.16) 0 8%, transparent 24%),
+        radial-gradient(circle at 50% 50%, transparent 0 23%, rgba(0, 0, 0, 0.18) 46%, rgba(0, 0, 0, 0.78) 100%),
+        repeating-linear-gradient(0deg, transparent 0 3px, rgba(214, 166, 77, 0.022) 3px 4px),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.5));
+      backdrop-filter: blur(3px) saturate(1.12);
+      -webkit-backdrop-filter: blur(3px) saturate(1.12);
+      animation: backdropRipple 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
     .ritual-stack[open] .auth-panel {
@@ -2422,6 +2424,10 @@
         text-shadow: none;
         box-shadow: none;
       }
+      .ritual-stack::backdrop {
+        animation: none !important;
+        opacity: 1;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -2599,9 +2605,22 @@
       100% { transform: translateX(250%) scaleX(0.86); opacity: 0.64; }
     }
 
-    @keyframes backdropFadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
+    @keyframes backdropRipple {
+      0% {
+        opacity: 0;
+        background-size: 50% 50%, 50% 50%, auto, auto;
+        background-position: 50% 50%, 50% 50%, 0 0, 0 0;
+      }
+
+      60% {
+        opacity: 1;
+      }
+
+      100% {
+        opacity: 1;
+        background-size: 100% 100%, 100% 100%, auto, auto;
+        background-position: 50% 50%, 50% 50%, 0 0, 0 0;
+      }
     }
 
     @property --sweep-angle {
