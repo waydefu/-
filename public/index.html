@@ -1954,6 +1954,39 @@
       min-height: 100%;
     }
 
+    .field,
+    .textarea-wrap {
+      position: relative;
+    }
+
+    .field::before,
+    .textarea-wrap::before,
+    .draft-field-shell::before {
+      content: "";
+      position: absolute;
+      z-index: 2;
+      left: 50%;
+      bottom: 0;
+      width: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(255, 226, 160, 0.96), transparent);
+      transform: translateX(-50%);
+      transition: width var(--sao-dur-slow) var(--sao-easing-out);
+      pointer-events: none;
+      box-shadow: 0 0 14px rgba(214, 166, 77, 0.68);
+    }
+
+    .field:focus-within::before,
+    .textarea-wrap:focus-within::before,
+    .draft-field-shell:focus-within::before {
+      width: 100%;
+    }
+
+    .textarea-wrap:focus-within,
+    .draft-field-shell:focus-within {
+      box-shadow: 0 0 28px rgba(214, 166, 77, 0.26), inset 0 0 36px rgba(214, 166, 77, 0.07);
+    }
+
     .draft-field-title {
       color: rgba(234, 230, 205, 0.86);
       font: 800 clamp(0.8125rem, 0.74rem + 0.18vw, 0.875rem)/1.45 var(--font-mono);
@@ -2574,6 +2607,11 @@
       .sao-btn .sao-ripple {
         transition: none !important;
         animation: none !important;
+      }
+      .field::before,
+      .textarea-wrap::before,
+      .draft-field-shell::before {
+        transition: none !important;
       }
       body.operational .sao-window {
         animation: none !important;

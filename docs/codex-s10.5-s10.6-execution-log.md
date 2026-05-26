@@ -206,3 +206,18 @@
 - `public/index.html`：為靜態與動態 button 增加 `sao-btn` / `is-danger` class；沒有改 button id、type、文字或 handler。
 - `public/index.html`：新增 click ripple 事件委派，`prefers-reduced-motion` 下直接略過。
 - `tests/visual/helpers.ts`：同步 visual helper 注入的 dossier / history 按鈕 class，避免截圖假資料停留舊樣式。
+- Commit: `4ff7884 feat(s10.6/sao-btn): shared SAO button mixin with extended timing`
+
+## S10.6 Part 2 - Input Focus Underline
+
+### 變更前確認
+
+- 範圍：表單/textarea 外框 focus-within 視覺線條與 reduced-motion 規則。
+- 不改 textarea id、ARIA、placeholder、草稿保存/恢復邏輯。
+- 只使用 absolute pseudo-element 與 box-shadow，不改排版尺寸，避免 CLS。
+
+### 變更後更新
+
+- `public/index.html`：新增 `.field` / `.textarea-wrap` / `.draft-field-shell` focus underline，使用 `width` transition 與固定 2px pseudo-element。
+- `public/index.html`：新增 focus-within glow；未變更 textarea 尺寸與既有 focus-visible outline。
+- `public/index.html`：reduced-motion 下停用 underline transition。
