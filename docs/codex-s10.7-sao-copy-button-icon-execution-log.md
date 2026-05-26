@@ -59,3 +59,32 @@ Scope: public/index.html first, then sync public/worldforge-login.html with npm 
 
 Confirmed safe to add this documentation file only. No runtime files changed in this part.
 
+## Before Edit Confirmation - Part 2 Copy
+
+Planned runtime file: public/index.html.
+
+Allowed by user: Traditional Chinese copy polish.
+
+Constraints checked:
+- Keep all ids, ARIA attributes, handlers, Firebase/Auth/draft/history contracts unchanged.
+- Preserve Google-only login meaning.
+- Preserve analysis/history/draft operation semantics.
+- Avoid copy that expands buttons enough to threaten 44x44, reflow, or mobile layout.
+
+Target changes:
+- Make hero/login/workbench copy more elegant and consistent with Great Sage / SAO black-gold tone.
+- Polish status/toast/progress copy for clarity.
+- Keep action labels concise.
+
+## After Edit - Part 2 Copy
+
+Changed public/index.html only.
+
+What changed:
+- Polished product metadata/title, login prompt, workbench headline, draft helper, progress notes, result empty states, history/account wording, and HUD/toast status copy.
+- Replaced some "診斷卷宗" visible states with "鑑定卷宗" for stronger product tone.
+- Kept Google-only login meaning, all ids, ARIA wiring, handlers, Auth/Firebase/draft/history code paths, and native dialog structure intact.
+
+Next required action:
+- Run npm run sync:login-mother so public/worldforge-login.html matches public/index.html.
+- Then run git diff --check before committing Part 2.
