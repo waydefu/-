@@ -7076,6 +7076,12 @@
         return false;
       }
 
+      triggerLinkStartHandoff() {
+        if (prefersReducedMotion) return;
+        window.__FLG_LINK_START__?.start?.(2600);
+        this.post.triggerChromaticAberration(0.010, 1.24);
+      }
+
       async beginAuthentication(initialMessage, options = {}) {
         if (this.operational) return;
         this.setStatus("正在確認作者授權印記");
@@ -7088,6 +7094,7 @@
           }
           return;
         }
+        this.triggerLinkStartHandoff();
         this.operational = true;
         this.setStatus(initialMessage);
         this.ritualStack.classList.remove("is-oauth");

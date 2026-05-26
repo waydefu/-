@@ -173,3 +173,33 @@ Risk:
 
 - Medium: the active Link Start shader is a full-screen overlay and must only be triggered during intentional handoff windows.
 - Low: canvas is `aria-hidden`, `pointer-events:none`, and disabled under reduced motion.
+
+## Phase D2 - Before
+
+- `LinkStartFX` exists and can render the tunnel, but it is not connected to auth handoff yet.
+- Confirmed edit scope before changes: call visual FX only after `beginAuthentication()` passes existing auth checks. Firebase provider setup, sign-in calls, redirect handling, and user/session state remain unchanged.
+
+## Phase D2 - Completed
+
+- Added `triggerLinkStartHandoff()` to `LoginController`.
+- Triggered `window.__FLG_LINK_START__.start(2600)` and a short CA pulse only after `authenticateBeforeCore()` returns success inside `beginAuthentication()`.
+- Kept failed auth, cancelled popup, and pre-auth force-sync paths from starting the handoff FX.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366`: login baseline unchanged before auth.
+- `workbench-1366`: workbench baseline remains readable after static operational setup.
+- `logout-confirm-1366`: modal overlay remains centered and readable.
+
+Risk:
+
+- Medium: Link Start overlay is intentionally full-screen during successful auth handoff; trigger is guarded after auth success and reduced-motion still disables it.
+- Low: no auth provider, Firebase config, persistence, or DOM id changes.
