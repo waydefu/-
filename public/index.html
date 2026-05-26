@@ -1768,10 +1768,30 @@
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
       pointer-events: auto;
+      transform-origin: top right;
+      opacity: 1;
+      transform: scale(1) translateY(0);
+      visibility: visible;
+      transition:
+        opacity var(--sao-dur-fast) ease,
+        transform var(--sao-dur-mid) var(--sao-easing-back),
+        visibility 0s;
     }
 
     .account-menu[hidden] {
-      display: none;
+      display: grid !important;
+      opacity: 0;
+      transform: scale(0.86) translateY(-6px);
+      pointer-events: none;
+      visibility: hidden;
+      transition:
+        opacity 0.16s ease,
+        transform var(--sao-dur-fast) var(--sao-easing-out),
+        visibility 0s var(--sao-dur-fast);
+    }
+
+    .account-menu:not([hidden]) {
+      animation: saoMenuOpen 0.42s var(--sao-easing-back) both;
     }
 
     .account-menu button {
@@ -1809,10 +1829,30 @@
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
       pointer-events: auto;
+      transform-origin: top right;
+      opacity: 1;
+      transform: scaleY(1) translateY(0);
+      visibility: visible;
+      transition:
+        opacity var(--sao-dur-mid) var(--sao-easing-out),
+        transform var(--sao-dur-mid) var(--sao-easing-back),
+        visibility 0s;
     }
 
     .history-drawer[hidden] {
-      display: none;
+      display: block !important;
+      opacity: 0;
+      transform: scaleY(0.02) translateY(-8px);
+      pointer-events: none;
+      visibility: hidden;
+      transition:
+        opacity var(--sao-dur-fast) ease,
+        transform var(--sao-dur-fast) var(--sao-easing-out),
+        visibility 0s var(--sao-dur-fast);
+    }
+
+    .history-drawer:not([hidden]) {
+      animation: saoDrawerOpen 0.58s var(--sao-easing-back) both;
     }
 
     .history-head {
@@ -2670,6 +2710,11 @@
         transition: none !important;
         animation: none !important;
       }
+      .history-drawer,
+      .account-menu {
+        transition: none !important;
+        animation: none !important;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -2992,6 +3037,40 @@
       to {
         opacity: 1;
         transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes saoDrawerOpen {
+      0% {
+        opacity: 0;
+        transform: scaleY(0.02) translateY(-10px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: scaleY(1.05) translateY(2px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scaleY(1) translateY(0);
+      }
+    }
+
+    @keyframes saoMenuOpen {
+      0% {
+        opacity: 0;
+        transform: scale(0.86) translateY(-6px);
+      }
+
+      60% {
+        opacity: 1;
+        transform: scale(1.05) translateY(2px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: scale(1) translateY(0);
       }
     }
 

@@ -237,3 +237,18 @@
 - `public/index.html`：新增 `.is-active` 目前卷宗標記與 `aria-current="true"`；只存在 UI 狀態，不寫入歷史資料。
 - `public/index.html`：刪除/清空歷史時同步清除 active id，避免殘留狀態。
 - `tests/visual/helpers.ts`：history drawer baseline fixture 加入 active item，讓截圖能檢查三角標記。
+- Commit: `0a41e93 feat(s10.6/history): add SAO active archive state`
+
+## S10.6 Part 4 - Drawer And Menu Motion
+
+### 變更前確認
+
+- 範圍：`.history-drawer` / `.account-menu` CSS open/closed motion。
+- 不改 toggle handler、ARIA expanded 更新、outside click 或 menu role。
+- `[hidden]` 狀態保留，僅以 scoped CSS 覆寫 display 讓 opacity/transform transition 可以執行；閉合仍是 `visibility:hidden` + `pointer-events:none`。
+
+### 變更後更新
+
+- `public/index.html`：account menu 加入 0.42s scale/translate opening motion 與 closed transform state。
+- `public/index.html`：history drawer 加入 0.58s scaleY/translate opening motion 與 closed transform state。
+- `public/index.html`：reduced-motion 下停用 drawer/menu transition 與 animation；既有 hidden/ARIA/toggle handler 未改。
