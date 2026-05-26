@@ -148,7 +148,7 @@ export async function openHistoryDrawer(page: Page) {
     if (list) {
       list.innerHTML = `
         <div class="history-entry">
-          <button class="history-item sao-btn" type="button">
+          <button class="history-item sao-btn is-active" type="button" aria-current="true">
             <b>遠征隊抵達禁忌書庫</b>
             <span class="history-preview">月色照在古堡斷裂的尖塔上...</span>
             <small class="history-time">2026/05/25 23:40</small>

@@ -1859,6 +1859,7 @@
     }
 
     .history-item {
+      position: relative;
       display: grid;
       gap: 5px;
       width: 100%;
@@ -1869,12 +1870,62 @@
       cursor: pointer;
       text-align: left;
       clip-path: var(--edge-sm);
+      transition:
+        border-color var(--sao-dur-mid) var(--sao-easing-out),
+        background var(--sao-dur-mid) var(--sao-easing-out),
+        padding-left var(--sao-dur-mid) var(--sao-easing-out);
+    }
+
+    .history-item::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: linear-gradient(180deg, transparent, rgba(255, 226, 160, 0.96), transparent);
+      transform: scaleY(0);
+      transform-origin: center;
+      transition: transform var(--sao-dur-mid) var(--sao-easing-out);
+      box-shadow: 0 0 14px rgba(214, 166, 77, 0.68);
     }
 
     .history-item:hover,
     .history-item:focus-visible {
-      border-color: rgba(255, 226, 160, 0.46);
+      border-color: rgba(255, 226, 160, 0.48);
+      background:
+        linear-gradient(90deg, rgba(214, 166, 77, 0.18), transparent 62%),
+        rgba(0, 0, 0, 0.52);
+      padding-left: 14px;
       outline: none;
+    }
+
+    .history-item:hover::before,
+    .history-item:focus-visible::before,
+    .history-item.is-active::before {
+      transform: scaleY(1);
+    }
+
+    .history-item.is-active {
+      border-color: rgba(255, 226, 160, 0.68);
+      background: rgba(214, 166, 77, 0.18);
+    }
+
+    .history-item.is-active::after {
+      content: "";
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-bottom: 9px solid rgba(255, 226, 160, 0.86);
+      background: none;
+      filter: drop-shadow(0 0 6px rgba(214, 166, 77, 0.62));
+      transform: translateY(0) scale(1);
+      opacity: 1;
+      animation: saoActiveTriangle 0.42s var(--sao-easing-back) both;
     }
 
     .history-delete {
@@ -2613,6 +2664,12 @@
       .draft-field-shell::before {
         transition: none !important;
       }
+      .history-item,
+      .history-item::before,
+      .history-item.is-active::after {
+        transition: none !important;
+        animation: none !important;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -2923,6 +2980,18 @@
       to {
         transform: scale(8);
         opacity: 0;
+      }
+    }
+
+    @keyframes saoActiveTriangle {
+      from {
+        opacity: 0;
+        transform: translateY(-4px) scale(0.6);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
     }
 
@@ -6125,6 +6194,7 @@
         this.spellWarn = document.getElementById("spellWarn");
         this.spellList = document.getElementById("spellList");
         this.historyItems = [];
+        this.activeHistoryId = "";
         this.draftSaveTimer = 0;
         this.spellScanTimer = 0;
         this.historyClearTimer = 0;
@@ -6472,6 +6542,7 @@
         if (!this.historyList) return;
         this.historyList.replaceChildren();
         if (!this.historyItems.length) {
+          this.activeHistoryId = "";
           const empty = document.createElement("p");
           empty.className = "history-empty";
           empty.textContent = "尚無封存紀錄。完成一次分析後，卷宗會自動收進此處。";
@@ -6480,6 +6551,9 @@
         }
 
         const fragment = document.createDocumentFragment();
+        if (this.activeHistoryId && !this.historyItems.some((entry) => entry.id === this.activeHistoryId)) {
+          this.activeHistoryId = "";
+        }
         this.historyItems.forEach((item) => {
           const row = document.createElement("div");
           row.className = "history-entry";
@@ -6488,6 +6562,10 @@
           button.type = "button";
           button.className = "history-item sao-btn";
           button.dataset.id = item.id;
+          if (item.id === this.activeHistoryId) {
+            button.classList.add("is-active");
+            button.setAttribute("aria-current", "true");
+          }
 
           const time = document.createElement("span");
           time.className = "history-time";
@@ -6516,6 +6594,8 @@
       loadHistoryItem(id) {
         const item = this.historyItems.find((entry) => entry.id === id);
         if (!item) return;
+        this.activeHistoryId = id;
+        this.renderHistory();
         this.draftField.value = item.draft || "";
         renderAnalysisResult(this.resultBox, item.result || "此卷宗沒有保存診斷結果。");
         this.saveDraft();
@@ -6549,6 +6629,9 @@
         }
         this.pendingHistoryDeleteId = "";
         this.historyItems = this.historyItems.filter((item) => item.id !== id);
+        if (this.activeHistoryId === id) {
+          this.activeHistoryId = "";
+        }
         try {
           localStorage.setItem(this.historyKey(), JSON.stringify(this.historyItems));
         } catch (error) {
@@ -6582,6 +6665,7 @@
         const ids = this.historyItems.map((item) => item.id).filter(Boolean);
         this.historyItems = [];
         this.pendingHistoryDeleteId = "";
+        this.activeHistoryId = "";
         try {
           localStorage.setItem(this.historyKey(), "[]");
         } catch (error) {

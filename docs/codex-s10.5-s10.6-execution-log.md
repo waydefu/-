@@ -221,3 +221,19 @@
 - `public/index.html`：新增 `.field` / `.textarea-wrap` / `.draft-field-shell` focus underline，使用 `width` transition 與固定 2px pseudo-element。
 - `public/index.html`：新增 focus-within glow；未變更 textarea 尺寸與既有 focus-visible outline。
 - `public/index.html`：reduced-motion 下停用 underline transition。
+- Commit: `51ce266 feat(s10.6/forms): add SAO focus underline for draft inputs`
+
+## S10.6 Part 3 - History Item Active State
+
+### 變更前確認
+
+- 範圍：history item hover/active 視覺、目前載入卷宗的暫態 class。
+- 不改歷史資料來源、localStorage key、Firestore query 或刪除/載入 handler。
+- `.history-item` 會保留 `sao-btn` class，但局部覆寫 pseudo-element 供側線與 active triangle 使用。
+
+### 變更後更新
+
+- `public/index.html`：history item hover/focus 加入 0.42s 側線、背景、padding transition。
+- `public/index.html`：新增 `.is-active` 目前卷宗標記與 `aria-current="true"`；只存在 UI 狀態，不寫入歷史資料。
+- `public/index.html`：刪除/清空歷史時同步清除 active id，避免殘留狀態。
+- `tests/visual/helpers.ts`：history drawer baseline fixture 加入 active item，讓截圖能檢查三角標記。
