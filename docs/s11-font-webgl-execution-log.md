@@ -83,3 +83,32 @@ Risk:
 
 - Medium: pipeline now renders bloom and final scene separately, so later luminous objects must opt into `BLOOM_SCENE`.
 - Low: the dark-material swap is limited to render-time and restores original material references immediately after bloom rendering.
+
+## Phase B2 - Before
+
+- Selective bloom mechanism is in place, but no scene objects are intentionally assigned to `BLOOM_SCENE` yet.
+- Confirmed edit scope before changes: enable bloom only on luminous WebGL objects and mark the hero CTA for DOM-side optical emphasis. Button ids, auth handlers, Firebase, drafts, history, and ARIA remain unchanged.
+
+## Phase B2 - Completed
+
+- Added `enableBloomLayer()` and assigned `BLOOM_SCENE` only to luminous WebGL targets: core mesh, edge shell, geometry rings, scan bands, manuscript orbitals, runes, particles, Raphael core/ring, magicule particles, reference glyphs, and gold bokeh.
+- Exposed runtime diagnostics via `window.__FLG_BLOOM_SCENE__`, `data-selective-bloom`, `data-bloom-layer`, and `data-bloom-targets`.
+- Marked the login hero CTA with `data-bloom-target="hero-cta"` and added restrained black-gold optical emphasis without changing `#openRitualBtn` or its auth submit behavior.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366` / `login-390`: hero CTA keeps the project black-gold tone, offset underplate, and readable text; no over-bright cyan drift.
+- `workbench-1366` / `workbench-390`: background bloom is visible but restrained; content, textarea, and CTA remain readable and contained.
+
+Risk:
+
+- Medium: bloom target list is intentionally selective; any future luminous WebGL module must call `enableBloomLayer()` or opt in explicitly.
+- Low: DOM CTA changes are visual-only and keep existing button id, label, form submit behavior, and focus path.

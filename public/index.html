@@ -1598,6 +1598,32 @@
       box-shadow: var(--sao-glow-active);
     }
 
+    .sao-btn[data-bloom-target="hero-cta"] {
+      box-shadow:
+        var(--sao-shadow-offset),
+        0 0 20px rgba(214, 166, 77, 0.16),
+        inset 0 1px 0 rgba(255, 246, 203, 0.28);
+    }
+
+    .sao-btn[data-bloom-target="hero-cta"]::before {
+      background:
+        linear-gradient(90deg, rgba(15, 213, 205, 0.38), transparent 9% 86%, rgba(15, 213, 205, 0.42)),
+        var(--sao-shadow-primary);
+      opacity: 0.88;
+    }
+
+    .sao-btn[data-bloom-target="hero-cta"]::after {
+      box-shadow:
+        inset 0 1px 0 rgba(255, 246, 203, 0.52),
+        inset 0 -18px 28px rgba(68, 27, 0, 0.28),
+        0 0 18px rgba(214, 166, 77, 0.18);
+    }
+
+    .sao-btn[data-bloom-target="hero-cta"]:hover:not(:disabled),
+    .sao-btn[data-bloom-target="hero-cta"]:focus-visible {
+      filter: saturate(1.04) drop-shadow(0 0 10px rgba(214, 166, 77, 0.24));
+    }
+
     .primary-btn.sao-btn:hover::after {
       background: var(--sao-cyber-primary-hover);
       animation: none;
@@ -4661,7 +4687,7 @@
           <p class="auth-copy" id="authPrompt">完成 Google 授權後，可貼上手稿並同步取得全文重寫、語感審查與歷史卷宗。</p>
 
           <div class="auth-actions">
-            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span class="sao-btn-label">使用 Google 登入</span></button>
+            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit" data-bloom-target="hero-cta"><span class="sao-btn-label">使用 Google 登入</span></button>
           </div>
 
           <div class="ritual-status visually-hidden" id="ritualStatus" role="status" aria-live="polite">Google 登入待命中</div>
@@ -5924,6 +5950,17 @@
         this.bloomMixPass.uniforms.uMixStrength.value = prefersReducedMotion ? 0.62 : 0.92;
         this.renderSelectiveBloom(delta);
       }
+    }
+
+    function enableBloomLayer(object) {
+      let count = 0;
+      object?.traverse?.((child) => {
+        if (!child.layers) return;
+        if (!(child.isMesh || child.isLine || child.isLineSegments || child.isPoints)) return;
+        child.layers.enable(BLOOM_SCENE);
+        count += 1;
+      });
+      return count;
     }
 
     class CoreEngine {
@@ -8104,6 +8141,26 @@
     } catch (err) {
       console.warn("[FLG] SteppedAnimationController init failed:", err?.message || err);
     }
+
+    const bloomTargetCount = [
+      core.coreMesh,
+      core.edgeShell,
+      core.geometryGroup,
+      core.scanGroup,
+      core.pageGroup,
+      runes.group,
+      particles.group,
+      raphaelSingularityCore?.group,
+      raphaelComputationRing?.group,
+      magiculeParticleField?.group,
+      referenceGlyphRing?.group,
+      goldBokehField?.group
+    ].reduce((count, object) => count + enableBloomLayer(object), 0);
+    window.__FLG_BLOOM_SCENE__ = BLOOM_SCENE;
+    document.documentElement.dataset.selectiveBloom = "active";
+    document.documentElement.dataset.bloomLayer = String(BLOOM_SCENE);
+    document.documentElement.dataset.bloomTargets = String(bloomTargetCount);
+
     const getRaphaelWebglState = () => ({
       energy: clamp(login.syncProgress + core.wake * 0.42 + core.hover * 0.32 + core.operational * 0.18, 0, 1),
       warp: clamp(core.shock + particles.spiral * 0.72 + post.shockEnergy * 0.35, 0, 1),
@@ -8125,6 +8182,9 @@
       steppedAnimationController: !!steppedAnimationController,
       magiculeParticles: magiculeParticleField?.count || 0,
       composerPasses: post.composer.passes?.length || 0,
+      selectiveBloom: true,
+      bloomLayer: BLOOM_SCENE,
+      bloomTargets: bloomTargetCount,
       reducedMotion: prefersReducedMotion,
       mobile: mobileQuery.matches
     };
