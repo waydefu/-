@@ -122,14 +122,14 @@ export async function enterOperationalWorkbench(page: Page) {
         <section class="result-section">
           <div class="result-section-head">
             <span>修改後全文</span>
-            <button type="button" class="dossier-copy sao-btn">複製本段</button>
+            <button type="button" class="dossier-copy sao-btn"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製本段</span></button>
           </div>
           <div class="result-section-body">月色照在古堡斷裂的尖塔上，守門人低聲宣告遠征隊已抵達禁忌書庫。</div>
         </section>
         <section class="result-section">
           <div class="result-section-head">
             <span>審查摘要</span>
-            <button type="button" class="dossier-copy sao-btn">複製本段</button>
+            <button type="button" class="dossier-copy sao-btn"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製本段</span></button>
           </div>
           <div class="result-section-body">語氣已調整為沉穩西幻敘事，現代口吻與突兀節奏已收斂。</div>
         </section>
@@ -149,11 +149,11 @@ export async function openHistoryDrawer(page: Page) {
       list.innerHTML = `
         <div class="history-entry">
           <button class="history-item sao-btn is-active" type="button" aria-current="true">
-            <b>遠征隊抵達禁忌書庫</b>
-            <span class="history-preview">月色照在古堡斷裂的尖塔上...</span>
-            <small class="history-time">2026/05/25 23:40</small>
+            <span class="sao-btn-symbol history-entry-sigil" aria-hidden="true">卷</span>
+            <span class="history-time">2026/05/25 23:40</span>
+            <span class="history-preview">遠征隊抵達禁忌書庫，月色照在古堡斷裂的尖塔上...</span>
           </button>
-          <button class="history-delete sao-btn is-danger" type="button" aria-label="刪除此卷宗">×</button>
+          <button class="history-delete sao-btn is-danger" type="button" aria-label="刪除此卷宗"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">刪</span></button>
         </div>
       `;
     }

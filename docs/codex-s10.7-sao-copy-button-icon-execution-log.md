@@ -153,3 +153,83 @@ What changed:
 Next required action:
 - Run npm run sync:login-mother.
 - Run git diff --check and check:frontend before committing Part 4.
+
+Part 4 commit: 6c1c53a feat(s10.7/buttons): add black-gold clipped glitch button polish.
+
+## Before Validation - Part 5
+
+Planned validation:
+- npm run sync:login-mother
+- git diff --check
+- npm run check
+- npm test
+- npm run test:visual:update
+- Review updated screenshots manually
+- npm run test:visual
+- npm run test:a11y
+- npm run build
+
+Notes:
+- Visual snapshots are expected to update because copy, icon wrappers, and button VFX changed.
+- No deploy requested for S10.7 in the latest instruction; smoke:hosting only reflects the deployed S10.6 hosting version unless a deploy is explicitly performed.
+
+## Before Edit Confirmation - Part 5 Visual Fixtures
+
+Planned test file: tests/visual/helpers.ts.
+
+Reason:
+- The product now renders dynamic buttons with `.sao-btn-symbol` and `.sao-btn-label`.
+- Existing visual helpers manually injected old plain-text dynamic buttons, which would make screenshots less representative.
+
+Constraints checked:
+- Test fixture only; no production ids, handlers, Firebase/Auth/draft/history/native dialog changes.
+- Keep same fixture behavior and visible sample content.
+
+## After Edit - Part 5 Visual Fixtures
+
+Changed tests/visual/helpers.ts only.
+
+What changed:
+- Updated fixture result copy buttons to include SAO glyph/label wrappers.
+- Updated fixture history row and delete button to mirror production dynamic markup.
+
+Next required action:
+- Re-run npm run test:visual:update.
+- Manually review regenerated screenshots.
+
+## Validation Finding - Touch Target Fix
+
+DOM metric check found visible dossier action buttons at 38px height on desktop:
+- copyAllButton
+- clearDraftButton
+
+Fix applied:
+- Raised `.dossier-action`, `.dossier-copy`, and `.result-section-copy` to global min-height 44px.
+- Added flex/gap alignment to `.result-section-copy` so dynamic copy buttons match the glyph layout.
+
+## Validation Results - Part 5
+
+Commands:
+- npm run sync:login-mother: passed.
+- git diff --check: passed.
+- npm run check: passed.
+- npm test: passed, 22 tests.
+- npm run test:visual:update: passed, 12 tests. Snapshots updated.
+- npm run test:visual: passed, 12 tests.
+- npm run test:a11y: passed after rerun, 3 tests, axe impact counts `{}`.
+- npm run build: passed.
+- npm run smoke:hosting: passed. Note: no S10.7 deploy was requested, so this checks the currently deployed hosting health, not a deployed S10.7 UI.
+
+Manual screenshot review:
+- tests/visual/worldforge.spec.ts-snapshots/login-1366-chromium-win32.png: OK, new login copy visible, no overflow.
+- tests/visual/worldforge.spec.ts-snapshots/login-390-chromium-win32.png: OK, mobile login copy wraps cleanly.
+- tests/visual/worldforge.spec.ts-snapshots/workbench-1366-chromium-win32.png: OK, nav glyph buttons and polished copy fit.
+- tests/visual/worldforge.spec.ts-snapshots/history-drawer-1366-chromium-win32.png: OK, history drawer button glyphs visible; no incoherent overlap.
+- tests/visual/worldforge.spec.ts-snapshots/account-menu-1366-chromium-win32.png: OK, logout glyph/label fits.
+
+DOM metric check:
+- Desktop 1366x768: overflowX 0, no visible buttons below 44x44, no unlabeled visible buttons.
+- Mobile 390x844: overflowX 0, no visible buttons below 44x44, no unlabeled visible buttons.
+
+Known note:
+- test:a11y initially failed once because it was launched in parallel with another Playwright webServer on port 5173. Sequential rerun passed.
