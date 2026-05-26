@@ -143,3 +143,33 @@ Risk:
 
 - Medium: CA is a full-screen pass, so future pulse intensities must stay low around text-heavy states.
 - Low: reduced-motion disables CA pulses and idle offset.
+
+## Phase D1 - Before
+
+- No Link Start shader canvas exists yet; auth handoff currently relies on DOM/GSAP collapse, shockwave, and boot veil only.
+- Confirmed edit scope before changes: add an `aria-hidden` / `pointer-events:none` WebGL canvas and controller only. Auth trigger logic remains untouched until Phase D2.
+
+## Phase D1 - Completed
+
+- Added `#linkStartFX` canvas with `link-start-fx` styling, isolated z-index, `aria-hidden`, and `pointer-events:none`.
+- Implemented `LinkStartFX`, a WebGL1 polar rainbow tunnel shader with cached program/attributes/uniforms and resize handling.
+- Exposed `window.__FLG_LINK_START__` and `data-link-start-shader` diagnostics.
+- Disabled the canvas path under `prefers-reduced-motion`.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation so far:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check:frontend` passed.
+- `npm run test:visual:update` passed: 14/14.
+
+Screenshot review:
+
+- `login-1366` / `workbench-1366`: inactive Link Start canvas does not alter baseline layout, text, dialog, or workbench surfaces.
+- Active shader preview `test-results/s11-link-start-active.bmp`: rainbow polar tunnel renders correctly after replacing reverse `smoothstep()` calls with forward-compatible forms; it is not a blank canvas.
+
+Risk:
+
+- Medium: the active Link Start shader is a full-screen overlay and must only be triggered during intentional handoff windows.
+- Low: canvas is `aria-hidden`, `pointer-events:none`, and disabled under reduced motion.
