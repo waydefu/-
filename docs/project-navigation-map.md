@@ -6,8 +6,8 @@ Purpose: current handoff map for the Fantasy Lore Guardian / Great Sage Manuscri
 
 ## Current State
 
-- Main working tree has uncommitted S10.8 / S10.9 UI work, visual snapshots, and documentation updates.
-- Do not assume `HEAD` includes the latest UI. Check `git status --short` before planning commits or deploys.
+- S10.8 / S10.9 handoff state was preserved in commit `2e0737c`.
+- S11 execution is in progress; see `docs/s11-font-webgl-execution-log.md` for per-Phase status, validation, screenshots, commit hashes, and risks.
 - Current frontend source of truth is `public/index.html`.
 - `public/worldforge-login.html` is generated from `public/index.html` by `npm run sync:login-mother`.
 - Latest SAO button correction is based on the dev.to Cyberpunk 2077 button article, adapted to black/gold manuscript styling:
@@ -146,6 +146,8 @@ Snapshot tests strip scripts and hide WebGL for deterministic layout. They do no
   - S10.8 cyber buttons and modal interactions.
 - `docs/s10.9-mobile-sao-button-animation-layout-execution-plan.md`
   - Latest mobile spacing, button correction, dev.to article review, reference-image comparison, and validation.
+- `docs/s11-font-webgl-execution-log.md`
+  - S11 font hierarchy and WebGL enhancement execution record.
 - `docs/project-scan-handoff-2026-05-26.md`
   - Broader risk scan and optimization backlog.
 

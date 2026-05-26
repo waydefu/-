@@ -57,12 +57,23 @@
       --text-nano: clamp(0.625rem, 0.55rem + 0.15vw, 0.6875rem);
       --text-hud: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
       --text-label: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
-      --text-core: clamp(0.75rem, 0.66rem + 0.2vw, 0.875rem);
-      --text-body: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
-      --text-btn: clamp(0.8125rem, 0.72rem + 0.22vw, 0.875rem);
-      --text-input: clamp(0.875rem, 0.78rem + 0.25vw, 1rem);
+      --text-status: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
+      --text-body: clamp(0.875rem, 0.78rem + 0.25vw, 1rem);
+      --text-btn-cn: clamp(0.9375rem, 0.84rem + 0.24vw, 1.0625rem);
+      --text-btn-en: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
+      --text-input: clamp(1rem, 0.88rem + 0.32vw, 1.1875rem);
+      --text-core: clamp(1rem, 0.84rem + 0.42vw, 1.25rem);
       --text-section: clamp(0.875rem, 0.74rem + 0.32vw, 1.0625rem);
-      --text-hero: clamp(1.5rem, 1.1rem + 1.4vw, 2.375rem);
+      --text-hero-cn: clamp(1.75rem, 1.2rem + 1.8vw, 2.6rem);
+      --text-hero-en: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
+      --text-btn: var(--text-btn-cn);
+      --text-hero: var(--text-hero-cn);
+      --tracking-zh: 0;
+      --tracking-en-decor: 0.22em;
+      --tracking-en-hud: 0.16em;
+      --tracking-en-section: 0.12em;
+      --tracking-en-title: 0.08em;
+      --tracking-en-btn: 0.06em;
       --keyboard-inset: 0px;
       --session-dock-size: 52px;
       --session-dock-offset: clamp(14px, 2.2vw, 34px);
@@ -415,9 +426,9 @@
       top: -20%;
       bottom: -20%;
       width: 46%;
-      color: rgba(214, 166, 77, 0.18);
-      font: 11px/2 var(--font-mono);
-      letter-spacing: 0.22em;
+      color: rgba(214, 166, 77, 0.42);
+      font: 400 var(--text-nano)/1.6 var(--font-mono);
+      letter-spacing: var(--tracking-en-decor);
       writing-mode: vertical-rl;
       text-orientation: mixed;
       white-space: pre-wrap;
@@ -710,11 +721,12 @@
     .brand-block h1 {
       margin: 0;
       font-family: var(--font-en);
-      font-size: clamp(1.5rem, 1.2rem + 1.1vw, 2.75rem);
-      letter-spacing: 0.22em;
+      font-size: var(--text-hero-en);
+      font-weight: 600;
+      letter-spacing: var(--tracking-en-title);
       color: var(--rf-white-gold);
-      text-shadow: var(--text-glow), 0 0 30px rgba(255, 211, 100, 0.22);
-      line-height: 1.1;
+      text-shadow: 0 0 22px rgba(214, 166, 77, 0.32);
+      line-height: 1.18;
     }
 
     .brand-compact {
@@ -737,9 +749,10 @@
       border-top: 1px solid rgba(214, 166, 77, 0.28);
       color: rgba(200, 216, 232, 0.72);
       font-family: var(--font-mono);
-      font-size: clamp(0.5625rem, 0.5rem + 0.16vw, 0.6875rem);
-      letter-spacing: 0.16em;
-      line-height: 1.65;
+      font-size: var(--text-hud);
+      font-weight: 600;
+      letter-spacing: var(--tracking-en-hud);
+      line-height: 1.4;
       text-transform: uppercase;
       background: linear-gradient(90deg, rgba(214, 166, 77, 0.1), transparent 68%);
       clip-path: var(--edge);
@@ -1022,8 +1035,10 @@
         linear-gradient(90deg, rgba(10, 35, 117, 0.18), rgba(200, 120, 8, 0.12), transparent),
         rgba(0, 0, 0, 0.18);
       font-family: var(--font-mono);
-      font-size: 11px;
-      letter-spacing: 0.18em;
+      font-size: var(--text-hud);
+      font-weight: 600;
+      letter-spacing: var(--tracking-en-hud);
+      line-height: 1.4;
       color: rgba(234, 230, 205, 0.86);
       display: flex;
       justify-content: space-between;
@@ -1040,12 +1055,12 @@
     .auth-body h2 {
       margin: 0;
       font-family: var(--font-serif);
-      font-size: var(--text-hero);
-      letter-spacing: 0.06em;
+      font-size: var(--text-hero-cn);
+      letter-spacing: var(--tracking-zh);
       line-height: 1.18;
       color: var(--gold-hot);
       text-align: center;
-      text-shadow: var(--text-glow), 0 1px 0 rgba(0, 0, 0, 0.9);
+      text-shadow: 0 0 22px rgba(214, 166, 77, 0.32);
       text-wrap: balance;
       font-weight: 700;
     }
@@ -1054,7 +1069,8 @@
       margin: 0;
       color: rgba(232, 216, 184, 0.82);
       font-size: var(--text-body);
-      line-height: 1.8;
+      font-weight: 400;
+      line-height: 1.7;
       text-align: center;
       letter-spacing: 0;
       text-wrap: pretty;
@@ -1073,13 +1089,15 @@
       min-height: 44px;
       padding: 12px 13px;
       font-size: var(--text-input);
+      font-weight: 400;
       letter-spacing: 0;
-      line-height: 1.45;
+      line-height: 1.85;
       transition: border-color 0.22s ease, box-shadow 0.22s ease, background 0.22s ease, transform 0.22s ease;
     }
 
     .operational-deck textarea::placeholder {
-      color: rgba(170, 195, 215, 0.78);
+      color: rgba(241, 222, 194, 0.68);
+      font-weight: 400;
     }
 
     .sync-row {
@@ -1258,7 +1276,9 @@
       cursor: pointer;
       font-family: var(--font-cyber);
       font-weight: 900;
+      font-size: var(--text-btn-cn);
       letter-spacing: 0;
+      line-height: 1.3;
       color: rgba(255, 246, 203, 0.96);
       background: transparent;
       border: 0;
@@ -1719,11 +1739,20 @@
       border: 1px solid rgba(214, 166, 77, 0.13);
       background: rgba(0, 0, 0, 0.26);
       color: rgba(255, 226, 160, 0.76);
-      font-size: 11px;
+      font-family: var(--font-tw);
+      font-size: var(--text-status);
+      font-weight: 500;
       line-height: 1.55;
       text-align: center;
-      letter-spacing: 0;
+      letter-spacing: var(--tracking-zh);
       text-wrap: pretty;
+      transition: filter 0.4s ease, color 0.4s ease;
+    }
+
+    .ritual-status.is-updated,
+    #operationalStatus.is-updated,
+    #sessionSyncState.is-updated {
+      filter: brightness(1.4) drop-shadow(0 0 10px rgba(255, 226, 160, 0.26));
     }
 
     .ritual-status.error {
@@ -1853,16 +1882,18 @@
     }
 
     .workbench-nav-title b {
-      font-size: 16px;
-      font-weight: 900;
-      line-height: 1.2;
+      font-size: var(--text-section);
+      font-weight: 700;
+      line-height: 1.45;
+      letter-spacing: var(--tracking-zh);
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.62);
     }
 
     .workbench-nav-title span {
       overflow: hidden;
       color: rgba(200, 216, 232, 0.62);
-      font: 11px/1.3 var(--font-mono);
-      letter-spacing: 0.14em;
+      font: 600 var(--text-hud)/1.4 var(--font-mono);
+      letter-spacing: var(--tracking-en-hud);
       text-overflow: ellipsis;
       text-transform: uppercase;
       white-space: nowrap;
@@ -2013,8 +2044,10 @@
     .session-badge {
       overflow: hidden;
       color: rgba(255, 226, 160, 0.86);
-      font-size: 14px;
-      line-height: 1.15;
+      font-size: var(--text-core);
+      font-weight: 700;
+      line-height: 1.35;
+      letter-spacing: var(--tracking-zh);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -2022,9 +2055,11 @@
     .account-meta small {
       overflow: hidden;
       color: rgba(241, 222, 194, 0.58);
-      font-size: 11px;
+      font-family: var(--font-mono);
+      font-size: var(--text-hud);
       font-weight: 600;
-      line-height: 1.25;
+      line-height: 1.4;
+      letter-spacing: var(--tracking-en-hud);
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -2182,9 +2217,11 @@
       margin-bottom: 10px;
       color: rgba(255, 226, 160, 0.74);
       font-family: var(--font-tw);
-      font-size: 14px;
+      font-size: var(--text-section);
       font-weight: 700;
-      letter-spacing: 0.14em;
+      letter-spacing: var(--tracking-zh);
+      line-height: 1.45;
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.62);
     }
 
     .history-head button {
@@ -2337,8 +2374,9 @@
     .history-preview {
       grid-column: 2;
       color: rgba(241, 222, 194, 0.72);
-      font-size: 14px;
+      font-size: var(--text-body);
       line-height: 1.7;
+      letter-spacing: var(--tracking-zh);
     }
 
     .codex-panel::before,
@@ -2360,9 +2398,10 @@
       margin: 0;
       color: var(--gold-hot);
       font-family: var(--font-serif);
-      font-size: clamp(1.75rem, 1.34rem + 1.05vw, 2.5rem);
-      letter-spacing: 0;
-      line-height: 1.22;
+      font-size: var(--text-hero-cn);
+      font-weight: 700;
+      letter-spacing: var(--tracking-zh);
+      line-height: 1.18;
       text-align: center;
       text-wrap: balance;
     }
@@ -2371,8 +2410,8 @@
       margin: 0;
       color: rgba(241, 222, 194, 0.66);
       text-align: center;
-      line-height: 1.8;
-      font-size: clamp(0.9375rem, 0.8rem + 0.34vw, 1.125rem);
+      line-height: 1.7;
+      font-size: var(--text-body);
       letter-spacing: 0;
       text-wrap: pretty;
     }
@@ -2427,15 +2466,18 @@
 
     .draft-field-help {
       color: rgba(232, 216, 184, 0.58);
-      font-size: clamp(0.8125rem, 0.74rem + 0.18vw, 0.875rem);
-      line-height: 1.6;
+      font-size: var(--text-body);
+      font-weight: 400;
+      letter-spacing: var(--tracking-zh);
+      line-height: 1.7;
     }
 
     .operational-deck textarea {
       min-height: 100%;
       resize: vertical;
       line-height: 1.85;
-      font-size: clamp(1.1875rem, 1.02rem + 0.42vw, 1.375rem);
+      font-size: var(--text-input);
+      font-weight: 400;
       letter-spacing: 0;
       padding-bottom: 46px;
       background:
@@ -2745,8 +2787,9 @@
     .result-section-head h3 {
       margin: 0;
       color: var(--gold-hot);
-      font: 14px/1.4 var(--font-mono);
-      letter-spacing: 0.14em;
+      font: 700 var(--text-section)/1.45 var(--font-tw);
+      letter-spacing: var(--tracking-zh);
+      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.62);
       text-transform: uppercase;
     }
 
@@ -2754,8 +2797,8 @@
       display: block;
       margin-bottom: 2px;
       color: rgba(214, 166, 77, 0.66);
-      font: 10px/1.4 var(--font-mono);
-      letter-spacing: 0.16em;
+      font: 700 var(--text-section)/1.45 var(--font-mono);
+      letter-spacing: var(--tracking-en-section);
       text-transform: uppercase;
     }
 
@@ -2777,8 +2820,8 @@
     .result-section-body {
       padding: 14px 16px;
       font-family: var(--font-serif);
-      font-size: clamp(1rem, 0.88rem + 0.32vw, 1.1875rem);
-      line-height: 2;
+      font-size: var(--text-body);
+      line-height: 1.7;
       color: rgba(241, 222, 194, 0.88);
       white-space: normal;
       word-break: break-word;
@@ -4045,7 +4088,7 @@
       .brand-block h1 {
         max-width: calc(100vw - 32px);
         margin-inline: auto;
-        font-size: clamp(1.125rem, 0.95rem + 1vw, 1.4375rem);
+        font-size: var(--text-hero-en);
         letter-spacing: 0.08em;
         overflow-wrap: anywhere;
       }
@@ -4143,7 +4186,7 @@
       }
 
       .account-meta small {
-        font-size: 10px;
+        font-size: var(--text-hud);
       }
 
       .history-drawer {
@@ -4204,7 +4247,7 @@
       }
 
       .auth-body h2 {
-        font-size: 24px;
+        font-size: var(--text-hero-cn);
       }
 
       .primary-btn,
@@ -4264,13 +4307,13 @@
       }
 
       .codex-panel h2 {
-        font-size: clamp(1.75rem, 1.48rem + 1vw, 2rem);
-        line-height: 1.12;
+        font-size: var(--text-hero-cn);
+        line-height: 1.18;
       }
 
       .codex-panel p {
-        font-size: 16px;
-        line-height: 1.62;
+        font-size: var(--text-body);
+        line-height: 1.7;
       }
 
       .draft-field-shell {
@@ -4305,7 +4348,7 @@
 
       .operational-deck textarea {
         min-height: 220px;
-        font-size: 21px;
+        font-size: var(--text-input);
         padding-bottom: 44px;
       }
 
@@ -5049,6 +5092,19 @@
         console.warn("[FLG] quota peek failed:", error?.message || error);
         return { limit: 0, used: 0, remaining: 0, resetAt: "", status: "error" };
       }
+    }
+
+    function setLiveStatus(element, text, { error = false } = {}) {
+      if (!(element instanceof HTMLElement)) return;
+      element.textContent = text;
+      element.classList.toggle("error", Boolean(error));
+      element.classList.remove("is-updated");
+      void element.offsetWidth;
+      element.classList.add("is-updated");
+      window.clearTimeout(element.__flgStatusTimer);
+      element.__flgStatusTimer = window.setTimeout(() => {
+        element.classList.remove("is-updated");
+      }, 420);
     }
 
     function createButtonGlyph(symbol) {
@@ -6512,7 +6568,7 @@
               style: "西方奇幻語彙校準中"
             };
             const message = map[button.dataset.op] || "小說編修核心待命";
-            this.operationalStatus.textContent = message;
+            this.setOperationalStatus(message);
             this.triggerSmallPulse();
           });
         });
@@ -6529,8 +6585,11 @@
       }
 
       setStatus(text, isError = false) {
-        this.status.textContent = text;
-        this.status.classList.toggle("error", isError);
+        setLiveStatus(this.status, text, { error: isError });
+      }
+
+      setOperationalStatus(text, isError = false) {
+        setLiveStatus(this.operationalStatus, text, { error: isError });
       }
 
       pulseError() {
@@ -6965,14 +7024,14 @@
         const analyzeButton = document.querySelector('[data-op="analyze"]');
         const draft = draftField.value.trim();
         if (!draft) {
-          this.operationalStatus.textContent = "請先貼上需要校準的小說手稿";
+          this.setOperationalStatus("請先貼上需要校準的小說手稿", true);
           this.hud.showNotice("手稿尚未注入鑑定核心");
           this.triggerSmallPulse();
           draftField.focus();
           return;
         }
         if (draft.length > LIMITS.MAX_INPUT_CHARS) {
-          this.operationalStatus.textContent = `手稿超過 ${LIMITS.MAX_INPUT_CHARS.toLocaleString("zh-TW")} 字，請縮短段落`;
+          this.setOperationalStatus(`手稿超過 ${LIMITS.MAX_INPUT_CHARS.toLocaleString("zh-TW")} 字，請縮短段落`, true);
           this.hud.showNotice("手稿超出核心承載上限");
           this.triggerSmallPulse();
           return;
@@ -6994,7 +7053,7 @@
         AppState.set("currentReqId", reqId);
         const ctrl = new AbortController();
         const startedAt = Date.now();
-        this.operationalStatus.textContent = "正在解析手稿並建立鑑定卷宗";
+        this.setOperationalStatus("正在解析手稿並建立鑑定卷宗");
         const progress = this.renderAnalysisProgress(resultBox);
         this.scrollWorkbenchToDossier(40);
         this.hud.showNotice("正在解析手稿");
@@ -7022,7 +7081,7 @@
           document.getElementById("reanalyzeButton")?.removeAttribute("hidden");
           progress?.complete();
           this.scrollWorkbenchToDossier(80);
-          this.operationalStatus.textContent = fromCache ? "已讀取封存鑑定卷宗" : "魔導鑑定卷宗已完成";
+          this.setOperationalStatus(fromCache ? "已讀取封存鑑定卷宗" : "魔導鑑定卷宗已完成");
           this.hud.showNotice(fromCache ? MSG.CACHE_HIT : "魔導鑑定卷宗已完成");
           analyzeButton?.classList.add("is-success");
           window.setTimeout(() => analyzeButton?.classList.remove("is-success"), 900);
@@ -7032,7 +7091,7 @@
           const message = error?.name === "AbortError" ? MSG.TIMEOUT : (error?.userMessage || error?.message || MSG.FETCH_FAIL);
           renderAnalysisResult(resultBox, message);
           this.scrollWorkbenchToDossier(80);
-          this.operationalStatus.textContent = "鑑定中斷，請重試";
+          this.setOperationalStatus("鑑定中斷，請重試", true);
           this.hud.showNotice("鑑定中斷，請重試");
           analyzeButton?.classList.add("is-error");
           window.setTimeout(() => analyzeButton?.classList.remove("is-error"), 650);
@@ -7320,6 +7379,10 @@
         return `${UI_CONFIG.STORAGE_KEY}_${this.sessionId()}`;
       }
 
+      setStatus(text, isError = false) {
+        setLiveStatus(this.status, text, { error: isError });
+      }
+
       formatTime(ts) {
         try {
           return new Intl.DateTimeFormat("zh-TW", {
@@ -7381,7 +7444,7 @@
       openLogoutConfirm() {
         if (!this.logoutConfirmWindow) return;
         this.toggleAccount(false);
-        this.status.textContent = "請確認是否封存草稿並結束本次工作階段";
+        this.setStatus("請確認是否封存草稿並結束本次工作階段");
         this.hud.showNotice("登出確認視窗已開啟");
         this.logoutConfirmController.open(this.logoutConfirmWindow);
       }
@@ -7389,12 +7452,12 @@
       closeLogoutConfirm() {
         if (!this.logoutConfirmWindow) return;
         this.logoutConfirmController.close(this.logoutConfirmWindow);
-        this.status.textContent = "已取消登出，工作階段維持啟用";
+        this.setStatus("已取消登出，工作階段維持啟用");
         this.hud.showNotice("已返回鑑定核心");
       }
 
       setSyncState(text) {
-        if (this.sessionSyncState) this.sessionSyncState.textContent = text;
+        setLiveStatus(this.sessionSyncState, text);
       }
 
       syncHudState({ analyzing = false } = {}) {
@@ -7448,13 +7511,13 @@
           if (!ok) throw new Error("clipboard-failed");
           const original = getButtonLabel(this.copyButton, "複製鑑定卷宗");
           setButtonLabel(this.copyButton, "已複製");
-          this.status.textContent = "鑑定卷宗已寫入剪貼簿";
+          this.setStatus("鑑定卷宗已寫入剪貼簿");
           this.hud.showNotice("鑑定卷宗已複製");
           window.setTimeout(() => {
             setButtonLabel(this.copyButton, original);
           }, 1600);
         } catch (error) {
-          this.status.textContent = "剪貼簿寫入失敗，請手動選取卷宗";
+          this.setStatus("剪貼簿寫入失敗，請手動選取卷宗", true);
           this.hud.showNotice("剪貼簿寫入失敗");
         }
       }
@@ -7551,7 +7614,7 @@
 
       bindDraftMemory() {
         this.draftField.addEventListener("input", () => {
-          this.status.textContent = "草稿已更新，等待同步";
+          this.setStatus("草稿已更新，等待同步");
           this.setSyncState("草稿記憶同步中");
           this.loginController.syncProgress = clamp(this.draftField.value.length / 500, 0, 1);
           this.updateDraftDiagnostics();
@@ -7701,7 +7764,7 @@
         renderAnalysisResult(this.resultBox, item.result || "此卷宗沒有保存鑑定結果。");
         this.saveDraft();
         this.updateDraftDiagnostics();
-        this.status.textContent = "鑑定紀錄已載入";
+        this.setStatus("鑑定紀錄已載入");
         this.hud.showNotice("鑑定紀錄已載入");
         this.loginController.syncProgress = clamp(this.draftField.value.length / 500, 0, 1);
         this.toggleHistory(false);
@@ -7794,10 +7857,10 @@
         try {
           const ok = await this.copyPlainText(text);
           if (!ok) throw new Error("clipboard-failed");
-          this.status.textContent = "分區內容已寫入剪貼簿";
+          this.setStatus("分區內容已寫入剪貼簿");
           this.hud.showNotice(kind === "summary" ? "審查摘要已複製" : "修改後全文已複製");
         } catch (error) {
-          this.status.textContent = "剪貼簿寫入失敗，請手動選取內容";
+          this.setStatus("剪貼簿寫入失敗，請手動選取內容", true);
           this.hud.showNotice("剪貼簿寫入失敗");
         }
       }
@@ -7813,7 +7876,7 @@
         this.updateDraftDiagnostics();
         this.saveDraft();
         this.setSyncState("草稿記憶已清除");
-        this.status.textContent = "手稿內容已清除";
+        this.setStatus("手稿內容已清除");
         this.hud.showNotice("手稿內容已清除");
         this.reanalyzeButton.hidden = true;
         this.syncHudState();
@@ -7826,7 +7889,7 @@
           setButtonGlyph(this.confirmLogoutButton, "⇥", "封存中");
         }
         this.saveDraft();
-        this.status.textContent = "正在封存草稿並結束工作階段";
+        this.setStatus("正在封存草稿並結束工作階段");
         this.hud.showNotice("正在結束鑑定核心工作階段");
         try {
           firebaseRuntime.guest = false;
