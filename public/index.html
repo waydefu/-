@@ -71,6 +71,22 @@
       --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.78), 0 0 38px rgba(214, 166, 77, 0.2);
       --glow-hot: 0 0 28px rgba(255, 226, 160, 0.34);
       --text-glow: 0 0 22px rgba(214, 166, 77, 0.28);
+      --sao-edge: 1px;
+      --sao-edge-len: 14px;
+      --sao-glow-default: 0 0 0 rgba(214, 166, 77, 0);
+      --sao-glow-hover: 0 0 22px rgba(214, 166, 77, 0.46), inset 0 0 16px rgba(255, 226, 160, 0.22);
+      --sao-glow-active: 0 0 38px rgba(255, 226, 160, 0.86), inset 0 0 26px rgba(255, 226, 160, 0.5);
+      --sao-glow-focus: 0 0 0 2px rgba(255, 226, 160, 0.82), 0 0 26px rgba(214, 166, 77, 0.68);
+      --sao-glow-danger: 0 0 22px rgba(185, 75, 25, 0.56), inset 0 0 16px rgba(255, 156, 100, 0.28);
+      --sao-scan-color: rgba(255, 226, 160, 0.78);
+      --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
+      --sao-easing-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+      --sao-easing-decel: cubic-bezier(0.16, 1, 0.3, 1);
+      --sao-dur-fast: 0.24s;
+      --sao-dur-mid: 0.42s;
+      --sao-dur-slow: 0.8s;
+      --sao-dur-xl: 1.2s;
+      --sao-dur-modal: 1.8s;
       --z-bg: -1;
       --z-webgl: 1;
       --z-atmosphere: 2;
@@ -1191,6 +1207,130 @@
         transform: translateZ(0) scale(0.992);
         filter: brightness(1.04);
       }
+    }
+
+    .sao-btn {
+      position: relative;
+      isolation: isolate;
+      overflow: hidden;
+      min-height: 44px;
+      min-width: 44px;
+      cursor: pointer;
+      font-family: var(--font-tw);
+      letter-spacing: 0.02em;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      transition:
+        transform var(--sao-dur-fast) var(--sao-easing-out),
+        box-shadow var(--sao-dur-mid) var(--sao-easing-out),
+        border-color var(--sao-dur-mid) var(--sao-easing-out),
+        filter var(--sao-dur-mid) var(--sao-easing-out);
+      box-shadow: var(--sao-glow-default);
+    }
+
+    .sao-btn::before,
+    .sao-btn::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      transition: opacity var(--sao-dur-mid) var(--sao-easing-out);
+    }
+
+    .sao-btn::before {
+      background:
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top left/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top left/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top right/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) top right/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom left/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom left/var(--sao-edge) var(--sao-edge-len) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom right/var(--sao-edge-len) var(--sao-edge) no-repeat,
+        linear-gradient(rgba(255, 226, 160, 0.78), rgba(255, 226, 160, 0.78)) bottom right/var(--sao-edge) var(--sao-edge-len) no-repeat;
+      opacity: 0.42;
+    }
+
+    .sao-btn::after {
+      background: linear-gradient(105deg, transparent 0 30%, var(--sao-scan-color) 50%, transparent 70% 100%);
+      transform: translateX(-120%);
+      opacity: 0;
+    }
+
+    .sao-btn:hover:not(:disabled)::before {
+      opacity: 1;
+    }
+
+    .sao-btn:hover:not(:disabled)::after {
+      opacity: 0.86;
+      transform: translateX(120%);
+      transition: transform 0.9s var(--sao-easing-out), opacity var(--sao-dur-mid) var(--sao-easing-out);
+    }
+
+    .sao-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: var(--sao-glow-hover);
+    }
+
+    .sao-btn:active:not(:disabled) {
+      transform: translateY(1px) scale(0.985);
+      box-shadow: var(--sao-glow-active);
+      filter: brightness(1.18) saturate(1.12);
+      transition: transform 0.1s var(--sao-easing-out), box-shadow 0.1s ease;
+    }
+
+    .sao-btn:focus-visible {
+      outline: none;
+      box-shadow: var(--sao-glow-focus);
+      animation: saoFocusPulse 2s ease-in-out infinite;
+    }
+
+    .sao-btn:disabled {
+      cursor: not-allowed;
+      filter: saturate(0.36) brightness(0.72);
+      opacity: 0.6;
+    }
+
+    .sao-btn:disabled::before {
+      opacity: 0.18;
+    }
+
+    .sao-btn.is-loading {
+      pointer-events: none;
+    }
+
+    .sao-btn.is-loading::before {
+      opacity: 1;
+      background: conic-gradient(
+        from var(--sao-spin-angle, 0deg),
+        transparent 0 80deg,
+        rgba(255, 226, 160, 0.92) 88deg 92deg,
+        transparent 100deg 360deg
+      );
+      -webkit-mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      padding: 1px;
+      animation: saoSpinAngle 1.8s linear infinite;
+    }
+
+    .sao-btn .sao-ripple {
+      position: absolute;
+      z-index: 0;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 226, 160, 0.7), transparent 70%);
+      pointer-events: none;
+      transform: scale(0);
+      opacity: 0.88;
+      animation: saoRipple 0.8s var(--sao-easing-out) forwards;
+    }
+
+    .sao-btn.is-danger:hover:not(:disabled) {
+      box-shadow: var(--sao-glow-danger);
+    }
+
+    .sao-btn.is-danger:focus-visible {
+      box-shadow: 0 0 0 2px rgba(255, 156, 100, 0.82), 0 0 26px rgba(185, 75, 25, 0.68);
     }
 
     html.sao-modal-open,
@@ -2428,6 +2568,13 @@
         animation: none !important;
         opacity: 1;
       }
+      .sao-btn,
+      .sao-btn::before,
+      .sao-btn::after,
+      .sao-btn .sao-ripple {
+        transition: none !important;
+        animation: none !important;
+      }
       body.operational .sao-window {
         animation: none !important;
       }
@@ -2629,6 +2776,12 @@
       initial-value: 0deg;
     }
 
+    @property --sao-spin-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+
     @keyframes panelMaterialize {
       0% {
         opacity: 0;
@@ -2716,6 +2869,22 @@
         opacity: 1;
         transform: scale(1);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 226, 160, 0.32);
+      }
+    }
+
+    @keyframes saoFocusPulse {
+      0%, 100% { box-shadow: var(--sao-glow-focus); }
+      50% { box-shadow: 0 0 0 2px rgba(255, 226, 160, 1), 0 0 38px rgba(214, 166, 77, 0.92); }
+    }
+
+    @keyframes saoSpinAngle {
+      to { --sao-spin-angle: 360deg; }
+    }
+
+    @keyframes saoRipple {
+      to {
+        transform: scale(8);
+        opacity: 0;
       }
     }
 
@@ -3289,8 +3458,8 @@
       <b id="overrideTitle">系統覆寫警告</b>
       <p id="overrideBody">解除多層屏障將直接接管演算核心。<br />確認後，系統將接管草稿記憶並進入鑑定待命。</p>
       <div class="override-actions">
-        <button class="ghost-btn" id="abortOverrideBtn" type="button">✕ 中斷</button>
-        <button class="secondary-btn danger-btn" id="forceSyncBtn" type="button">◯ 強制同步</button>
+        <button class="ghost-btn sao-btn" id="abortOverrideBtn" type="button">✕ 中斷</button>
+        <button class="secondary-btn danger-btn sao-btn is-danger" id="forceSyncBtn" type="button">◯ 強制同步</button>
       </div>
     </div>
   </div>
@@ -3324,7 +3493,7 @@
           <p class="auth-copy" id="authPrompt">使用 Google 登入後，即可貼上草稿並取得重寫全文、語感審查與歷史紀錄同步。</p>
 
           <div class="auth-actions">
-            <button class="primary-btn" id="openRitualBtn" type="submit"><span>使用 Google 登入</span><span class="google-mark" aria-hidden="true"></span></button>
+            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span>使用 Google 登入</span><span class="google-mark" aria-hidden="true"></span></button>
           </div>
 
           <div class="ritual-status visually-hidden" id="ritualStatus" role="status" aria-live="polite">Google 登入待命</div>
@@ -3355,11 +3524,11 @@
           <span>Archives / Account / Session</span>
         </div>
         <div class="workbench-nav-actions" role="toolbar" aria-label="編修核心操作">
-          <button class="history-chip" type="button" id="historyToggle" aria-label="開啟歷史紀錄" title="歷史紀錄" aria-expanded="false" aria-controls="historyDrawer">
+          <button class="history-chip sao-btn" type="button" id="historyToggle" aria-label="開啟歷史紀錄" title="歷史紀錄" aria-expanded="false" aria-controls="historyDrawer">
             <span class="nav-glyph" aria-hidden="true">歷</span>
             <span class="nav-label">歷史紀錄</span>
           </button>
-          <button class="account-chip" type="button" id="accountToggle" aria-label="開啟帳號選單" title="帳號選單" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+          <button class="account-chip sao-btn" type="button" id="accountToggle" aria-label="開啟帳號選單" title="帳號選單" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
             <span class="account-avatar" id="accountAvatar" aria-hidden="true">
               <img id="accountAvatarImg" alt="" />
               <span id="accountAvatarText">編</span>
@@ -3372,13 +3541,13 @@
           </button>
         </div>
         <div class="account-menu" id="accountMenu" role="menu" hidden>
-          <button type="button" id="logoutButton" role="menuitem">登出</button>
+          <button class="sao-btn is-danger" type="button" id="logoutButton" role="menuitem">登出</button>
         </div>
         <div class="history-drawer" id="historyDrawer" role="region" aria-labelledby="historyHeading" hidden>
           <div class="history-head">
             <span id="historyHeading" aria-label="歷史鑑定卷宗">APPRAISAL ARCHIVE</span>
-            <button type="button" id="historyClear">清空</button>
-            <button type="button" id="historyClose">收回</button>
+            <button class="sao-btn is-danger" type="button" id="historyClear">清空</button>
+            <button class="sao-btn" type="button" id="historyClose">收回</button>
           </div>
           <div class="history-list" id="historyList">
             <p class="history-empty">尚無鑑定紀錄。</p>
@@ -3405,7 +3574,7 @@
         </label>
         <div class="spell-list" id="spellList" aria-live="polite"></div>
         <div class="operational-actions">
-          <button class="primary-btn analyze-ritual-btn" type="button" data-op="analyze" aria-keyshortcuts="Control+Enter Meta+Enter">
+          <button class="primary-btn analyze-ritual-btn sao-btn" type="button" data-op="analyze" aria-keyshortcuts="Control+Enter Meta+Enter">
             <span class="btn-prefix" aria-hidden="true">◈</span>
             <span class="btn-label">啟動奧術解析引擎</span>
             <span class="btn-loading" aria-hidden="true" hidden>符文校準中…</span>
@@ -3416,9 +3585,9 @@
           <div class="analysis-dossier-head">
             <span>ARCANE DIAGNOSTIC DOSSIER</span>
             <div class="dossier-actions">
-              <button type="button" class="dossier-copy" id="copyAllButton">複製全部</button>
-              <button type="button" class="ghost-btn dossier-action" id="reanalyzeButton" hidden>重新審閱</button>
-              <button type="button" class="ghost-btn dossier-action" id="clearDraftButton">清空手稿</button>
+              <button type="button" class="dossier-copy sao-btn" id="copyAllButton">複製全部</button>
+              <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden>重新審閱</button>
+              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton">清空手稿</button>
             </div>
           </div>
           <div id="analysisResult" class="analysis-result">
@@ -3599,6 +3768,21 @@
 
     window.__FLG_SAO_AUDIO__ = SaoAudio;
 
+    document.addEventListener("click", (event) => {
+      if (prefersReducedMotion) return;
+      const target = event.target instanceof Element ? event.target.closest(".sao-btn:not(:disabled)") : null;
+      if (!(target instanceof HTMLElement)) return;
+      const rect = target.getBoundingClientRect();
+      const ripple = document.createElement("span");
+      const size = Math.max(rect.width, rect.height);
+      ripple.className = "sao-ripple";
+      ripple.style.width = ripple.style.height = `${size}px`;
+      ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+      ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+      target.appendChild(ripple);
+      window.setTimeout(() => ripple.remove(), 900);
+    });
+
     function bindVisualViewportInset() {
       const viewport = window.visualViewport;
       if (!viewport) return;
@@ -3756,7 +3940,7 @@
       heading.textContent = title;
       const copy = document.createElement("button");
       copy.type = "button";
-      copy.className = "result-section-copy";
+      copy.className = "result-section-copy sao-btn";
       copy.dataset.copySection = kind;
       copy.textContent = "複製此區";
       const body = document.createElement("div");
@@ -6264,7 +6448,7 @@
 
           const button = document.createElement("button");
           button.type = "button";
-          button.className = "history-item";
+          button.className = "history-item sao-btn";
           button.dataset.id = item.id;
 
           const time = document.createElement("span");
@@ -6280,7 +6464,7 @@
 
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
-          deleteButton.className = "history-delete";
+          deleteButton.className = "history-delete sao-btn is-danger";
           deleteButton.textContent = this.pendingHistoryDeleteId === item.id ? "確定" : "刪";
           deleteButton.setAttribute("aria-label", this.pendingHistoryDeleteId === item.id ? "再次確認刪除此卷宗" : "刪除此卷宗");
           deleteButton.addEventListener("click", () => this.deleteHistoryItem(item.id));

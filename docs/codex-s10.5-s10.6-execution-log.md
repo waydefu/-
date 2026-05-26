@@ -177,3 +177,32 @@
 - `f8e09d3 feat(s10.5/sweep): sync frame sweep with panel materialize`
 - `241be31 feat(s10.5/backdrop): radial pulse and scan-line on dialog open`
 - Part 5 `feat(s10.5/audio): add gesture-unlocked SAO open chime`（最新 hash 以 final 回報與 `git log` 為準，避免 commit 自我引用造成 hash 變動）
+
+## S10.6 Commit Plan
+
+- Commit 1: core `--sao-*` tokens, `.sao-btn` mixin, ripple JS, static/dynamic button class coverage.
+- Commit 2: form / textarea focus underline.
+- Commit 3: history item hover / active state.
+- Commit 4: history drawer / account menu open-close animation.
+- Commit 5: toast scan and CSS in/out motion.
+- Commit 6: progress bar endpoint pulse.
+- Commit 7: primary/analyze button loading and hover enhancement.
+- Commit 8: chip hover / expanded state.
+- Commit 9: danger confirm state.
+- Commit 10: success/error flash + override / connection / spell-list integration.
+
+## S10.6 Part 1 - SAO Button Mixin
+
+### 變更前確認
+
+- 範圍：`:root` tokens、`.sao-btn` CSS、click ripple JS、HTML button class additions、dynamic button class additions。
+- 不改任何 button id/name/click handler；只加 class。
+- Touch target 透過 `.sao-btn { min-height: 44px; }` 維持紅線。
+- Reduced motion 下停用 button transition / ripple / loading spin。
+
+### 變更後更新
+
+- `public/index.html`：新增 S10.6 v2 `--sao-*` timing / glow tokens 與 `.sao-btn` 共用樣式。
+- `public/index.html`：為靜態與動態 button 增加 `sao-btn` / `is-danger` class；沒有改 button id、type、文字或 handler。
+- `public/index.html`：新增 click ripple 事件委派，`prefers-reduced-motion` 下直接略過。
+- `tests/visual/helpers.ts`：同步 visual helper 注入的 dossier / history 按鈕 class，避免截圖假資料停留舊樣式。
