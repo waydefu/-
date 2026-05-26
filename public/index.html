@@ -1243,6 +1243,57 @@
       box-shadow: var(--sao-glow-default);
     }
 
+    .sao-btn .sao-btn-label,
+    .sao-btn .sao-btn-symbol {
+      position: relative;
+      z-index: 1;
+    }
+
+    .sao-btn .sao-btn-label {
+      display: inline-flex;
+      align-items: center;
+      min-width: 0;
+    }
+
+    .sao-btn .sao-btn-symbol {
+      display: inline-grid;
+      width: 1.55em;
+      height: 1.55em;
+      min-width: 1.55em;
+      place-items: center;
+      border: 1px solid rgba(255, 226, 160, 0.42);
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 30%, rgba(255, 246, 203, 0.5), rgba(214, 166, 77, 0.16) 46%, transparent 70%),
+        linear-gradient(145deg, rgba(78, 39, 10, 0.82), rgba(7, 3, 1, 0.94));
+      color: rgba(255, 246, 203, 0.94);
+      font-family: var(--font-mono);
+      font-size: 0.86em;
+      font-weight: 700;
+      line-height: 1;
+      text-shadow: 0 0 10px rgba(255, 226, 160, 0.56);
+      box-shadow: 0 0 14px rgba(214, 166, 77, 0.18), inset 0 0 8px rgba(255, 226, 160, 0.12);
+      transition:
+        transform var(--sao-dur-mid) var(--sao-easing-back),
+        border-color var(--sao-dur-mid) var(--sao-easing-out),
+        box-shadow var(--sao-dur-mid) var(--sao-easing-out);
+    }
+
+    .sao-btn:hover:not(:disabled) .sao-btn-symbol,
+    .sao-btn:focus-visible .sao-btn-symbol {
+      transform: rotate(-10deg) scale(1.08);
+      border-color: rgba(255, 246, 203, 0.78);
+      box-shadow: 0 0 20px rgba(255, 226, 160, 0.34), inset 0 0 12px rgba(255, 226, 160, 0.22);
+    }
+
+    .sao-btn.is-danger .sao-btn-symbol {
+      border-color: rgba(255, 156, 100, 0.52);
+      color: rgba(255, 216, 184, 0.94);
+      background:
+        radial-gradient(circle at 36% 30%, rgba(255, 190, 144, 0.42), rgba(185, 75, 25, 0.18) 46%, transparent 70%),
+        linear-gradient(145deg, rgba(110, 35, 15, 0.86), rgba(16, 4, 2, 0.96));
+    }
+
     .sao-btn::before,
     .sao-btn::after {
       content: "";
@@ -1908,6 +1959,10 @@
     }
 
     .account-menu button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
       width: 100%;
       min-height: 44px;
       border: 1px solid rgba(214, 166, 77, 0.22);
@@ -1982,6 +2037,10 @@
     }
 
     .history-head button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       border: 0;
       background: transparent;
       color: rgba(241, 222, 194, 0.52);
@@ -2006,7 +2065,7 @@
 
     .history-entry {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) 38px;
+      grid-template-columns: minmax(0, 1fr) minmax(44px, auto);
       gap: 7px;
       align-items: stretch;
     }
@@ -2014,7 +2073,10 @@
     .history-item {
       position: relative;
       display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
       gap: 5px;
+      column-gap: 8px;
+      align-items: center;
       width: 100%;
       padding: 10px;
       border: 1px solid rgba(214, 166, 77, 0.14);
@@ -2082,6 +2144,10 @@
     }
 
     .history-delete {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
       min-width: 44px;
       min-height: 44px;
       border: 1px solid rgba(214, 94, 58, 0.24);
@@ -2102,13 +2168,23 @@
     }
 
     .history-time {
+      grid-column: 2;
       color: rgba(255, 226, 160, 0.58);
       font-family: var(--font-mono);
       font-size: 12px;
       letter-spacing: 0.08em;
     }
 
+    .history-entry-sigil {
+      grid-row: 1 / span 2;
+      width: 28px;
+      height: 28px;
+      align-self: center;
+      font-size: 11px;
+    }
+
     .history-preview {
+      grid-column: 2;
       color: rgba(241, 222, 194, 0.72);
       font-size: 14px;
       line-height: 1.7;
@@ -2453,6 +2529,10 @@
     }
 
     .dossier-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       min-height: 38px;
       padding: 6px 10px;
       font: 12px/1 var(--font-tw);
@@ -2466,6 +2546,10 @@
     }
 
     .dossier-copy {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
       border: 1px solid rgba(214, 166, 77, 0.22);
       background: rgba(0, 0, 0, 0.24);
       color: rgba(255, 226, 160, 0.78);
@@ -2890,6 +2974,7 @@
       .sao-btn,
       .sao-btn::before,
       .sao-btn::after,
+      .sao-btn .sao-btn-symbol,
       .sao-btn .sao-ripple {
         transition: none !important;
         animation: none !important;
@@ -4070,8 +4155,8 @@
       <b id="overrideTitle">系統覆寫警告</b>
       <p id="overrideBody">解除多層屏障後，系統將直接接管演算核心。<br />確認後，草稿記憶會進入鑑定待命狀態。</p>
       <div class="override-actions">
-        <button class="ghost-btn sao-btn" id="abortOverrideBtn" type="button">✕ 中斷</button>
-        <button class="secondary-btn danger-btn sao-btn is-danger" id="forceSyncBtn" type="button">◯ 強制同步</button>
+        <button class="ghost-btn sao-btn" id="abortOverrideBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">中斷</span></button>
+        <button class="secondary-btn danger-btn sao-btn is-danger" id="forceSyncBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">↻</span><span class="sao-btn-label">強制同步</span></button>
       </div>
     </div>
   </div>
@@ -4105,7 +4190,7 @@
           <p class="auth-copy" id="authPrompt">以 Google 登入後，即可貼上手稿，取得全文重寫、語感審查與歷史卷宗同步。</p>
 
           <div class="auth-actions">
-            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span>使用 Google 登入</span><span class="google-mark" aria-hidden="true"></span></button>
+            <button class="primary-btn sao-btn" id="openRitualBtn" type="submit"><span class="sao-btn-label">使用 Google 登入</span><span class="google-mark" aria-hidden="true"></span></button>
           </div>
 
           <div class="ritual-status visually-hidden" id="ritualStatus" role="status" aria-live="polite">Google 登入待命中</div>
@@ -4153,13 +4238,13 @@
           </button>
         </div>
         <div class="account-menu" id="accountMenu" role="menu" hidden>
-          <button class="sao-btn is-danger" type="button" id="logoutButton" role="menuitem">登出</button>
+          <button class="sao-btn is-danger" type="button" id="logoutButton" role="menuitem"><span class="sao-btn-symbol" aria-hidden="true">⇥</span><span class="sao-btn-label">登出</span></button>
         </div>
         <div class="history-drawer" id="historyDrawer" role="region" aria-labelledby="historyHeading" hidden>
           <div class="history-head">
             <span id="historyHeading" aria-label="歷史鑑定卷宗">APPRAISAL ARCHIVE</span>
-            <button class="sao-btn is-danger" type="button" id="historyClear">清空</button>
-            <button class="sao-btn" type="button" id="historyClose">收回</button>
+            <button class="sao-btn is-danger" type="button" id="historyClear"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">清空</span></button>
+            <button class="sao-btn" type="button" id="historyClose"><span class="sao-btn-symbol" aria-hidden="true">⌃</span><span class="sao-btn-label">收回</span></button>
           </div>
           <div class="history-list" id="historyList">
             <p class="history-empty">尚無鑑定紀錄。</p>
@@ -4197,9 +4282,9 @@
           <div class="analysis-dossier-head">
             <span>ARCANE DIAGNOSTIC DOSSIER</span>
             <div class="dossier-actions">
-              <button type="button" class="dossier-copy sao-btn" id="copyAllButton">複製卷宗</button>
-              <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden>再次鑑定</button>
-              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton">清空手稿</button>
+              <button type="button" class="dossier-copy sao-btn" id="copyAllButton"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製卷宗</span></button>
+              <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden><span class="sao-btn-symbol" aria-hidden="true">↻</span><span class="sao-btn-label">再次鑑定</span></button>
+              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton"><span class="sao-btn-symbol" aria-hidden="true">⌫</span><span class="sao-btn-label">清空手稿</span></button>
             </div>
           </div>
           <div id="analysisResult" class="analysis-result">
@@ -4538,6 +4623,41 @@
       }
     }
 
+    function createButtonGlyph(symbol) {
+      const node = document.createElement("span");
+      node.className = "sao-btn-symbol";
+      node.setAttribute("aria-hidden", "true");
+      node.textContent = symbol;
+      return node;
+    }
+
+    function createButtonLabel(label) {
+      const node = document.createElement("span");
+      node.className = "sao-btn-label";
+      node.textContent = label;
+      return node;
+    }
+
+    function setButtonGlyph(button, symbol, label) {
+      if (!(button instanceof HTMLElement)) return;
+      button.replaceChildren(createButtonGlyph(symbol), createButtonLabel(label));
+    }
+
+    function setButtonLabel(button, label) {
+      if (!(button instanceof HTMLElement)) return;
+      const labelNode = button.querySelector(".sao-btn-label");
+      if (labelNode) {
+        labelNode.textContent = label;
+      } else {
+        button.textContent = label;
+      }
+    }
+
+    function getButtonLabel(button, fallback = "") {
+      if (!(button instanceof HTMLElement)) return fallback;
+      return button.querySelector(".sao-btn-label")?.textContent || button.textContent || fallback;
+    }
+
     function createResultSection(kind, title, eyebrow, content) {
       const section = document.createElement("section");
       section.className = "result-section";
@@ -4554,7 +4674,7 @@
       copy.type = "button";
       copy.className = "result-section-copy sao-btn";
       copy.dataset.copySection = kind;
-      copy.textContent = "複製段落";
+      setButtonGlyph(copy, "⧉", "複製段落");
       const body = document.createElement("div");
       body.className = "result-section-body";
       body.innerHTML = renderMarkdownLite(content || "此段暫無回傳內容。");
@@ -5927,7 +6047,7 @@
         this.authHeaderState.textContent = state;
         this.authTitle.textContent = title;
         this.authPrompt.textContent = prompt;
-        const buttonLabel = this.openButton.querySelector("span:not(.google-mark)");
+        const buttonLabel = this.openButton.querySelector(".sao-btn-label") || this.openButton.querySelector("span:not(.google-mark)");
         if (buttonLabel) {
           buttonLabel.textContent = button;
         } else {
@@ -6753,7 +6873,7 @@
         window.clearTimeout(this.logoutConfirmTimer);
         if (!this.logoutButton) return;
         delete this.logoutButton.dataset.confirm;
-        this.logoutButton.textContent = "登出";
+        setButtonGlyph(this.logoutButton, "⇥", "登出");
         this.logoutButton.classList.remove("is-confirming");
       }
 
@@ -6810,12 +6930,12 @@
         try {
           const ok = await this.copyPlainText(text);
           if (!ok) throw new Error("clipboard-failed");
-          const original = this.copyButton?.textContent || "複製卷宗";
-          if (this.copyButton) this.copyButton.textContent = "已複製";
+          const original = getButtonLabel(this.copyButton, "複製卷宗");
+          setButtonLabel(this.copyButton, "已複製");
           this.status.textContent = "鑑定卷宗已寫入剪貼簿";
           this.hud.showNotice("鑑定卷宗已複製");
           window.setTimeout(() => {
-            if (this.copyButton) this.copyButton.textContent = original;
+            setButtonLabel(this.copyButton, original);
           }, 1600);
         } catch (error) {
           this.status.textContent = "剪貼簿寫入失敗，請手動選取卷宗";
@@ -7033,14 +7153,17 @@
           preview.className = "history-preview";
           preview.textContent = item.preview || item.draft?.replace(/\s+/g, " ").slice(0, 86) || "未命名手稿";
 
-          button.append(time, preview);
+          const sigil = createButtonGlyph("卷");
+          sigil.classList.add("history-entry-sigil");
+
+          button.append(sigil, time, preview);
           button.addEventListener("click", () => this.loadHistoryItem(item.id));
 
           const deleteButton = document.createElement("button");
           deleteButton.type = "button";
           deleteButton.className = "history-delete sao-btn is-danger";
           deleteButton.classList.toggle("is-confirming", this.pendingHistoryDeleteId === item.id);
-          deleteButton.textContent = this.pendingHistoryDeleteId === item.id ? "確定" : "刪";
+          setButtonGlyph(deleteButton, this.pendingHistoryDeleteId === item.id ? "!" : "×", this.pendingHistoryDeleteId === item.id ? "確定" : "刪");
           deleteButton.setAttribute("aria-label", this.pendingHistoryDeleteId === item.id ? "再次確認刪除此卷宗" : "刪除此卷宗");
           deleteButton.addEventListener("click", () => this.deleteHistoryItem(item.id));
 
@@ -7109,7 +7232,7 @@
         if (this.historyClear?.dataset.confirm !== "1") {
           if (this.historyClear) {
             this.historyClear.dataset.confirm = "1";
-            this.historyClear.textContent = "再次確認";
+            setButtonGlyph(this.historyClear, "!", "再次確認");
             this.historyClear.classList.add("is-confirming");
           }
           this.hud.showNotice("再次點擊以清空歷史卷宗");
@@ -7117,7 +7240,7 @@
           this.historyClearTimer = window.setTimeout(() => {
             if (this.historyClear) {
               delete this.historyClear.dataset.confirm;
-              this.historyClear.textContent = "清空";
+              setButtonGlyph(this.historyClear, "×", "清空");
               this.historyClear.classList.remove("is-confirming");
             }
           }, 2600);
@@ -7134,7 +7257,7 @@
         }
         if (this.historyClear) {
           delete this.historyClear.dataset.confirm;
-          this.historyClear.textContent = "清空";
+          setButtonGlyph(this.historyClear, "×", "清空");
           this.historyClear.classList.remove("is-confirming");
         }
         this.renderHistory();
@@ -7182,7 +7305,7 @@
         if (this.logoutButton?.dataset.confirm !== "1") {
           if (this.logoutButton) {
             this.logoutButton.dataset.confirm = "1";
-            this.logoutButton.textContent = "再次確認登出";
+            setButtonGlyph(this.logoutButton, "!", "再次確認登出");
             this.logoutButton.classList.add("is-confirming");
           }
           this.status.textContent = "再次確認後將封存草稿並退出書庫";

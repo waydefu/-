@@ -88,3 +88,36 @@ What changed:
 Next required action:
 - Run npm run sync:login-mother so public/worldforge-login.html matches public/index.html.
 - Then run git diff --check before committing Part 2.
+
+Part 2 commit: 1f96bcc feat(s10.7/copy): polish Traditional Chinese UI tone.
+
+## Before Edit Confirmation - Part 3 Icons
+
+Planned runtime file: public/index.html.
+
+Constraints checked:
+- Button ids and event listeners stay unchanged.
+- Decorative icons must use aria-hidden and not replace accessible labels.
+- Dynamic buttons must keep data attributes and click behavior.
+- Static Google button label must still be updated by LoginController.setAuthCopy.
+
+Target changes:
+- Add `.sao-btn-symbol` and `.sao-btn-label` for consistent icon/text layout.
+- Wrap static button labels with decorative SAO glyphs where safe.
+- Add a helper for dynamic button glyph creation.
+- Add icons to result copy buttons, history delete buttons, and history row buttons.
+
+## After Edit - Part 3 Icons
+
+Changed public/index.html only.
+
+What changed:
+- Added `.sao-btn-symbol` and `.sao-btn-label` CSS for black-gold SAO glyph badges.
+- Wrapped static action buttons with aria-hidden decorative glyphs and preserved readable label spans.
+- Added helper functions for dynamic glyph buttons so result copy/history delete/history row buttons keep consistent icon treatment.
+- Updated copy/logout/history confirm label changes to preserve icon wrappers instead of replacing button DOM with plain text.
+- Added reduced-motion coverage for glyph transitions.
+
+Next required action:
+- Run npm run sync:login-mother.
+- Run git diff --check before committing Part 3.
