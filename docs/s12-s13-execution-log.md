@@ -18,7 +18,7 @@
 | Part | Commit | 狀態 | 風險/備註 |
 | --- | --- | --- | --- |
 | 1 | `perf(s12/preconnect)` | 已修改，待驗收 | 已補 Firebase/Three/CDN/API/font origin preconnect 與核心本地 modulepreload；不改 UI 文案。 |
-| 2 | `perf(s12/script-loading)` | 待執行 | 預計延後非關鍵 script，同時確保 Firebase/GSAP 初始化仍可等待。 |
+| 2 | `perf(s12/script-loading)` | 已修改，待驗收 | GSAP 改為 `defer` + `crossorigin`；Firebase compat scripts 已維持 defer，不改 Auth 流程。 |
 | 3 | `perf(s12/lcp)` | 待執行 | 預計縮短登入殼層首屏可見時間，不提前動 Auth。 |
 | 4 | `perf(s12/webgl-idle)` | 待執行 | 預計將重型附加 WebGL 層延後到 idle，保留核心 WebGL 首屏。 |
 | 5 | `perf(s12/link-start-idle)` | 待執行 | 預計 Link Start shader lazy/idle 初始化，觸發時仍可同步啟動。 |
