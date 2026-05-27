@@ -36,7 +36,7 @@
 | 4 | `feat(s13/menu-anim)` | 已修改，待驗收 | 帳號選單與歷史抽屜增加掃描門 sweep 與更長展開動畫；沿用 `hidden`/ARIA，不改歷史資料。 |
 | 5 | `feat(s13/notice-anim)` | 已修改，待驗收 | Notice 進場改為水平切入/垂直展開，加入掃描線與 pulse；live region 與文字未改。 |
 | 6 | `feat(s13/list-anim)` | 已修改，待驗收 | 歷史卷宗列表加入 stagger 進場動畫；刪除、載入、active 狀態與資料流未改。 |
-| 7 | `feat(s13/status-anim)` | 待執行 | 強化 status 更新提示。 |
+| 7 | `feat(s13/status-anim)` | 已修改，待驗收 | 狀態列更新加入 sweep/pulse，`is-updated` 視覺保留至 780ms；ARIA live 與文案未改。 |
 | 8 | `feat(s13/frame-sweep)` | 待執行 | 強化面板 frame sweep。 |
 | 9 | `feat(s13/spell-anim)` | 待執行 | 強化 spell chip 動畫。 |
 | 10 | `feat(s13/feedback)` | 待執行 | 強化成功/錯誤/確認回饋。 |
