@@ -68,6 +68,45 @@ async function verifyAppCheck(req: any, requestId: string): Promise<AppCheckStat
   }
 }
 
+function sanitizeCspReport(body: any): Record<string, string> {
+  const report = body?.["csp-report"] || body?.body?.["csp-report"] || body || {};
+  const pick = (key: string): string => {
+    const value = report[key];
+    return typeof value === "string" ? value.slice(0, 500) : "";
+  };
+  return {
+    documentUri: pick("document-uri"),
+    referrer: pick("referrer"),
+    violatedDirective: pick("violated-directive"),
+    effectiveDirective: pick("effective-directive"),
+    originalPolicy: pick("original-policy"),
+    blockedUri: pick("blocked-uri"),
+    sourceFile: pick("source-file"),
+    lineNumber: String(report["line-number"] || ""),
+    columnNumber: String(report["column-number"] || ""),
+    statusCode: String(report["status-code"] || ""),
+  };
+}
+
+const cspReportHandler = async (req: any, res: any): Promise<void> => {
+  const requestId = getRequestId(req);
+  if (req.method === "OPTIONS") {
+    applyCors(req, res);
+    res.set("Access-Control-Allow-Methods", "POST, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Content-Type");
+    res.set("Access-Control-Max-Age", "3600");
+    res.status(204).send("");
+    return;
+  }
+  if (req.method !== "POST") {
+    sendError(req, res, 405, "method-not-allowed", "Method Not Allowed");
+    return;
+  }
+  applyCors(req, res);
+  warnEvent("csp_report", { requestId, ...sanitizeCspReport(req.body) });
+  res.status(204).send("");
+};
+
 // ── Main handler ─────────────────────────────────────────────
 const analyzeHandler = async (req: any, res: any): Promise<void> => {
   const requestId = getRequestId(req);
@@ -224,4 +263,14 @@ export const analyzeV2 = onRequest(
     secrets:        [GROQ_API_KEY],
   },
   analyzeHandler
+);
+
+export const cspReport = onRequest(
+  {
+    region: "us-central1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+    concurrency: 80,
+  },
+  cspReportHandler
 );
