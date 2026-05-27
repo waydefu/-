@@ -4935,6 +4935,14 @@
       });
     }
     const shouldAutoFocusAuth = () => !mobileQuery.matches && window.innerWidth >= 980 && window.innerHeight >= 780;
+    const deferToIdle = (callback, { timeout = 1200 } = {}) => {
+      if (typeof callback !== "function") return 0;
+      if (prefersReducedMotion) return window.setTimeout(callback, 0);
+      if ("requestIdleCallback" in window) {
+        return window.requestIdleCallback(callback, { timeout });
+      }
+      return window.setTimeout(callback, timeout);
+    };
 
     const SaoAudio = (() => {
       let ctx = null;
@@ -8432,33 +8440,8 @@
     let referenceGlyphRing = null;
     let goldBokehField = null;
     let steppedAnimationController = null;
-    try {
-      raphaelComputationRing = new RaphaelComputationRing(THREE, manager.scene, raphaelWebglProfile, core);
-    } catch (err) {
-      console.warn("[FLG] RaphaelComputationRing init failed:", err?.message || err);
-    }
-    try {
-      magiculeParticleField = new MagiculeParticleField(THREE, manager.scene, raphaelWebglProfile, core);
-    } catch (err) {
-      console.warn("[FLG] MagiculeParticleField init failed:", err?.message || err);
-    }
-    try {
-      referenceGlyphRing = new ReferenceGlyphRing(THREE, manager.scene, raphaelWebglProfile, core);
-    } catch (err) {
-      console.warn("[FLG] ReferenceGlyphRing init failed:", err?.message || err);
-    }
-    try {
-      goldBokehField = new GoldBokehField(THREE, manager.scene, raphaelWebglProfile, core);
-    } catch (err) {
-      console.warn("[FLG] GoldBokehField init failed:", err?.message || err);
-    }
-    try {
-      steppedAnimationController = new SteppedAnimationController({ reduced: raphaelWebglProfile.reduced });
-    } catch (err) {
-      console.warn("[FLG] SteppedAnimationController init failed:", err?.message || err);
-    }
-
-    const bloomTargetCount = [
+    let deferredRaphaelLayersReady = false;
+    let bloomTargetCount = [
       core.coreMesh,
       core.edgeShell,
       core.geometryGroup,
@@ -8466,16 +8449,8 @@
       core.pageGroup,
       runes.group,
       particles.group,
-      raphaelSingularityCore?.group,
-      raphaelComputationRing?.group,
-      magiculeParticleField?.group,
-      referenceGlyphRing?.group,
-      goldBokehField?.group
+      raphaelSingularityCore?.group
     ].reduce((count, object) => count + enableBloomLayer(object), 0);
-    window.__FLG_BLOOM_SCENE__ = BLOOM_SCENE;
-    document.documentElement.dataset.selectiveBloom = "active";
-    document.documentElement.dataset.bloomLayer = String(BLOOM_SCENE);
-    document.documentElement.dataset.bloomTargets = String(bloomTargetCount);
 
     const getRaphaelWebglState = () => ({
       energy: clamp(login.syncProgress + core.wake * 0.42 + core.hover * 0.32 + core.operational * 0.18, 0, 1),
@@ -8483,41 +8458,89 @@
       handoff: document.body.classList.contains("operational") || core.operational > 0.3
     });
 
-    window.__FLG_LOGIN_FX_METRICS__ = {
-      runeLayers: runes.metrics?.runeLayers || runes.rings.length,
-      semanticZones: runes.metrics?.semanticZones || 7,
-      particles: particles.metrics?.particles || particles.count,
-      ingestionStreams: particles.metrics?.ingestionStreams || particles.streamCount,
-      scanBands: core.scanBands.length,
-      arcaneOpticalBackground: true,
-      raphaelSingularityCore: true,
-      raphaelComputationRing: !!raphaelComputationRing,
-      magiculeParticleField: !!magiculeParticleField,
-      referenceGlyphRing: !!referenceGlyphRing,
-      goldBokehField: !!goldBokehField,
-      steppedAnimationController: !!steppedAnimationController,
-      magiculeParticles: magiculeParticleField?.count || 0,
-      composerPasses: post.composer.passes?.length || 0,
-      selectiveBloom: true,
-      bloomLayer: BLOOM_SCENE,
-      bloomTargets: bloomTargetCount,
-      linkStartShader: !!linkStartFX.gl,
-      modalGlass: true,
-      reducedMotion: prefersReducedMotion,
-      mobile: mobileQuery.matches
-    };
-    document.documentElement.dataset.runeLayers = String(window.__FLG_LOGIN_FX_METRICS__.runeLayers);
-    document.documentElement.dataset.ingestionStreams = String(window.__FLG_LOGIN_FX_METRICS__.ingestionStreams);
-    document.documentElement.dataset.scanBands = String(window.__FLG_LOGIN_FX_METRICS__.scanBands);
-    document.documentElement.dataset.linkStartShader = linkStartFX.gl ? "ready" : "disabled";
-    document.documentElement.dataset.modalGlass = "ready";
-    document.documentElement.dataset.arcaneOpticalBackground = "active";
-    document.documentElement.dataset.raphaelSingularityCore = "active";
-    if (raphaelComputationRing) document.documentElement.dataset.raphaelComputationRing = "active";
-    if (magiculeParticleField) document.documentElement.dataset.magiculeParticleField = "active";
-    if (referenceGlyphRing) document.documentElement.dataset.referenceGlyphRing = "active";
-    if (goldBokehField) document.documentElement.dataset.goldBokehField = "active";
-    if (steppedAnimationController) document.documentElement.dataset.steppedAnimationController = "active";
+    function updateFxMetrics() {
+      window.__FLG_BLOOM_SCENE__ = BLOOM_SCENE;
+      document.documentElement.dataset.selectiveBloom = "active";
+      document.documentElement.dataset.bloomLayer = String(BLOOM_SCENE);
+      document.documentElement.dataset.bloomTargets = String(bloomTargetCount);
+      window.__FLG_LOGIN_FX_METRICS__ = {
+        runeLayers: runes.metrics?.runeLayers || runes.rings.length,
+        semanticZones: runes.metrics?.semanticZones || 7,
+        particles: particles.metrics?.particles || particles.count,
+        ingestionStreams: particles.metrics?.ingestionStreams || particles.streamCount,
+        scanBands: core.scanBands.length,
+        arcaneOpticalBackground: true,
+        raphaelSingularityCore: true,
+        raphaelComputationRing: !!raphaelComputationRing,
+        magiculeParticleField: !!magiculeParticleField,
+        referenceGlyphRing: !!referenceGlyphRing,
+        goldBokehField: !!goldBokehField,
+        steppedAnimationController: !!steppedAnimationController,
+        magiculeParticles: magiculeParticleField?.count || 0,
+        composerPasses: post.composer.passes?.length || 0,
+        selectiveBloom: true,
+        bloomLayer: BLOOM_SCENE,
+        bloomTargets: bloomTargetCount,
+        linkStartShader: !!linkStartFX.gl,
+        modalGlass: true,
+        deferredRaphaelLayersReady,
+        reducedMotion: prefersReducedMotion,
+        mobile: mobileQuery.matches
+      };
+      document.documentElement.dataset.runeLayers = String(window.__FLG_LOGIN_FX_METRICS__.runeLayers);
+      document.documentElement.dataset.ingestionStreams = String(window.__FLG_LOGIN_FX_METRICS__.ingestionStreams);
+      document.documentElement.dataset.scanBands = String(window.__FLG_LOGIN_FX_METRICS__.scanBands);
+      document.documentElement.dataset.linkStartShader = linkStartFX.gl ? "ready" : "disabled";
+      document.documentElement.dataset.modalGlass = "ready";
+      document.documentElement.dataset.arcaneOpticalBackground = "active";
+      document.documentElement.dataset.raphaelSingularityCore = "active";
+      document.documentElement.dataset.raphaelDeferredLayers = deferredRaphaelLayersReady ? "ready" : "idle";
+      if (raphaelComputationRing) document.documentElement.dataset.raphaelComputationRing = "active";
+      if (magiculeParticleField) document.documentElement.dataset.magiculeParticleField = "active";
+      if (referenceGlyphRing) document.documentElement.dataset.referenceGlyphRing = "active";
+      if (goldBokehField) document.documentElement.dataset.goldBokehField = "active";
+      if (steppedAnimationController) document.documentElement.dataset.steppedAnimationController = "active";
+    }
+
+    function initializeDeferredRaphaelLayers() {
+      if (deferredRaphaelLayersReady) return;
+      try {
+        raphaelComputationRing = new RaphaelComputationRing(THREE, manager.scene, raphaelWebglProfile, core);
+      } catch (err) {
+        console.warn("[FLG] RaphaelComputationRing init failed:", err?.message || err);
+      }
+      try {
+        magiculeParticleField = new MagiculeParticleField(THREE, manager.scene, raphaelWebglProfile, core);
+      } catch (err) {
+        console.warn("[FLG] MagiculeParticleField init failed:", err?.message || err);
+      }
+      try {
+        referenceGlyphRing = new ReferenceGlyphRing(THREE, manager.scene, raphaelWebglProfile, core);
+      } catch (err) {
+        console.warn("[FLG] ReferenceGlyphRing init failed:", err?.message || err);
+      }
+      try {
+        goldBokehField = new GoldBokehField(THREE, manager.scene, raphaelWebglProfile, core);
+      } catch (err) {
+        console.warn("[FLG] GoldBokehField init failed:", err?.message || err);
+      }
+      try {
+        steppedAnimationController = new SteppedAnimationController({ reduced: raphaelWebglProfile.reduced });
+      } catch (err) {
+        console.warn("[FLG] SteppedAnimationController init failed:", err?.message || err);
+      }
+      bloomTargetCount += [
+        raphaelComputationRing?.group,
+        magiculeParticleField?.group,
+        referenceGlyphRing?.group,
+        goldBokehField?.group
+      ].reduce((count, object) => count + enableBloomLayer(object), 0);
+      deferredRaphaelLayersReady = true;
+      updateFxMetrics();
+    }
+
+    updateFxMetrics();
+    deferToIdle(initializeDeferredRaphaelLayers, { timeout: 1800 });
     window.addEventListener("beforeunload", () => steppedAnimationController?.dispose?.(), { once: true });
 
     if ("PerformanceObserver" in window) {
