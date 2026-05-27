@@ -118,13 +118,13 @@
       --sao-glitch-clip-six: polygon(0 40%, 100% 40%, 100% 85%, 8% 85%, 0 70%);
       --sao-glitch-clip-seven: polygon(0 63%, 100% 63%, 100% 80%, 8% 80%, 0 70%);
       --sao-glitch-shift: 5;
-      --sao-cyber-offset-x: clamp(16px, 1.45vw, 24px);
-      --sao-cyber-offset-y: clamp(10px, 0.92vw, 15px);
+      --sao-cyber-offset-x: clamp(9px, 0.72vw, 12px);
+      --sao-cyber-offset-y: clamp(6px, 0.52vw, 9px);
       --sao-cyber-border: clamp(4px, 0.35vw, 6px);
       --sao-cyber-primary: linear-gradient(180deg, rgba(242, 204, 126, 0.76) 0%, rgba(128, 65, 11, 0.94) 38%, rgba(43, 18, 4, 0.99) 74%, rgba(5, 2, 1, 1) 100%);
       --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 220, 143, 0.84) 0%, rgba(150, 76, 12, 0.96) 42%, rgba(49, 18, 4, 1) 100%);
       --sao-cyber-primary-active: linear-gradient(180deg, rgba(78, 38, 6, 0.98), rgba(12, 5, 2, 1));
-      --sao-cyber-underplate: linear-gradient(90deg, rgba(4, 2, 1, 1) 0%, rgba(15, 8, 2, 1) 64%, rgba(58, 35, 8, 0.98) 84%, rgba(166, 111, 35, 0.92) 100%);
+      --sao-cyber-underplate: linear-gradient(90deg, rgba(4, 2, 1, 1) 0%, rgba(14, 7, 2, 1) 62%, rgba(42, 24, 6, 0.98) 84%, rgba(116, 75, 22, 0.88) 100%);
       --sao-cyber-shadow-primary: rgba(18, 10, 3, 0.98);
       --sao-cyber-shadow-secondary: rgba(230, 176, 82, 0.62);
       --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1191,8 +1191,8 @@
     .auth-panel.is-google-only .auth-actions {
       grid-template-columns: 1fr;
       overflow: visible;
-      padding-right: calc(var(--sao-cyber-offset-x) + 4px);
-      padding-bottom: calc(var(--sao-cyber-offset-y) + 2px);
+      padding-right: calc(var(--sao-cyber-offset-x) + 2px);
+      padding-bottom: calc(var(--sao-cyber-offset-y) + 1px);
     }
 
     .auth-panel.is-google-only .primary-btn {
@@ -1501,7 +1501,7 @@
 
     .sao-btn:hover:not(:disabled)::before {
       opacity: 1;
-      transform: translate(calc(var(--sao-cyber-offset-x) + 4px), calc(var(--sao-cyber-offset-y) + 2px));
+      transform: translate(calc(var(--sao-cyber-offset-x) + 2px), calc(var(--sao-cyber-offset-y) + 1px));
       filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.78)) brightness(1.02);
     }
 
@@ -3559,16 +3559,40 @@
       transform: none;
     }
 
+    body.login-modal-entering:not(.operational) .auth-panel {
+      animation: panelMaterialize 1.55s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+      transform-origin: center center;
+      will-change: transform, opacity, filter;
+    }
+
+    body.login-modal-entering:not(.operational) .auth-panel::after {
+      animation: panelEdgeIgnition 1.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+    }
+
+    body.login-modal-entering:not(.operational) .auth-header,
+    body.login-modal-entering:not(.operational) .seal-strip {
+      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.52s both;
+    }
+
+    body.login-modal-entering:not(.operational) #authTitle {
+      animation: textGlow 0.78s cubic-bezier(0.22, 1, 0.36, 1) 0.7s both;
+    }
+
+    body.login-modal-entering:not(.operational) #authPrompt {
+      animation: contentSlideUp 0.64s cubic-bezier(0.22, 1, 0.36, 1) 0.86s both;
+    }
+
+    body.login-modal-entering:not(.operational) .auth-actions {
+      animation: ctaWake 0.72s cubic-bezier(0.22, 1, 0.36, 1) 1.02s both;
+    }
+
     @media (max-width: 820px) {
       body.login-modal-entering:not(.operational) .ritual-stack {
         animation: mobileRitualStackConjure 2.15s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
       body.login-modal-entering:not(.operational) .auth-panel {
-        animation: none;
-        opacity: 1;
-        transform: none;
-        filter: none;
+        animation: panelMaterialize 1.5s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
       body.login-modal-entering:not(.operational) .auth-panel::after {
@@ -4851,6 +4875,16 @@
       box-shadow: none;
     }
 
+    .workbench-nav-actions > button.sao-btn,
+    .account-menu button.sao-btn,
+    .history-head button.sao-btn,
+    .dossier-actions button.sao-btn,
+    .result-section-copy.sao-btn,
+    .history-delete.sao-btn {
+      --sao-cyber-offset-x: clamp(7px, 0.5vw, 9px);
+      --sao-cyber-offset-y: clamp(5px, 0.36vw, 7px);
+    }
+
     .sao-btn::before,
     .workbench-nav-actions > button.sao-btn::before,
     .account-menu button.sao-btn::before,
@@ -4919,7 +4953,7 @@
     .history-delete.sao-btn:hover::before,
     .history-delete.sao-btn:focus-visible::before {
       opacity: 1;
-      transform: translate(calc(var(--sao-cyber-offset-x) + 4px), calc(var(--sao-cyber-offset-y) + 2px));
+      transform: translate(calc(var(--sao-cyber-offset-x) + 2px), calc(var(--sao-cyber-offset-y) + 1px));
       filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.78)) brightness(1.02);
     }
 
@@ -7297,8 +7331,8 @@
         this.mode = "email";
         this.authPanel?.classList.add("is-google-only");
         this.setAuthCopy({
-          header: "GOOGLE_SIGN_IN",
-          state: "OAUTH STANDBY",
+          header: "AUTH_REQUIRED",
+          state: "AUTH STANDBY",
           title: "西方奇幻手稿編修核心",
           prompt: "完成 Google 授權後，可貼上手稿並同步取得全文重寫、語感審查與歷史卷宗。",
           button: "使用 Google 登入"

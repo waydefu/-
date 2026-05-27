@@ -139,6 +139,37 @@ Validation:
 - `npm run smoke:hosting`: passed.
 - Production screenshot after deploy: `output/playwright/sao-button-hotfix-production-login.png`.
 
+## S13 Effects Visibility Hotfix
+
+Timestamp: 2026-05-28 Asia/Taipei.
+
+Problem confirmed after user review:
+
+- Login / auth ritual effects were visually too static.
+- The S13 validation stabilization had set open auth panel elements to `animation: none`, which kept screenshots stable but suppressed the visible horizontal/vertical panel materialization.
+- The previous cyber underplate offset was also too large on compact workbench buttons.
+
+Safe scope before editing:
+
+- Restore visible login materialization only for normal motion users through `body.login-modal-entering:not(.operational)`.
+- Keep the `prefers-reduced-motion: reduce` block intact.
+- Keep visual tests stable because their helper removes entering state / disables animations.
+- Keep Firebase/Auth, button ids, draft/history, native dialog structure, ARIA, focus-visible, skip-link, and Traditional Chinese copy unchanged.
+
+What changed:
+
+- Re-enabled `panelMaterialize` on `.auth-panel`.
+- Re-enabled staged `contentSlideUp`, `textGlow`, and `ctaWake` for auth header, seal strip, title, prompt, and action row.
+- Kept mobile ritual stack animation and switched mobile auth panel from `animation: none` back to `panelMaterialize`.
+- Reduced the cyber button backing plate offsets to avoid oversized gold slabs on login/workbench buttons.
+- Restored auth header runtime copy to `AUTH_REQUIRED` / `AUTH STANDBY` to avoid the `GOOGLE_SIGN_IN` glyph being misread as `GDDGLE_SIGN_IN`.
+
+Manual evidence:
+
+- `output/playwright/s13-effects-login-enter-120ms.png` shows the panel mid-materialization with blur/brightness and partial vertical expansion.
+- `output/playwright/s13-effects-login-enter-740ms.png` shows the panel settled with readable content.
+- Computed style at 120ms: `animationName=panelMaterialize`, active 3D transform, blur, brightness, and saturate filters.
+
 ## Red Lines
 
 - Do not touch Firebase/Auth semantics unless explicitly requested.
