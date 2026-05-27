@@ -1633,8 +1633,16 @@
       animation: saoSuccessFlash 0.86s var(--sao-easing-out) both;
     }
 
+    .sao-btn.is-success::after {
+      animation: saoSuccessSweep 0.86s var(--sao-easing-out) both;
+    }
+
     .sao-btn.is-error {
       animation: saoErrorFlash 0.6s var(--sao-easing-out) both;
+    }
+
+    .sao-btn.is-error::after {
+      animation: saoErrorSweep 0.6s var(--sao-easing-out) both;
     }
 
     .primary-btn:hover:not(:disabled) {
@@ -4093,12 +4101,27 @@
       100% { filter: brightness(1); box-shadow: var(--sao-glow-default); }
     }
 
+    @keyframes saoSuccessSweep {
+      0%, 100% { filter: brightness(1); }
+      34% { filter: brightness(1.34) saturate(1.08); }
+    }
+
     @keyframes saoErrorFlash {
       0%, 100% { transform: translateX(0); filter: hue-rotate(0deg); }
       20% { transform: translateX(-8px); filter: hue-rotate(-14deg) brightness(1.5); }
       40% { transform: translateX(8px); filter: hue-rotate(-10deg); }
       60% { transform: translateX(-5px); }
       80% { transform: translateX(4px); }
+    }
+
+    @keyframes saoErrorSweep {
+      0%, 100% {
+        background: linear-gradient(180deg, rgba(255, 190, 144, 0.96), rgba(185, 75, 25, 0.94) 54%, rgba(85, 18, 13, 0.98));
+      }
+
+      46% {
+        background: linear-gradient(180deg, rgba(255, 226, 160, 0.98), rgba(185, 75, 25, 0.98) 46%, rgba(85, 18, 13, 1));
+      }
     }
 
     @keyframes overrideMaterialize {
@@ -5555,6 +5578,15 @@
         button.textContent = label;
       }
       hydrateSaoButton(button);
+    }
+
+    function flashButtonFeedback(button, type = "success", duration = 900) {
+      if (!(button instanceof HTMLElement)) return;
+      const className = type === "error" ? "is-error" : "is-success";
+      button.classList.remove("is-success", "is-error");
+      void button.offsetWidth;
+      button.classList.add(className);
+      window.setTimeout(() => button.classList.remove(className), duration);
     }
 
     function getButtonLabel(button, fallback = "") {
@@ -7775,8 +7807,7 @@
           this.scrollWorkbenchToDossier(80);
           this.setOperationalStatus(fromCache ? "已讀取封存鑑定卷宗" : "魔導鑑定卷宗已完成");
           this.hud.showNotice(fromCache ? MSG.CACHE_HIT : "魔導鑑定卷宗已完成");
-          analyzeButton?.classList.add("is-success");
-          window.setTimeout(() => analyzeButton?.classList.remove("is-success"), 900);
+          flashButtonFeedback(analyzeButton, "success", 980);
           this.persistHistory({ draft, result, ts: startedAt });
           window.dispatchEvent(new CustomEvent("worldforge:analysis-complete", { detail: { fromCache } }));
         } catch (error) {
@@ -7785,8 +7816,7 @@
           this.scrollWorkbenchToDossier(80);
           this.setOperationalStatus("鑑定中斷，請重試", true);
           this.hud.showNotice("鑑定中斷，請重試");
-          analyzeButton?.classList.add("is-error");
-          window.setTimeout(() => analyzeButton?.classList.remove("is-error"), 650);
+          flashButtonFeedback(analyzeButton, "error", 760);
         } finally {
           progress?.dispose();
           window.clearTimeout(timeout);
@@ -8110,7 +8140,7 @@
         this.clearDraftButton?.addEventListener("click", () => this.clearDraft());
         this.resultBox?.addEventListener("click", (event) => {
           const button = event.target instanceof Element ? event.target.closest("[data-copy-section]") : null;
-          if (button instanceof HTMLElement) this.copyResultSection(button.dataset.copySection || "all");
+          if (button instanceof HTMLElement) this.copyResultSection(button.dataset.copySection || "all", button);
         });
         document.addEventListener("pointerdown", (event) => this.handleOutsidePointer(event));
       }
@@ -8206,12 +8236,14 @@
           if (!ok) throw new Error("clipboard-failed");
           const original = getButtonLabel(this.copyButton, "複製鑑定卷宗");
           setButtonLabel(this.copyButton, "已複製");
+          flashButtonFeedback(this.copyButton, "success", 980);
           this.setStatus("鑑定卷宗已寫入剪貼簿");
           this.hud.showNotice("鑑定卷宗已複製");
           window.setTimeout(() => {
             setButtonLabel(this.copyButton, original);
           }, 1600);
         } catch (error) {
+          flashButtonFeedback(this.copyButton, "error", 760);
           this.setStatus("剪貼簿寫入失敗，請手動選取卷宗", true);
           this.hud.showNotice("剪貼簿寫入失敗");
         }
@@ -8542,7 +8574,7 @@
         await this.deleteHistoryRefs(ids);
       }
 
-      async copyResultSection(kind) {
+      async copyResultSection(kind, button = null) {
         const section = this.resultBox?.querySelector(`[data-section="${CSS.escape(kind)}"]`);
         const text = section?.querySelector(".result-section-body")?.innerText?.trim() || "";
         if (!text) {
@@ -8552,9 +8584,11 @@
         try {
           const ok = await this.copyPlainText(text);
           if (!ok) throw new Error("clipboard-failed");
+          flashButtonFeedback(button, "success", 980);
           this.setStatus("分區內容已寫入剪貼簿");
           this.hud.showNotice(kind === "summary" ? "審查摘要已複製" : "修改後全文已複製");
         } catch (error) {
+          flashButtonFeedback(button, "error", 760);
           this.setStatus("剪貼簿寫入失敗，請手動選取內容", true);
           this.hud.showNotice("剪貼簿寫入失敗");
         }
@@ -8573,6 +8607,7 @@
         this.setSyncState("草稿記憶已清除");
         this.setStatus("手稿內容已清除");
         this.hud.showNotice("手稿內容已清除");
+        flashButtonFeedback(this.clearDraftButton, "success", 980);
         this.reanalyzeButton.hidden = true;
         this.syncHudState();
         this.draftField.focus();
