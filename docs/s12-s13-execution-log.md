@@ -41,4 +41,4 @@
 | 9 | `feat(s13/spell-anim)` | 已修改，待驗收 | 語彙警示 chip 改為生成/掃描雙段動畫；forbidden words、IME、輸入流程未改。 |
 | 10 | `feat(s13/feedback)` | 已修改，待驗收 | 分析、複製、清稿操作接上 success/error button feedback；clipboard/draft/history 邏輯與文案未改。 |
 | 11 | `feat(s13/ca)` | 已修改，待驗收 | CA pulse 加上 0.018 上限，Link Start/分析開始/成功/錯誤/小脈衝觸發更明顯；reduced-motion 仍跳過。 |
-| 12 | `chore(s13/validate)` | 待執行 | 彙整 visual、deploy、smoke、無痕驗證結果。 |
+| 12 | `chore(s13/validate)` | 已驗收，待 deploy/smoke | `npm run check` 通過；`npm test` 通過 23 tests；`npm run test:visual:update` 通過 14 tests 且無 snapshot diff。已人工 review login/workbench/history/account/logout baseline，未見空白、主要重疊或錯位。 |
