@@ -912,7 +912,10 @@
     }
 
     .ritual-stack[open] .auth-panel {
-      animation: panelMaterialize 1.9s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
       transform-origin: center center;
     }
 
@@ -921,23 +924,38 @@
     }
 
     .ritual-stack[open] .auth-header {
-      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.72s both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
 
     .ritual-stack[open] .seal-strip {
-      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 0.88s both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
 
     .ritual-stack[open] #authTitle {
-      animation: textGlow 0.82s cubic-bezier(0.22, 1, 0.36, 1) 1.06s both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
 
     .ritual-stack[open] #authPrompt {
-      animation: contentSlideUp 0.62s cubic-bezier(0.22, 1, 0.36, 1) 1.24s both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
 
     .ritual-stack[open] .auth-actions {
-      animation: ctaWake 0.78s cubic-bezier(0.34, 1.56, 0.64, 1) 1.48s both;
+      animation: none;
+      opacity: 1;
+      transform: none;
+      filter: none;
     }
 
     .auth-panel {
@@ -3525,7 +3543,10 @@
       }
 
       body.login-modal-entering:not(.operational) .auth-panel {
-        animation: mobileAuthPanelWake 2.25s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+        animation: none;
+        opacity: 1;
+        transform: none;
+        filter: none;
       }
 
       body.login-modal-entering:not(.operational) .auth-panel::after {
@@ -7909,6 +7930,7 @@
         this.timeline = null;
         this.forceTimer = 0;
         this.modalEnterTimer = 0;
+        this.modalStabilizeTimer = 0;
       }
 
       markLoginModalEntering() {
@@ -7916,9 +7938,24 @@
         document.body.classList.remove("auth-handoff-collapsing");
         document.body.classList.add("login-modal-entering");
         window.clearTimeout(this.modalEnterTimer);
+        window.clearTimeout(this.modalStabilizeTimer);
         this.modalEnterTimer = window.setTimeout(() => {
           document.body.classList.remove("login-modal-entering");
         }, uiMotion.mobileEnterClass);
+        this.modalStabilizeTimer = window.setTimeout(() => this.stabilizeAuthPanel(), uiMotion.mobileEnterClass + 120);
+      }
+
+      stabilizeAuthPanel() {
+        const ritualStack = document.getElementById("ritualStack");
+        const authPanel = document.getElementById("authPanel");
+        if (!ritualStack?.open || !(authPanel instanceof HTMLElement)) return;
+        authPanel.style.animation = "none";
+        authPanel.style.opacity = "1";
+        authPanel.style.transform = "none";
+        authPanel.style.filter = "none";
+        window.setTimeout(() => {
+          authPanel.style.removeProperty("animation");
+        }, 120);
       }
 
       start() {

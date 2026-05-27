@@ -42,3 +42,9 @@
 | 10 | `feat(s13/feedback)` | 已修改，待驗收 | 分析、複製、清稿操作接上 success/error button feedback；clipboard/draft/history 邏輯與文案未改。 |
 | 11 | `feat(s13/ca)` | 已修改，待驗收 | CA pulse 加上 0.018 上限，Link Start/分析開始/成功/錯誤/小脈衝觸發更明顯；reduced-motion 仍跳過。 |
 | 12 | `chore(s13/validate)` | 已驗收，待 deploy/smoke | `npm run check` 通過；`npm test` 通過 23 tests；`npm run test:visual:update` 通過 14 tests 且無 snapshot diff。已人工 review login/workbench/history/account/logout baseline，未見空白、主要重疊或錯位。 |
+
+## 部署後修正
+
+| Commit | 狀態 | 風險/備註 |
+| --- | --- | --- |
+| `fix(s13/validate): stabilize login panel animation` | 已修改，待驗收 | 無痕正式站 headless 截圖發現登入 panel 可能卡在 CSS animation 初始幀；登入 panel 與核心內容改為本體常駐可見，戲劇感保留在 backdrop/邊框/掃描層，避免登入 UI 隱形。 |
