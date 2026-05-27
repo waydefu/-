@@ -286,3 +286,65 @@ Deployment:
 Known residual risk:
 
 - `npm run audit:functions` reports existing moderate transitive dependency advisories in the Functions dependency tree (`qs`, `uuid`, and related `firebase-admin` / Google Cloud packages). The suggested force path would install a breaking `firebase-admin` version, so no automatic dependency upgrade was made in this UI/WebGL task.
+
+## Post-S11 Full Revalidation - Workspace Spacing And Mobile Output Type
+
+User requested a fresh project recheck against the S10.9/S11 execution notes and reference files, with special attention on workbench spacing, mobile output area, and text size.
+
+Before edit confirmation:
+
+- Scope is CSS/layout only in `public/index.html`, followed by `npm run sync:login-mother`.
+- No Firebase, Auth semantics, IME behavior, draft/history persistence, button ids, ARIA, focus-visible, skip-link, native dialog structure, 44 x 44 touch targets, or Traditional Chinese copy will be changed.
+- Local Playwright layout probe showed mobile workbench hidden history/account panels are still 0 x 0, so the earlier S10.9 mobile blank-space bug is not back.
+- Local Playwright layout probe showed mobile result output body text at about 14.6 CSS px, which is below the desired mobile reading floor for the output area.
+- Local Playwright layout probe showed desktop brand-to-workbench vertical gap around 89 CSS px, which can feel loose on laptop-height screens.
+
+Planned correction:
+
+- Tighten operational-mode top spacing on desktop/laptop without affecting the login modal.
+- Raise mobile result/output body text to a 16px floor and keep line-height comfortable for Traditional Chinese.
+- Slightly raise mobile analyze CTA/status readability while preserving existing touch target sizes.
+
+Completed correction:
+
+- Updated only CSS in `public/index.html`, then regenerated `public/worldforge-login.html` with `npm run sync:login-mother`.
+- Reduced operational-mode top row gap and operational deck top margin so laptop/desktop workbench starts higher without moving the login modal.
+- Raised mobile result-section body text from about 14.6 CSS px to about 16.7 CSS px.
+- Raised mobile result section headings to the same 16px floor, mobile status text to 14px, and the analyze CTA label to 16px.
+- Re-ran the local Playwright layout probe: mobile document still has no horizontal overflow (`scrollWidth` equals `clientWidth` at 390px), and hidden history/account panels remain 0 x 0.
+
+Post-edit measured values:
+
+- Desktop 1366 brand-to-workbench gap: about 89px before, about 72px after.
+- Mobile 390 brand-to-workbench gap: about 24px before, about 20px after.
+- Mobile output body font: about 14.6px before, about 16.7px after.
+- Mobile status font: about 13.5px before, 14px after.
+- Mobile analyze CTA label: 16px after.
+
+Validation after correction:
+
+- `npm run sync:login-mother` passed.
+- `git diff --check` passed with CRLF warnings only.
+- `npm run check` passed.
+- `npm test` passed: 22/22.
+- `npm run test:a11y` passed: 3/3, axe impact counts `{}`.
+- `npm run test:visual:update` passed: 14/14; workbench/account/history/logout snapshots regenerated and reviewed.
+- `npm run test:visual` passed: 14/14.
+- `npm run build` passed.
+- `npm run test:rules` passed.
+- `npm audit --omit=dev` passed with 0 vulnerabilities.
+- `npm run audit:functions` still reports the known existing 10 moderate transitive advisories under Functions dependencies (`qs`, `uuid`, and Firebase/Google Cloud transitive packages). No dependency upgrade was made because the force path includes a breaking `firebase-admin` change and this correction touched only UI CSS.
+
+Screenshot review after correction:
+
+- `workbench-390`: no excessive blank space under the mobile header/nav, no horizontal overflow, nav buttons remain readable, and the first output area starts within the expected scroll flow.
+- `workbench-1366`: workspace panel starts higher on laptop/desktop view, without overlapping top HUD or title content.
+- `history-drawer-1366`, `account-menu-1366`, `logout-confirm-1366`: overlay positions remain stable after the spacing change.
+
+Deployment after correction:
+
+- Commit created for this revalidation correction: `fix(s11/audit): tighten workbench spacing and mobile output type`.
+- `firebase deploy --only hosting --project project-7276420283723642146` passed.
+- Hosting URL: `https://project-7276420283723642146.web.app`
+- `npm run smoke:hosting` passed after deploy.
+- User requested no shutdown after this pass; no shutdown command was scheduled.

@@ -714,6 +714,8 @@
       overflow-y: auto;
       overscroll-behavior: contain;
       scrollbar-color: rgba(214, 166, 77, 0.44) rgba(0, 0, 0, 0.2);
+      row-gap: clamp(8px, 1.1vw, 16px);
+      padding-top: clamp(10px, 1.8vw, 24px);
     }
 
     .top-hud {
@@ -1814,7 +1816,7 @@
       pointer-events: auto;
       width: min(1480px, calc(100vw - 44px));
       max-height: none;
-      margin: clamp(16px, 2.8dvh, 34px) auto clamp(54px, 7dvh, 88px);
+      margin: clamp(6px, 1.5dvh, 18px) auto clamp(54px, 7dvh, 88px);
       padding: clamp(14px, 1.6vw, 20px);
       display: grid;
       grid-template-columns: minmax(0, 1fr);
@@ -4403,9 +4405,11 @@
       .analyze-ritual-btn {
         min-height: 54px;
         gap: 8px;
+        font-size: 16px;
       }
 
       .analyze-ritual-btn .btn-label {
+        font-size: 16px;
         white-space: nowrap;
       }
 
@@ -4428,12 +4432,18 @@
 
       .result-section-body {
         padding: 12px;
-        line-height: 1.9;
+        font-size: clamp(1rem, 0.94rem + 0.18vw, 1.125rem);
+        line-height: 1.86;
+      }
+
+      .result-section-head h3 {
+        font-size: clamp(1rem, 0.94rem + 0.18vw, 1.125rem);
       }
 
       .ritual-status {
         min-height: 24px;
         padding: 5px 8px;
+        font-size: 14px;
       }
 
       .analysis-progress-row {
