@@ -170,6 +170,66 @@ Manual evidence:
 - `output/playwright/s13-effects-login-enter-740ms.png` shows the panel settled with readable content.
 - Computed style at 120ms: `animationName=panelMaterialize`, active 3D transform, blur, brightness, and saturate filters.
 
+## S13 VFX / UX Recovery - Pre-Change Record
+
+Timestamp: 2026-05-28 Asia/Taipei.
+
+User correction:
+
+- The requested Cyberpunk / SAO reference is about visible effects and interaction motion, not only static button shape.
+- Normal-motion mode should keep animation visibly active; reduced-motion support must remain available for accessibility.
+- Mobile output-area buttons are currently hard to read and feel randomly placed.
+- Main loading, menu opening, login materialization, and button hover/focus need real, visible motion checks.
+- Compare against the original `waydefu/-` repository for earlier spacing and practical reading scale.
+
+Current problems confirmed before editing:
+
+- `.analyze-ritual-btn.is-loading::after` reuses the same pseudo-element as the shared `.sao-btn::after` main plate, collapsing the loading button into a dark rectangular strip instead of a clipped SAO plate.
+- Mobile `.analysis-dossier-head` keeps title and actions in the same horizontal header, making the output buttons crowd the right side on 390px.
+- Result-section copy buttons become tiny right-side controls on mobile instead of clear full-width actions.
+- Shared button plate colors still begin too bright for the black/gold manuscript palette.
+- Desktop workbench grid rows use large fractional tracks, leaving excessive vertical air between title/copy and the draft field on some viewport heights.
+
+Planned safe scope:
+
+- Keep Firebase/Auth, draft/history persistence, button ids, native dialog structure, ARIA, focus-visible, skip-link, touch target floor, and Traditional Chinese copy intact.
+- Preserve `prefers-reduced-motion: reduce`; only restore/enhance normal-motion effects.
+- Darken the shared SAO button plate variables and remove stale cyan hero underplate styling.
+- Move loading scan/glyph effects onto child elements so the main clipped plate remains visible.
+- Make mobile output actions full-width, ordered, and readable.
+- Tighten workbench vertical rhythm without reducing textarea/result usability.
+- Re-run sync, visual update, a11y/check/build, then deploy only after screenshots confirm the fixes.
+
+Post-change record:
+
+- `public/index.html` remains the edited source of truth; `public/worldforge-login.html` was synced from it.
+- Darkened shared `.sao-btn` primary, hover, danger, underplate, and glitch colors so buttons read as black/copper/gold instead of bright orange.
+- Removed stale cyan hero CTA underplate styling.
+- Restored primary button hover strike animation instead of suppressing it on `.primary-btn.sao-btn`.
+- Fixed loading button layering: the loading scan now lives on `.btn-loading::after`, while `.sao-btn::after` remains the clipped main plate.
+- Replaced the circular loading spinner with a CSS diamond glyph animation; no image/texture asset was introduced.
+- Added normal-motion plate breathing/loading animation for the login CTA and main analyze CTA.
+- Removed fragile fixed grid-row sizing from `.codex-panel`; draft and dossier height are now controlled by their own min-height rules so hidden rows cannot stretch the analyze button.
+- Mobile output actions now stack as full-width readable buttons, and result-section copy controls are full-width under their headings.
+- Mobile history/account panels use fixed floating panel placement; runtime open motion is driven through `Element.animate()` from `toggleHistory()` / `toggleAccount()` while reduced-motion users skip it.
+- Compared against the original `waydefu/-` repository snapshot: the earlier version used practical compact content flow and smaller result controls; this pass restores a practical flow while keeping the current Great Sage visual system.
+
+Manual screenshots reviewed:
+
+- `output/playwright/audit-fixed-login-hover.png`
+- `output/playwright/audit-fixed-mobile-workbench-after-grid.png`
+- `output/playwright/audit-fixed-mobile-output-area-after-grid.png`
+- `output/playwright/audit-fixed-mobile-loading-after-grid.png`
+
+Validation:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14; updated login 1366, workbench 390, history drawer 1366, logout confirm 1366 snapshots.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+
 ## Red Lines
 
 - Do not touch Firebase/Auth semantics unless explicitly requested.
