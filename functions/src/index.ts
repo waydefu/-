@@ -5,7 +5,7 @@ import { createHash } from "crypto";
 import Groq from "groq-sdk";
 import { SYSTEM_PROMPT, ALLOWED_ORIGINS } from "./config";
 import { validateDraftInput } from "./validation";
-import { checkAndIncrementQuota, refundQuota } from "./quota";
+import { checkAndIncrementQuota, peekQuota, refundQuota } from "./quota";
 
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 
@@ -105,6 +105,52 @@ const cspReportHandler = async (req: any, res: any): Promise<void> => {
   applyCors(req, res);
   warnEvent("csp_report", { requestId, ...sanitizeCspReport(req.body) });
   res.status(204).send("");
+};
+
+const quotaPeekHandler = async (req: any, res: any): Promise<void> => {
+  const requestId = getRequestId(req);
+  if (req.method === "OPTIONS") {
+    applyCors(req, res);
+    res.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    res.set("Access-Control-Allow-Headers", "Authorization, X-Firebase-AppCheck");
+    res.set("Access-Control-Max-Age", "3600");
+    res.status(204).send("");
+    return;
+  }
+  if (req.method !== "GET") {
+    logEvent("quota_peek_rejected", { requestId, status: 405, code: "method-not-allowed" });
+    sendError(req, res, 405, "method-not-allowed", "Method Not Allowed");
+    return;
+  }
+
+  const authHeader = req.headers.authorization as string | undefined;
+  if (!authHeader?.startsWith("Bearer ")) {
+    logEvent("quota_peek_rejected", { requestId, status: 401, code: "unauthorized" });
+    sendError(req, res, 401, "unauthorized", "Authentication required");
+    return;
+  }
+
+  let decodedToken: admin.auth.DecodedIdToken;
+  try {
+    decodedToken = await admin.auth().verifyIdToken(authHeader.split("Bearer ")[1]);
+  } catch {
+    logEvent("quota_peek_rejected", { requestId, status: 403, code: "invalid-token" });
+    sendError(req, res, 403, "invalid-token", "Invalid token");
+    return;
+  }
+
+  const appCheckStatus = await verifyAppCheck(req, requestId);
+  if (appCheckStatus !== "valid") {
+    logEvent("quota_peek_rejected", { requestId, status: 401, code: "app-check-failed", appCheckStatus });
+    sendError(req, res, 401, "app-check-failed", "App Check required");
+    return;
+  }
+
+  const isAnonymous = decodedToken.firebase?.sign_in_provider === "anonymous";
+  const quota = await peekQuota(admin.firestore(), decodedToken.uid, isAnonymous);
+  applyCors(req, res);
+  res.set("Cache-Control", "no-store");
+  res.status(200).json({ ...quota, anonymous: isAnonymous });
 };
 
 // ── Main handler ─────────────────────────────────────────────
@@ -273,4 +319,14 @@ export const cspReport = onRequest(
     concurrency: 80,
   },
   cspReportHandler
+);
+
+export const quotaPeek = onRequest(
+  {
+    region: "us-central1",
+    timeoutSeconds: 30,
+    memory: "256MiB",
+    concurrency: 40,
+  },
+  quotaPeekHandler
 );

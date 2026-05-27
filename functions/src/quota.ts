@@ -12,6 +12,14 @@ export type QuotaMutation = {
   data?: Required<QuotaDoc>;
 };
 
+export type QuotaPeek = {
+  date: string;
+  limit: number;
+  used: number;
+  remaining: number;
+  resetAt: string;
+};
+
 export class QuotaExceededError extends Error {
   code = "quota-exceeded";
 
@@ -24,6 +32,24 @@ export const getTodayKey = (): string => new Date().toISOString().slice(0, 10);
 
 export const getQuotaLimit = (isAnonymous: boolean): number =>
   isAnonymous ? DAILY_LIMIT_ANON : DAILY_LIMIT_AUTHED;
+
+export function buildQuotaPeek(
+  doc: QuotaDoc | undefined,
+  today: string,
+  isAnonymous: boolean
+): QuotaPeek {
+  const limit = getQuotaLimit(isAnonymous);
+  const used = doc?.date === today ? Math.max(0, Number(doc?.count || 0)) : 0;
+  const reset = new Date(`${today}T00:00:00.000Z`);
+  reset.setUTCDate(reset.getUTCDate() + 1);
+  return {
+    date: today,
+    limit,
+    used,
+    remaining: Math.max(0, limit - used),
+    resetAt: reset.toISOString(),
+  };
+}
 
 export function applyQuotaIncrement(
   doc: QuotaDoc | undefined,
@@ -94,4 +120,14 @@ export async function refundQuota(
     const mutation = applyQuotaRefund(snap.data(), today, quotaEventId);
     if (mutation.changed) tx.set(ref, mutation.data);
   });
+}
+
+export async function peekQuota(
+  db: any,
+  uid: string,
+  isAnonymous: boolean,
+  today = getTodayKey()
+): Promise<QuotaPeek> {
+  const snap = await db.doc(`quota/${uid}`).get();
+  return buildQuotaPeek(snap.data(), today, isAnonymous);
 }

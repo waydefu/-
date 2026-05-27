@@ -7,6 +7,7 @@ const {
   DAILY_LIMIT_ANON,
   DAILY_LIMIT_AUTHED,
   QuotaExceededError,
+  buildQuotaPeek,
   applyQuotaIncrement,
   applyQuotaRefund,
 } = require("../functions/lib/quota.js");
@@ -78,6 +79,29 @@ describe("quota transaction helpers", () => {
     assert.deepEqual(
       applyQuotaRefund({ date: today, count: 1, batches: { other: true } }, today, "evt_a"),
       { changed: false },
+    );
+  });
+
+  it("peeks the current quota without mutating the document", () => {
+    assert.deepEqual(
+      buildQuotaPeek({ date: today, count: 2, batches: { evt_a: true } }, today, false),
+      {
+        date: today,
+        limit: DAILY_LIMIT_AUTHED,
+        used: 2,
+        remaining: DAILY_LIMIT_AUTHED - 2,
+        resetAt: "2026-05-21T00:00:00.000Z",
+      },
+    );
+    assert.deepEqual(
+      buildQuotaPeek({ date: "2026-05-19", count: DAILY_LIMIT_ANON, batches: {} }, today, true),
+      {
+        date: today,
+        limit: DAILY_LIMIT_ANON,
+        used: 0,
+        remaining: DAILY_LIMIT_ANON,
+        resetAt: "2026-05-21T00:00:00.000Z",
+      },
     );
   });
 });
