@@ -31,7 +31,7 @@
 | Part | Commit | 狀態 | 風險/備註 |
 | --- | --- | --- | --- |
 | 1 | `revert(s13/glass): remove floating ModalGlass` | 已修改，待驗收 | 已移除 `ModalGlass` import、實例、update loop 與模組檔；保留 native dialog/backdrop，改用 DOM surface 標記。 |
-| 2 | `feat(s13/panel-anim)` | 待執行 | 強化 panel materialize，需守住 reduced-motion。 |
+| 2 | `feat(s13/panel-anim)` | 已修改，待驗收 | 強化 panel materialize 的水平生成/垂直展開與邊框點火；只用 transform/filter/box-shadow，守住 reduced-motion。 |
 | 3 | `feat(s13/btn-anim)` | 待執行 | 強化按鈕 underplate/glitch，不改 button id。 |
 | 4 | `feat(s13/menu-anim)` | 待執行 | 強化帳號/歷史下拉動畫，不改歷史資料。 |
 | 5 | `feat(s13/notice-anim)` | 待執行 | 強化 notice 進退場與掃描。 |
