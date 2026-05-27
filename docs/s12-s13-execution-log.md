@@ -38,7 +38,7 @@
 | 6 | `feat(s13/list-anim)` | 已修改，待驗收 | 歷史卷宗列表加入 stagger 進場動畫；刪除、載入、active 狀態與資料流未改。 |
 | 7 | `feat(s13/status-anim)` | 已修改，待驗收 | 狀態列更新加入 sweep/pulse，`is-updated` 視覺保留至 780ms；ARIA live 與文案未改。 |
 | 8 | `feat(s13/frame-sweep)` | 已修改，待驗收 | 彈窗 frame sweep 增強亮暗呼吸，工作區 SAO window 增加橫向掃描線；只動 pseudo/transform/filter。 |
-| 9 | `feat(s13/spell-anim)` | 待執行 | 強化 spell chip 動畫。 |
+| 9 | `feat(s13/spell-anim)` | 已修改，待驗收 | 語彙警示 chip 改為生成/掃描雙段動畫；forbidden words、IME、輸入流程未改。 |
 | 10 | `feat(s13/feedback)` | 待執行 | 強化成功/錯誤/確認回饋。 |
 | 11 | `feat(s13/ca)` | 待執行 | 強化 chromatic aberration 觸發，不讓長時間常駐過強。 |
 | 12 | `chore(s13/validate)` | 待執行 | 彙整 visual、deploy、smoke、無痕驗證結果。 |

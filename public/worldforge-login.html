@@ -2735,6 +2735,7 @@
       position: relative;
       display: inline-flex;
       align-items: center;
+      overflow: hidden;
       padding: 4px 10px;
       border: 1px solid rgba(255, 156, 100, 0.62);
       background: linear-gradient(180deg, rgba(110, 35, 15, 0.48), rgba(46, 14, 4, 0.62));
@@ -2747,14 +2748,25 @@
       box-shadow: 0 0 12px rgba(185, 75, 25, 0.28), inset 0 0 8px rgba(255, 156, 100, 0.12);
     }
 
-    .spell-list span:nth-child(1) { animation-delay: 0s; }
-    .spell-list span:nth-child(2) { animation-delay: 0.08s; }
-    .spell-list span:nth-child(3) { animation-delay: 0.16s; }
-    .spell-list span:nth-child(4) { animation-delay: 0.24s; }
-    .spell-list span:nth-child(5) { animation-delay: 0.32s; }
-    .spell-list span:nth-child(6) { animation-delay: 0.4s; }
-    .spell-list span:nth-child(7) { animation-delay: 0.48s; }
-    .spell-list span:nth-child(8) { animation-delay: 0.56s; }
+    .spell-list span::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: linear-gradient(100deg, transparent 0 22%, rgba(255, 226, 160, 0.36), transparent 62% 100%);
+      opacity: 0;
+      transform: translateX(-120%);
+      animation: spellChipScan 0.78s var(--sao-easing-out) calc(var(--spell-delay, 0s) + 0.08s) both;
+    }
+
+    .spell-list span:nth-child(1) { --spell-delay: 0s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(2) { --spell-delay: 0.08s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(3) { --spell-delay: 0.16s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(4) { --spell-delay: 0.24s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(5) { --spell-delay: 0.32s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(6) { --spell-delay: 0.4s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(7) { --spell-delay: 0.48s; animation-delay: var(--spell-delay); }
+    .spell-list span:nth-child(8) { --spell-delay: 0.56s; animation-delay: var(--spell-delay); }
 
     .spell-list span:hover {
       border-color: rgba(255, 156, 100, 0.96);
@@ -4182,19 +4194,35 @@
     @keyframes spellChipIn {
       0% {
         opacity: 0;
-        transform: translateY(-8px) scale(0.86);
-        filter: blur(4px);
+        transform: translateY(-10px) scaleX(0.42) scaleY(0.58);
+        filter: blur(5px) brightness(1.6);
       }
 
       60% {
         opacity: 1;
-        transform: translateY(2px) scale(1.04);
-        filter: blur(0);
+        transform: translateY(2px) scaleX(1.05) scaleY(1.06);
+        filter: blur(0) brightness(1.14);
       }
 
       100% {
         opacity: 1;
         transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes spellChipScan {
+      0% {
+        opacity: 0;
+        transform: translateX(-120%);
+      }
+
+      32% {
+        opacity: 0.82;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(120%);
       }
     }
 
