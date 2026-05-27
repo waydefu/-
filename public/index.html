@@ -4885,7 +4885,6 @@
     import { MagiculeParticleField } from "./js/webgl/magicule-particles.js";
     import { ReferenceGlyphRing } from "./js/webgl/reference-glyph-ring.js";
     import { GoldBokehField } from "./js/webgl/gold-bokeh-field.js";
-    import { ModalGlass } from "./js/webgl/modal-glass.js";
     import { SteppedAnimationController } from "./js/webgl/stepped-animation.js";
 
     const gsap = window.gsap;
@@ -5375,7 +5374,7 @@
         target.style.removeProperty("scale");
         target.style.removeProperty("filter");
         target.setAttribute("aria-hidden", "false");
-        showModalGlass(target);
+        showDialogSurface(target);
         const focusFirst = () => {
           const first = target.querySelector("button, [href], input, textarea, [tabindex]:not([tabindex='-1'])");
           if (first instanceof HTMLElement) first.focus();
@@ -5413,7 +5412,7 @@
           this.state = "closed";
           this.timeline = null;
           if (this.lastFocus instanceof HTMLElement) this.lastFocus.focus();
-          hideModalGlass({ restoreLogin: true });
+          hideDialogSurface({ restoreLogin: true });
         };
         const fallbackMs = Math.max(0, Math.round(duration * 1000));
         const cssMs = target.classList.contains("override-window") ? 600 : 420;
@@ -6077,24 +6076,18 @@
       return count;
     }
 
-    function showModalGlass(target) {
-      if (!target || !window.__FLG_MODAL_GLASS__) return;
-      window.requestAnimationFrame(() => {
-        if (!window.__FLG_MODAL_GLASS__) return;
-        if (target.hidden || target.getAttribute("aria-hidden") === "true") return;
-        const rect = target.getBoundingClientRect();
-        if (rect.width < 1 || rect.height < 1) return;
-        window.__FLG_MODAL_GLASS__.show(rect);
-      });
+    function showDialogSurface(target) {
+      if (!target) return;
+      document.documentElement.dataset.saoDialogSurface = target.id || "active";
     }
 
-    function hideModalGlass({ restoreLogin = false } = {}) {
+    function hideDialogSurface({ restoreLogin = false } = {}) {
       const ritualStack = document.getElementById("ritualStack");
       if (restoreLogin && ritualStack?.open && !document.body.classList.contains("operational")) {
-        showModalGlass(ritualStack);
+        showDialogSurface(ritualStack);
         return;
       }
-      window.__FLG_MODAL_GLASS__?.hide?.();
+      delete document.documentElement.dataset.saoDialogSurface;
     }
 
     class LinkStartFX {
@@ -7130,7 +7123,7 @@
       }
 
       triggerLinkStartHandoff() {
-        hideModalGlass();
+        hideDialogSurface();
         if (prefersReducedMotion) return;
         window.__FLG_LINK_START__?.start?.(2600);
         this.post.triggerChromaticAberration(0.010, 1.24);
@@ -7349,7 +7342,7 @@
       enterOperationalMode() {
         this.operational = true;
         this._handoffArmed = true;
-        hideModalGlass();
+        hideDialogSurface();
         if (this.ritualStack?.open && typeof this.ritualStack.close === "function") {
           this.ritualStack.close();
         }
@@ -7687,7 +7680,7 @@
             if (dlg) {
               dlg.style.opacity = "1";
               dlg.style.transform = "";
-              showModalGlass(dlg);
+              showDialogSurface(dlg);
               window.__FLG_SAO_AUDIO__?.playOpenChime();
             }
           }, null, 1.64);
@@ -7723,7 +7716,7 @@
           ritualStack.style.opacity = "1";
           ritualStack.style.scale = "";
           ritualStack.style.transform = "";
-          showModalGlass(ritualStack);
+          showDialogSurface(ritualStack);
           window.__FLG_SAO_AUDIO__?.playOpenChime();
         }
         document.body.classList.remove("is-booting");
@@ -8441,8 +8434,6 @@
         return linkStartFX?.gl || null;
       }
     };
-    const modalGlass = new ModalGlass(THREE, manager.scene, manager.camera, { reduced: prefersReducedMotion, bloomLayer: BLOOM_SCENE });
-    window.__FLG_MODAL_GLASS__ = modalGlass;
     const hud = new HUDSystem();
     const login = new LoginController(core, runes, particles, post, hud);
     window.__FLG_LOGIN_CONTROLLER__ = login;
@@ -8499,7 +8490,8 @@
         bloomLayer: BLOOM_SCENE,
         bloomTargets: bloomTargetCount,
         linkStartShader: !!linkStartFX?.gl,
-        modalGlass: true,
+        modalGlass: false,
+        dialogSurface: true,
         deferredRaphaelLayersReady,
         reducedMotion: prefersReducedMotion,
         mobile: mobileQuery.matches
@@ -8508,7 +8500,7 @@
       document.documentElement.dataset.ingestionStreams = String(window.__FLG_LOGIN_FX_METRICS__.ingestionStreams);
       document.documentElement.dataset.scanBands = String(window.__FLG_LOGIN_FX_METRICS__.scanBands);
       document.documentElement.dataset.linkStartShader = linkStartFX?.gl ? "ready" : "idle";
-      document.documentElement.dataset.modalGlass = "ready";
+      document.documentElement.dataset.modalGlass = "removed";
       document.documentElement.dataset.arcaneOpticalBackground = "active";
       document.documentElement.dataset.raphaelSingularityCore = "active";
       document.documentElement.dataset.raphaelDeferredLayers = deferredRaphaelLayersReady ? "ready" : "idle";
@@ -8612,7 +8604,6 @@
       magiculeParticleField?.update(delta, time, raphaelState);
       referenceGlyphRing?.update(delta, time, raphaelState);
       goldBokehField?.update(delta, time, raphaelState);
-      modalGlass.update();
       hud.update(time, login.syncProgress);
       post.update(time, delta);
     }
