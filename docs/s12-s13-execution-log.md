@@ -33,7 +33,7 @@
 | 1 | `revert(s13/glass): remove floating ModalGlass` | 已修改，待驗收 | 已移除 `ModalGlass` import、實例、update loop 與模組檔；保留 native dialog/backdrop，改用 DOM surface 標記。 |
 | 2 | `feat(s13/panel-anim)` | 已修改，待驗收 | 強化 panel materialize 的水平生成/垂直展開與邊框點火；只用 transform/filter/box-shadow，守住 reduced-motion。 |
 | 3 | `feat(s13/btn-anim)` | 已修改，待驗收 | 按鈕 underplate 偏移加大、主板色調壓回黑金，hover/focus 增加斷片 strike；button id 與 44px 觸控尺寸未改。 |
-| 4 | `feat(s13/menu-anim)` | 待執行 | 強化帳號/歷史下拉動畫，不改歷史資料。 |
+| 4 | `feat(s13/menu-anim)` | 已修改，待驗收 | 帳號選單與歷史抽屜增加掃描門 sweep 與更長展開動畫；沿用 `hidden`/ARIA，不改歷史資料。 |
 | 5 | `feat(s13/notice-anim)` | 待執行 | 強化 notice 進退場與掃描。 |
 | 6 | `feat(s13/list-anim)` | 待執行 | 強化歷史列表項目顯示。 |
 | 7 | `feat(s13/status-anim)` | 待執行 | 強化 status 更新提示。 |

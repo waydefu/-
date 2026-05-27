@@ -2187,6 +2187,7 @@
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
       pointer-events: auto;
+      overflow: hidden;
       transform-origin: top right;
       opacity: 1;
       transform: scale(1) translateY(0);
@@ -2195,6 +2196,26 @@
         opacity var(--sao-dur-fast) ease,
         transform var(--sao-dur-mid) var(--sao-easing-back),
         visibility 0s;
+    }
+
+    .account-menu::before,
+    .history-drawer::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent 0 18%, rgba(255, 226, 160, 0.22), transparent 52% 100%),
+        repeating-linear-gradient(0deg, rgba(214, 166, 77, 0.032) 0 1px, transparent 1px 7px);
+      opacity: 0;
+      transform: translateX(-120%);
+    }
+
+    .account-menu > *,
+    .history-drawer > * {
+      position: relative;
+      z-index: 1;
     }
 
     .account-menu[hidden] {
@@ -2210,7 +2231,12 @@
     }
 
     .account-menu:not([hidden]) {
-      animation: saoMenuOpen 0.42s var(--sao-easing-back) both;
+      animation: saoMenuOpen 0.58s var(--sao-easing-back) both;
+    }
+
+    .account-menu:not([hidden])::before,
+    .history-drawer:not([hidden])::before {
+      animation: saoMenuSweep 0.92s var(--sao-easing-out) 0.08s both;
     }
 
     .account-menu button {
@@ -2252,6 +2278,7 @@
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
       pointer-events: auto;
+      overflow: auto;
       transform-origin: top right;
       opacity: 1;
       transform: scaleY(1) translateY(0);
@@ -2275,7 +2302,7 @@
     }
 
     .history-drawer:not([hidden]) {
-      animation: saoDrawerOpen 0.58s var(--sao-easing-back) both;
+      animation: saoDrawerOpen 0.72s var(--sao-easing-back) both;
     }
 
     .history-head {
@@ -3268,7 +3295,9 @@
         animation: none !important;
       }
       .history-drawer,
-      .account-menu {
+      .history-drawer::before,
+      .account-menu,
+      .account-menu::before {
         transition: none !important;
         animation: none !important;
       }
@@ -3859,6 +3888,22 @@
         opacity: 1;
         transform: scaleX(1) scaleY(1) translateY(0);
         filter: blur(0) brightness(1);
+      }
+    }
+
+    @keyframes saoMenuSweep {
+      0% {
+        opacity: 0;
+        transform: translateX(-120%);
+      }
+
+      22% {
+        opacity: 0.9;
+      }
+
+      100% {
+        opacity: 0;
+        transform: translateX(120%);
       }
     }
 
