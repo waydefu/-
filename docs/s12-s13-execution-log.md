@@ -24,7 +24,7 @@
 | 5 | `perf(s12/link-start-idle)` | 已修改，待驗收 | Link Start shader 改為 proxy + idle warmup；Auth handoff 觸發時會即時建立並啟動，不預先佔用 WebGL context。 |
 | 6a | `feat(s12/csp-report)` | 已修改，待驗收 | Firebase Hosting 增加 `Content-Security-Policy-Report-Only` 與安全 headers；新增 `cspReport` Function 接收報告。未加入 enforce header。 |
 | 7 | `feat(s12/quota-peek)` | 已修改，待驗收 | `quotaPeek` 已補回 Functions source；成功回應前必須通過 ID token 與 App Check，並以 no-store 回傳剩餘額度。 |
-| 9 | `chore(s12/validate)` | 待執行 | 彙整驗收與跳過項。 |
+| 9 | `chore(s12/validate)` | 已驗收 | `npm run check` 通過；`npm test` 通過 23 tests。6b CSP enforce 未執行，需 report-only 觀測滿 24 小時後由使用者另行觸發；SR 真機測試保留給使用者。 |
 
 ## S13 Commit 紀錄
 
