@@ -48,3 +48,4 @@
 | Commit | 狀態 | 風險/備註 |
 | --- | --- | --- |
 | `fix(s13/validate): stabilize login panel animation` | 已修改，待驗收 | 無痕正式站 headless 截圖發現登入 panel 可能卡在 CSS animation 初始幀；登入 panel 與核心內容改為本體常駐可見，戲劇感保留在 backdrop/邊框/掃描層，避免登入 UI 隱形。 |
+| `fix(s13/validate): suppress login WebGL artifacts` | 已修改，待驗收 | 無痕截圖發現桌面登入背景有 WebGL 黑色矩形殘影；`#webgl-container canvas` 保持初始化但登入待命階段不顯示，Auth handoff 與工作區再恢復受控亮部疊加，並將核心漂浮碎片改為低透明金色加法材質。保留 Link Start/WebGL 動勢但不讓黑色實體遮蓋首屏。Firebase/Auth/草稿/歷史/繁中文字未動。 |
