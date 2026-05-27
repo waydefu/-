@@ -21,7 +21,7 @@
 | 2 | `perf(s12/script-loading)` | 已修改，待驗收 | GSAP 改為 `defer` + `crossorigin`；Firebase compat scripts 已維持 defer，不改 Auth 流程。 |
 | 3 | `perf(s12/lcp)` | 已修改，待驗收 | Boot veil fail-safe 由 6000ms 降到 4200ms，登入 dialog 開啟時間由 2.4s 提前到 1.64s；不提前觸發 Auth。 |
 | 4 | `perf(s12/webgl-idle)` | 已修改，待驗收 | 重型 Raphael 附加層與 stepped controller 改為 idle 初始化；核心 WebGL、登入環、粒子、bloom metadata 保留首屏可用。 |
-| 5 | `perf(s12/link-start-idle)` | 待執行 | 預計 Link Start shader lazy/idle 初始化，觸發時仍可同步啟動。 |
+| 5 | `perf(s12/link-start-idle)` | 已修改，待驗收 | Link Start shader 改為 proxy + idle warmup；Auth handoff 觸發時會即時建立並啟動，不預先佔用 WebGL context。 |
 | 6a | `feat(s12/csp-report)` | 待執行 | 僅 report-only，絕不 enforce。 |
 | 7 | `feat(s12/quota-peek)` | 待執行 | 必須同時驗 ID token 與 App Check。 |
 | 9 | `chore(s12/validate)` | 待執行 | 彙整驗收與跳過項。 |

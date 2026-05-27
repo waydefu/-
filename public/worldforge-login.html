@@ -8422,8 +8422,25 @@
     const particles = new ParticleSystem(manager.systemRoot, manager);
     const post = new PostProcessingPipeline(manager);
     window.__FLG_TRIGGER_CA__ = (amount, duration) => post.triggerChromaticAberration(amount, duration);
-    const linkStartFX = new LinkStartFX(document.getElementById("linkStartFX"));
-    window.__FLG_LINK_START__ = linkStartFX;
+    let linkStartFX = null;
+    function ensureLinkStartFX() {
+      if (!linkStartFX) {
+        linkStartFX = new LinkStartFX(document.getElementById("linkStartFX"));
+        updateFxMetrics?.();
+      }
+      return linkStartFX;
+    }
+    window.__FLG_LINK_START__ = {
+      start(duration) {
+        return ensureLinkStartFX()?.start?.(duration);
+      },
+      stop() {
+        return linkStartFX?.stop?.();
+      },
+      get gl() {
+        return linkStartFX?.gl || null;
+      }
+    };
     const modalGlass = new ModalGlass(THREE, manager.scene, manager.camera, { reduced: prefersReducedMotion, bloomLayer: BLOOM_SCENE });
     window.__FLG_MODAL_GLASS__ = modalGlass;
     const hud = new HUDSystem();
@@ -8481,7 +8498,7 @@
         selectiveBloom: true,
         bloomLayer: BLOOM_SCENE,
         bloomTargets: bloomTargetCount,
-        linkStartShader: !!linkStartFX.gl,
+        linkStartShader: !!linkStartFX?.gl,
         modalGlass: true,
         deferredRaphaelLayersReady,
         reducedMotion: prefersReducedMotion,
@@ -8490,7 +8507,7 @@
       document.documentElement.dataset.runeLayers = String(window.__FLG_LOGIN_FX_METRICS__.runeLayers);
       document.documentElement.dataset.ingestionStreams = String(window.__FLG_LOGIN_FX_METRICS__.ingestionStreams);
       document.documentElement.dataset.scanBands = String(window.__FLG_LOGIN_FX_METRICS__.scanBands);
-      document.documentElement.dataset.linkStartShader = linkStartFX.gl ? "ready" : "disabled";
+      document.documentElement.dataset.linkStartShader = linkStartFX?.gl ? "ready" : "idle";
       document.documentElement.dataset.modalGlass = "ready";
       document.documentElement.dataset.arcaneOpticalBackground = "active";
       document.documentElement.dataset.raphaelSingularityCore = "active";
@@ -8541,6 +8558,7 @@
 
     updateFxMetrics();
     deferToIdle(initializeDeferredRaphaelLayers, { timeout: 1800 });
+    deferToIdle(ensureLinkStartFX, { timeout: 2400 });
     window.addEventListener("beforeunload", () => steppedAnimationController?.dispose?.(), { once: true });
 
     if ("PerformanceObserver" in window) {
