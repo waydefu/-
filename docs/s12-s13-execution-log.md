@@ -40,5 +40,5 @@
 | 8 | `feat(s13/frame-sweep)` | 已修改，待驗收 | 彈窗 frame sweep 增強亮暗呼吸，工作區 SAO window 增加橫向掃描線；只動 pseudo/transform/filter。 |
 | 9 | `feat(s13/spell-anim)` | 已修改，待驗收 | 語彙警示 chip 改為生成/掃描雙段動畫；forbidden words、IME、輸入流程未改。 |
 | 10 | `feat(s13/feedback)` | 已修改，待驗收 | 分析、複製、清稿操作接上 success/error button feedback；clipboard/draft/history 邏輯與文案未改。 |
-| 11 | `feat(s13/ca)` | 待執行 | 強化 chromatic aberration 觸發，不讓長時間常駐過強。 |
+| 11 | `feat(s13/ca)` | 已修改，待驗收 | CA pulse 加上 0.018 上限，Link Start/分析開始/成功/錯誤/小脈衝觸發更明顯；reduced-motion 仍跳過。 |
 | 12 | `chore(s13/validate)` | 待執行 | 彙整 visual、deploy、smoke、無痕驗證結果。 |

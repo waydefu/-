@@ -6323,8 +6323,9 @@
 
       triggerChromaticAberration(amount = 0.006, duration = 0.62) {
         if (prefersReducedMotion) return;
-        this.caPulse = Math.max(this.caPulse, amount);
-        this.caPulseDecay = amount / Math.max(duration, 0.16);
+        const capped = clamp(amount, 0, 0.018);
+        this.caPulse = Math.max(this.caPulse, capped);
+        this.caPulseDecay = capped / Math.max(duration, 0.16);
       }
 
       getDarkMaterial(object) {
@@ -6363,8 +6364,8 @@
         this.bloomPass.strength = touchBloom + this.shockEnergy * (3.1 - touchBloom);
         this.bloomPass.radius = 0.28 + this.shockEnergy * 0.22;
         this.bloomMixPass.uniforms.uMixStrength.value = prefersReducedMotion ? 0.62 : 0.92;
-        const idleAberration = prefersReducedMotion ? 0 : 0.00045;
-        this.chromaticAberrationPass.uniforms.uAmount.value = idleAberration + this.caPulse + this.shockEnergy * 0.0048;
+        const idleAberration = prefersReducedMotion ? 0 : 0.00055;
+        this.chromaticAberrationPass.uniforms.uAmount.value = idleAberration + this.caPulse + this.shockEnergy * 0.0062;
         this.renderSelectiveBloom(delta);
       }
     }
@@ -7430,7 +7431,7 @@
         hideDialogSurface();
         if (prefersReducedMotion) return;
         window.__FLG_LINK_START__?.start?.(2600);
-        this.post.triggerChromaticAberration(0.010, 1.24);
+        this.post.triggerChromaticAberration(0.014, 1.38);
       }
 
       async beginAuthentication(initialMessage, options = {}) {
@@ -7785,6 +7786,7 @@
         this.runes.setShock(0.16);
         this.particles.setSpiral(0.2);
         this.post.setHoverEnergy(0.36);
+        this.post.triggerChromaticAberration(0.0052, 0.72);
 
         const timeout = window.setTimeout(() => ctrl.abort(), 180000);
         try {
@@ -7808,6 +7810,7 @@
           this.setOperationalStatus(fromCache ? "已讀取封存鑑定卷宗" : "魔導鑑定卷宗已完成");
           this.hud.showNotice(fromCache ? MSG.CACHE_HIT : "魔導鑑定卷宗已完成");
           flashButtonFeedback(analyzeButton, "success", 980);
+          this.post.triggerChromaticAberration(0.006, 0.82);
           this.persistHistory({ draft, result, ts: startedAt });
           window.dispatchEvent(new CustomEvent("worldforge:analysis-complete", { detail: { fromCache } }));
         } catch (error) {
@@ -7817,6 +7820,7 @@
           this.setOperationalStatus("鑑定中斷，請重試", true);
           this.hud.showNotice("鑑定中斷，請重試");
           flashButtonFeedback(analyzeButton, "error", 760);
+          this.post.triggerChromaticAberration(0.009, 0.68);
         } finally {
           progress?.dispose();
           window.clearTimeout(timeout);
@@ -7867,7 +7871,7 @@
 
       triggerSmallPulse() {
         const driver = { shock: 0 };
-        this.post.triggerChromaticAberration(0.0038, 0.46);
+        this.post.triggerChromaticAberration(0.0062, 0.54);
         if (!gsap) return;
         gsap.to(driver, {
           shock: 0.32,
