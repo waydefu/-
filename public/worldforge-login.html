@@ -8237,14 +8237,18 @@
         ];
         staged.forEach(([node, delay]) => {
           if (!(node instanceof HTMLElement)) return;
+          node.style.opacity = "1";
+          node.style.transform = "none";
+          node.style.filter = "none";
           node.animate([
-            { opacity: 0, transform: "translateY(10px)", filter: "blur(5px)" },
+            { opacity: 1, transform: "translateY(0)", filter: "brightness(1.34)" },
+            { opacity: 1, transform: "translateY(-2px)", filter: "brightness(1.12)", offset: 0.48 },
             { opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
           ], {
             duration: 620,
             delay,
             easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-            fill: "backwards"
+            fill: "none"
           });
         });
       }

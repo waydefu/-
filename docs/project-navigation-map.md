@@ -346,6 +346,13 @@ Validation:
 - `npm run build`: passed.
 - `git diff --check`: passed; Windows line-ending warnings only.
 
+Production follow-up:
+
+- A cache-busted production screenshot after deploy still showed the login frame with blank inner content.
+- Root cause: staged auth-panel child animations started from `opacity: 0` with `fill: backwards`; if production timing stalls or a frame is skipped, child copy and CTA can remain transparent while the panel frame is visible.
+- Hotfix plan: make child staging animation decorative only, force children visible before animation, use visible brightness/translate frames instead of hidden frames, and remove backwards fill.
+- Post-hotfix expectation: login text and CTA remain visible at all times; the materialization effect reads as a quick scan/brightness pass instead of relying on hidden-to-visible opacity.
+
 ## Next-Step Checklist
 
 Before any new UI task:
