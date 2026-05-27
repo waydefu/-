@@ -118,14 +118,14 @@
       --sao-glitch-clip-six: polygon(0 40%, 100% 40%, 100% 85%, 8% 85%, 0 70%);
       --sao-glitch-clip-seven: polygon(0 63%, 100% 63%, 100% 80%, 8% 80%, 0 70%);
       --sao-glitch-shift: 5;
-      --sao-cyber-offset-x: clamp(10px, 0.9vw, 14px);
-      --sao-cyber-offset-y: clamp(7px, 0.62vw, 10px);
+      --sao-cyber-offset-x: clamp(12px, 1.05vw, 18px);
+      --sao-cyber-offset-y: clamp(8px, 0.72vw, 12px);
       --sao-cyber-border: clamp(4px, 0.35vw, 6px);
-      --sao-cyber-primary: linear-gradient(180deg, rgba(255, 224, 148, 0.9) 0%, rgba(196, 106, 13, 0.94) 44%, rgba(117, 47, 4, 0.98) 76%, rgba(31, 12, 2, 0.99) 100%);
-      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 232, 166, 0.96) 0%, rgba(210, 118, 17, 0.98) 48%, rgba(92, 33, 4, 0.99) 100%);
-      --sao-cyber-primary-active: linear-gradient(180deg, rgba(150, 77, 9, 0.94), rgba(41, 15, 3, 0.98));
-      --sao-cyber-underplate: linear-gradient(180deg, rgba(58, 35, 8, 1) 0%, rgba(22, 11, 3, 1) 58%, rgba(3, 2, 1, 1) 100%);
-      --sao-cyber-shadow-primary: rgba(80, 48, 12, 0.98);
+      --sao-cyber-primary: linear-gradient(180deg, rgba(255, 224, 148, 0.82) 0%, rgba(172, 87, 8, 0.94) 44%, rgba(81, 31, 4, 0.99) 78%, rgba(12, 5, 1, 1) 100%);
+      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 232, 166, 0.9) 0%, rgba(190, 100, 12, 0.98) 48%, rgba(58, 20, 3, 1) 100%);
+      --sao-cyber-primary-active: linear-gradient(180deg, rgba(120, 56, 6, 0.96), rgba(18, 7, 2, 1));
+      --sao-cyber-underplate: linear-gradient(180deg, rgba(44, 27, 6, 1) 0%, rgba(12, 7, 2, 1) 60%, rgba(2, 1, 1, 1) 100%);
+      --sao-cyber-shadow-primary: rgba(49, 30, 8, 0.98);
       --sao-cyber-shadow-secondary: rgba(211, 139, 39, 0.72);
       --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
       --sao-easing-back: cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -1461,12 +1461,14 @@
 
     .sao-btn:hover:not(:disabled)::before {
       opacity: 1;
+      transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 2px));
       filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
     }
 
     .sao-btn:hover:not(:disabled)::after {
       background: var(--sao-cyber-primary-hover);
       filter: brightness(0.96);
+      animation: saoButtonStrike 0.48s steps(2, end) both;
     }
 
     .sao-btn:hover:not(:disabled) {
@@ -1479,6 +1481,10 @@
       box-shadow: var(--sao-glow-active);
       filter: brightness(1.18) saturate(1.12);
       transition: transform 0.1s var(--sao-easing-out), box-shadow 0.1s ease;
+    }
+
+    .sao-btn:active:not(:disabled)::before {
+      transform: translate(calc(var(--sao-cyber-offset-x) - 2px), calc(var(--sao-cyber-offset-y) - 1px));
     }
 
     .sao-btn-glitch,
@@ -3691,6 +3697,23 @@
       }
     }
 
+    @keyframes saoButtonStrike {
+      0%, 100% {
+        clip-path: var(--sao-cyber-clip);
+        filter: brightness(0.96);
+      }
+
+      28% {
+        clip-path: var(--sao-glitch-clip-three);
+        filter: brightness(1.24) saturate(1.1);
+      }
+
+      52% {
+        clip-path: var(--sao-glitch-clip-six);
+        filter: brightness(0.9) saturate(1.03);
+      }
+    }
+
     @keyframes saoLabelGlitch {
       0%, 100% { transform: translate3d(0, 0, 0); }
       18% { transform: translate3d(1px, 0, 0) skewX(-3deg); }
@@ -4604,12 +4627,19 @@
       background: var(--sao-cyber-primary-hover);
       opacity: 1;
       transform: none;
-      animation: none;
+      animation: saoButtonStrike 0.48s steps(2, end) both;
     }
 
     .sao-btn:hover:not(:disabled)::before,
-    .sao-btn:focus-visible::before {
+    .sao-btn:focus-visible::before,
+    .workbench-nav-actions > button.sao-btn:hover::before,
+    .workbench-nav-actions > button.sao-btn:focus-visible::before,
+    .account-menu button.sao-btn:hover::before,
+    .account-menu button.sao-btn:focus-visible::before,
+    .history-delete.sao-btn:hover::before,
+    .history-delete.sao-btn:focus-visible::before {
       opacity: 1;
+      transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 2px));
       filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
     }
 
