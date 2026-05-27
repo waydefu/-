@@ -302,6 +302,50 @@ Snapshot tests strip scripts and hide WebGL for deterministic layout. They do no
 - `API_CONFIG.QUOTA_URL` points to `quotaPeek`, but repository scan previously found no local function source for it. Treat quota HUD / hosting smoke around quota as a known risk until verified.
 - `functions/src/index.ts` currently keeps App Check enforcement disabled (`ENFORCE_APP_CHECK = false`).
 
+## 2026-05-28 S13 VFX / Mobile UX Recheck
+
+Pre-change confirmation:
+
+- User rejected the prior button pass because the visible result still read as static bright plates, not an obvious animated system effect.
+- Full-script local login verification previously exposed a risk where the auth panel could remain invisible if its materialization animation stuck at the initial hidden frame.
+- Mobile output screenshots showed the dossier area wasting vertical space before the heading; root cause is `.analysis-dossier { white-space: pre-wrap; }` preserving HTML indentation whitespace.
+- Mobile history/account panels opened over the workbench title area instead of presenting as a clear SAO-style floating panel.
+- Button ripple feedback was visually buried under the pseudo-element plates because `.sao-ripple` sat behind `::before` and `::after`.
+
+Planned changes:
+
+- Make auth materialization fail-safe so the login panel remains visible even if WAAPI timing stalls.
+- Remove preserved whitespace from the dossier container while keeping result body text wrapping intact.
+- Darken shared button colors toward obsidian/copper/gold and add always-on normal-motion plate pulse/scan feedback without removing `prefers-reduced-motion`.
+- Raise click ripple above the plates but below labels/glitch text.
+- Keep mobile history/account panels as navigation dropdown panels; a centered fixed panel was tested and rejected because the workbench visual container constrained its placement.
+- Re-run sync, visual/a11y/check/build, then deploy only after live screenshots confirm the fixes.
+
+Post-change record:
+
+- Auth panel materialization is fail-safe: the panel is visible at the first WAAPI keyframe, and `markLoginModalEntering()` no longer leaves the panel on a hidden CSS class if timing stalls.
+- Shared SAO buttons now use darker obsidian/copper gradients, continuous normal-motion plate and underplate pulse, hover glitch/strike layers, and visible click ripple above the plates.
+- `.analysis-dossier` no longer preserves indentation whitespace; result bodies and empty states keep readable wrapping where needed.
+- Mobile output actions remain stacked and full-width, but button height and result body rhythm were tightened.
+- Mobile history/account panels now open as stable dropdown panels under the workbench navigation, avoiding title/content overlap.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Manual screenshots reviewed:
+
+- `output/playwright/audit-login-timeout-diagnostic.png`
+- `output/playwright/audit-live-mobile-workbench-after-uxfix.png`
+- `output/playwright/audit-live-mobile-output-after-uxfix.png`
+- `output/playwright/audit-live-mobile-history-dropdown-after-uxfix.png`
+
+Validation:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14; updated mobile login and mobile workbench snapshots.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+
 ## Next-Step Checklist
 
 Before any new UI task:

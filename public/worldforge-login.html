@@ -121,10 +121,10 @@
       --sao-cyber-offset-x: clamp(9px, 0.72vw, 12px);
       --sao-cyber-offset-y: clamp(6px, 0.52vw, 9px);
       --sao-cyber-border: clamp(4px, 0.35vw, 6px);
-      --sao-cyber-primary: linear-gradient(180deg, rgba(178, 123, 48, 0.52) 0%, rgba(86, 42, 8, 0.94) 38%, rgba(24, 9, 2, 0.99) 74%, rgba(3, 1, 0, 1) 100%);
-      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(207, 151, 60, 0.62) 0%, rgba(104, 50, 9, 0.96) 42%, rgba(26, 9, 2, 1) 100%);
+      --sao-cyber-primary: linear-gradient(180deg, rgba(126, 78, 24, 0.4) 0%, rgba(46, 21, 4, 0.96) 40%, rgba(12, 4, 1, 1) 76%, rgba(2, 1, 0, 1) 100%);
+      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(158, 101, 31, 0.48) 0%, rgba(58, 25, 4, 0.98) 44%, rgba(12, 4, 1, 1) 100%);
       --sao-cyber-primary-active: linear-gradient(180deg, rgba(78, 38, 6, 0.98), rgba(12, 5, 2, 1));
-      --sao-cyber-underplate: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(8, 4, 1, 1) 58%, rgba(31, 17, 4, 0.98) 82%, rgba(91, 57, 16, 0.78) 100%);
+      --sao-cyber-underplate: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(5, 3, 1, 1) 58%, rgba(18, 10, 3, 0.98) 82%, rgba(71, 43, 12, 0.72) 100%);
       --sao-cyber-shadow-primary: rgba(18, 10, 3, 0.98);
       --sao-cyber-shadow-secondary: rgba(214, 166, 77, 0.46);
       --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -1631,10 +1631,11 @@
 
     .sao-btn .sao-ripple {
       position: absolute;
-      z-index: 0;
+      z-index: 3;
       border-radius: 50%;
-      background: radial-gradient(circle, rgba(255, 226, 160, 0.7), transparent 70%);
+      background: radial-gradient(circle, rgba(255, 226, 160, 0.58), rgba(214, 166, 77, 0.22) 42%, transparent 72%);
       pointer-events: none;
+      mix-blend-mode: screen;
       transform: scale(0);
       opacity: 0.88;
       animation: saoRipple 0.8s var(--sao-easing-out) forwards;
@@ -1722,6 +1723,27 @@
     .primary-btn.sao-btn:hover::after {
       background: var(--sao-cyber-primary-hover);
       animation: saoButtonStrike 0.48s steps(2, end) both;
+    }
+
+    @media (prefers-reduced-motion: no-preference) {
+      body.boot-complete .sao-btn:not(:disabled)::after {
+        animation: saoHeroPlateBreath 5.2s ease-in-out infinite;
+      }
+
+      body.boot-complete .sao-btn:not(:disabled)::before {
+        animation: saoUnderplatePulse 6.4s ease-in-out infinite;
+      }
+
+      body.boot-complete .sao-btn:hover:not(:disabled)::after,
+      body.boot-complete .sao-btn:focus-visible::after,
+      body.boot-complete .primary-btn.sao-btn:hover::after,
+      body.boot-complete .analyze-ritual-btn.is-loading::after {
+        animation: saoButtonStrike 0.48s steps(2, end) both;
+      }
+
+      body.boot-complete .analyze-ritual-btn.is-loading::after {
+        animation: saoHeroLoadingPlate 1.35s ease-in-out infinite;
+      }
     }
 
     html.sao-modal-open,
@@ -2913,7 +2935,7 @@
       color: rgba(241, 222, 194, 0.84);
       font-size: clamp(1.125rem, 0.96rem + 0.42vw, 1.375rem);
       line-height: 2;
-      white-space: pre-wrap;
+      white-space: normal;
     }
 
     .analysis-dossier-head {
@@ -3091,6 +3113,7 @@
       color: rgba(241, 222, 194, 0.62);
       font-style: italic;
       line-height: 1.8;
+      white-space: pre-wrap;
     }
 
     @media (pointer: coarse) {
@@ -4463,6 +4486,23 @@
       }
     }
 
+    @keyframes saoUnderplatePulse {
+      0%, 100% {
+        filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.72)) brightness(0.94);
+        box-shadow:
+          inset 0 0 0 1px rgba(214, 166, 77, 0.22),
+          inset -10px 0 0 rgba(214, 166, 77, 0.12);
+      }
+
+      48% {
+        filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.82)) brightness(1.06);
+        box-shadow:
+          inset 0 0 0 1px rgba(214, 166, 77, 0.34),
+          inset -10px 0 0 rgba(214, 166, 77, 0.2),
+          0 0 16px rgba(214, 166, 77, 0.12);
+      }
+    }
+
     @keyframes saoHeroLoadingPlate {
       0%, 100% {
         filter: brightness(0.88) saturate(1);
@@ -4776,22 +4816,25 @@
 
       .account-menu,
       .history-drawer {
-        position: fixed;
-        left: 12px;
-        right: 12px;
-        top: calc(env(safe-area-inset-top, 0px) + 92px);
-        width: auto;
-        margin: 0;
-        justify-self: auto;
+        position: static;
+        left: auto;
+        right: auto;
+        top: auto;
+        z-index: auto;
+        grid-column: 1 / -1;
+        width: 100%;
+        margin-top: 2px;
+        justify-self: stretch;
+        transform: none;
         transform-origin: top center;
       }
 
       .account-menu {
-        max-height: min(48dvh, 340px);
+        max-height: min(52dvh, 360px);
       }
 
       .history-drawer {
-        max-height: min(68dvh, 560px);
+        max-height: min(72dvh, 580px);
       }
 
       .account-menu[hidden],
@@ -4805,6 +4848,7 @@
         border-width: 0;
         overflow: hidden;
         box-shadow: none;
+        transform: none;
       }
 
       .account-avatar {
@@ -4871,11 +4915,11 @@
       }
 
       .analysis-dossier {
-        min-height: 260px;
+        min-height: 240px;
         max-height: none;
-        padding: 16px 14px;
-        font-size: 19px;
-        line-height: 1.95;
+        padding: 14px;
+        font-size: clamp(1rem, 0.98rem + 0.18vw, 1.125rem);
+        line-height: 1.82;
       }
 
       .analysis-result {
@@ -4898,14 +4942,14 @@
         grid-template-columns: 1fr;
         justify-content: stretch;
         width: 100%;
-        gap: 10px;
+        gap: 8px;
       }
 
       .dossier-actions button.sao-btn {
         width: 100%;
-        min-height: 50px;
-        padding-inline: 14px;
-        font-size: 15px;
+        min-height: 46px;
+        padding-inline: 12px;
+        font-size: 14px;
       }
 
       .result-section-head {
@@ -4918,7 +4962,7 @@
       .result-section-copy {
         justify-self: stretch;
         width: 100%;
-        min-height: 48px;
+        min-height: 46px;
         font-size: 14px;
       }
 
@@ -8134,13 +8178,75 @@
       markLoginModalEntering() {
         if (prefersReducedMotion) return;
         document.body.classList.remove("auth-handoff-collapsing");
-        document.body.classList.add("login-modal-entering");
+        document.body.classList.remove("login-modal-entering");
+        const authPanel = document.getElementById("authPanel");
+        if (authPanel instanceof HTMLElement) {
+          authPanel.style.animation = "";
+          authPanel.style.opacity = "1";
+          authPanel.style.transform = "none";
+          authPanel.style.filter = "none";
+        }
+        void document.body.offsetWidth;
+        this.playAuthPanelMaterialize(authPanel);
         window.clearTimeout(this.modalEnterTimer);
         window.clearTimeout(this.modalStabilizeTimer);
         this.modalEnterTimer = window.setTimeout(() => {
           document.body.classList.remove("login-modal-entering");
         }, uiMotion.mobileEnterClass);
         this.modalStabilizeTimer = window.setTimeout(() => this.stabilizeAuthPanel(), uiMotion.mobileEnterClass + 120);
+      }
+
+      playAuthPanelMaterialize(authPanel) {
+        if (!(authPanel instanceof HTMLElement) || prefersReducedMotion) return;
+        authPanel.getAnimations().forEach((animation) => animation.cancel());
+        authPanel.animate([
+          {
+            opacity: 1,
+            transform: "none",
+            filter: "brightness(1.28) saturate(1.08)"
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) rotateX(1.4deg) scaleX(1.01) scaleY(0.985)",
+            filter: "brightness(1.18) saturate(1.06)",
+            offset: 0.36
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) rotateX(-0.6deg) scaleX(1.006) scaleY(1.018)",
+            filter: "brightness(1.08)",
+            offset: 0.74
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) rotateX(0deg) scaleX(1) scaleY(1)",
+            filter: "blur(0) brightness(1)"
+          }
+        ], {
+          duration: 1550,
+          easing: "cubic-bezier(0.18, 0.92, 0.2, 1)",
+          fill: "none"
+        });
+
+        const staged = [
+          [authPanel.querySelector(".auth-header"), 480],
+          [authPanel.querySelector(".seal-strip"), 520],
+          [authPanel.querySelector("#authTitle"), 680],
+          [authPanel.querySelector("#authPrompt"), 830],
+          [authPanel.querySelector(".auth-actions"), 980]
+        ];
+        staged.forEach(([node, delay]) => {
+          if (!(node instanceof HTMLElement)) return;
+          node.animate([
+            { opacity: 0, transform: "translateY(10px)", filter: "blur(5px)" },
+            { opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
+          ], {
+            duration: 620,
+            delay,
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "backwards"
+          });
+        });
       }
 
       stabilizeAuthPanel() {
@@ -8207,7 +8313,6 @@
           .to("#bootVeil", { opacity: 0, duration: 0.62, ease: "power2.out" }, 1.34)
           .set("#bootVeil", { display: "none" }, 2.02)
           .to(".top-hud", { opacity: 1, y: 0, duration: 0.52 }, 1.34)
-          .call(() => this.markLoginModalEntering(), null, 1.58)
           .call(() => {
             const dlg = document.getElementById("ritualStack");
             if (dlg) {
@@ -8224,6 +8329,7 @@
               showDialogSurface(dlg);
               window.__FLG_SAO_AUDIO__?.playOpenChime();
             }
+            this.markLoginModalEntering();
           }, null, 1.64);
       }
 
@@ -8410,27 +8516,29 @@
         if (!(panel instanceof HTMLElement) || prefersReducedMotion) return;
         panel.getAnimations().forEach((animation) => animation.cancel());
         const isDrawer = type === "drawer";
+        const fixedCenter = getComputedStyle(panel).position === "fixed";
+        const baseTransform = fixedCenter ? "translate(-50%, -50%) " : "";
         panel.animate([
           {
             opacity: 0,
-            transform: "scaleX(0.02) scaleY(0.02) translateY(-10px)",
+            transform: `${baseTransform}scaleX(0.02) scaleY(0.02) translateY(-10px)`,
             filter: "blur(8px) brightness(1.72)"
           },
           {
             opacity: 1,
-            transform: "scaleX(1) scaleY(0.05) translateY(-3px)",
+            transform: `${baseTransform}scaleX(1) scaleY(0.05) translateY(-3px)`,
             filter: "blur(3px) brightness(1.36)",
             offset: 0.36
           },
           {
             opacity: 1,
-            transform: "scaleX(1) scaleY(1.045) translateY(2px)",
+            transform: `${baseTransform}scaleX(1) scaleY(1.045) translateY(2px)`,
             filter: "blur(1px) brightness(1.1)",
             offset: 0.72
           },
           {
             opacity: 1,
-            transform: "scaleX(1) scaleY(1) translateY(0)",
+            transform: `${baseTransform}scaleX(1) scaleY(1) translateY(0)`,
             filter: "blur(0) brightness(1)"
           }
         ], {
