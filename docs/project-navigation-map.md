@@ -353,6 +353,47 @@ Production follow-up:
 - Hotfix plan: make child staging animation decorative only, force children visible before animation, use visible brightness/translate frames instead of hidden frames, and remove backwards fill.
 - Post-hotfix expectation: login text and CTA remain visible at all times; the materialization effect reads as a quick scan/brightness pass instead of relying on hidden-to-visible opacity.
 
+## 2026-05-28 S13 Final Animation Completion
+
+Pre-change confirmation:
+
+- User confirmed all animation work should be completed, recorded before and after, then the machine may shut down.
+- Existing production checks showed the login content hotfix is deployed, but several visible animation hooks remain incomplete or too subtle.
+- Specific gaps found in `public/index.html` before editing:
+  - `markLoginModalEntering()` resets `login-modal-entering` but does not re-add it, so the CSS login materialization path can be skipped.
+  - Workbench CSS materialization runs only when GSAP is unavailable; production normally loads GSAP, so the visible deck sweep can be missed.
+  - History entries explicitly use `animation: none`, leaving the drawer list static.
+  - Button underplates pulse by brightness only; the offset slab does not visibly move enough to read as the requested Cyberpunk-style effect.
+  - Analysis progress rails have a glow dot but no clear system-scan sweep.
+
+Planned changes:
+
+- Re-enable login modal entering class while keeping the fail-safe visible-first keyframes.
+- Run workbench materialization CSS even when GSAP is present, with visible staged deck/session/panel/action/dossier entrance.
+- Restore menu/list entrance motion for account and history panels.
+- Make SAO button underplates physically shift during the ambient pulse and add a darker scan layer inside the main plate.
+- Add non-image CSS scan motion to analysis progress bars.
+- Preserve reduced-motion handling, native dialog structure, ARIA, Firebase/Auth/draft/history contracts, and 44px touch targets.
+
+Post-change record:
+
+- `markLoginModalEntering()` now re-adds `login-modal-entering`, so login modal materialization CSS and WAAPI both fire while keeping visible-first fail-safes.
+- Workbench materialization class now runs whenever motion is allowed, including production where GSAP is loaded.
+- Workbench entrance now stages session nav, codex panel, analyze CTA, and dossier surfaces.
+- History entries now use `historyEntryIn`; account menu buttons receive a short visible entrance.
+- SAO button main plates gained a dark scan layer; underplates now animate their actual offset position instead of brightness only.
+- Analysis progress bars now use CSS-generated rail scans; no image/texture asset was added.
+- `public/worldforge-login.html` was synced from `public/index.html`.
+
+Validation after change:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+
 ## Next-Step Checklist
 
 Before any new UI task:

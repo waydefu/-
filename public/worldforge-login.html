@@ -121,8 +121,12 @@
       --sao-cyber-offset-x: clamp(9px, 0.72vw, 12px);
       --sao-cyber-offset-y: clamp(6px, 0.52vw, 9px);
       --sao-cyber-border: clamp(4px, 0.35vw, 6px);
-      --sao-cyber-primary: linear-gradient(180deg, rgba(126, 78, 24, 0.4) 0%, rgba(46, 21, 4, 0.96) 40%, rgba(12, 4, 1, 1) 76%, rgba(2, 1, 0, 1) 100%);
-      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(158, 101, 31, 0.48) 0%, rgba(58, 25, 4, 0.98) 44%, rgba(12, 4, 1, 1) 100%);
+      --sao-cyber-primary:
+        linear-gradient(100deg, transparent 0 36%, rgba(255, 226, 160, 0.16) 44%, rgba(214, 166, 77, 0.18) 50%, transparent 60% 100%) -140% 0 / 220% 100% no-repeat,
+        linear-gradient(180deg, rgba(126, 78, 24, 0.4) 0%, rgba(46, 21, 4, 0.96) 40%, rgba(12, 4, 1, 1) 76%, rgba(2, 1, 0, 1) 100%);
+      --sao-cyber-primary-hover:
+        linear-gradient(100deg, transparent 0 34%, rgba(255, 226, 160, 0.22) 43%, rgba(214, 166, 77, 0.24) 51%, transparent 62% 100%) -140% 0 / 220% 100% no-repeat,
+        linear-gradient(180deg, rgba(158, 101, 31, 0.48) 0%, rgba(58, 25, 4, 0.98) 44%, rgba(12, 4, 1, 1) 100%);
       --sao-cyber-primary-active: linear-gradient(180deg, rgba(78, 38, 6, 0.98), rgba(12, 5, 2, 1));
       --sao-cyber-underplate: linear-gradient(90deg, rgba(0, 0, 0, 1) 0%, rgba(5, 3, 1, 1) 58%, rgba(18, 10, 3, 0.98) 82%, rgba(71, 43, 12, 0.72) 100%);
       --sao-cyber-shadow-primary: rgba(18, 10, 3, 0.98);
@@ -2337,6 +2341,10 @@
       animation: saoMenuSweep 0.92s var(--sao-easing-out) 0.08s both;
     }
 
+    .account-menu:not([hidden]) button {
+      animation: contentSlideUp 0.46s var(--sao-easing-out) both;
+    }
+
     .account-menu button {
       display: inline-flex;
       align-items: center;
@@ -2455,7 +2463,7 @@
     }
 
     .history-drawer:not([hidden]) .history-entry {
-      animation: none;
+      animation: historyEntryIn 0.58s var(--sao-easing-out) both;
     }
 
     .history-drawer:not([hidden]) .history-entry:nth-child(1) { animation-delay: 0.02s; }
@@ -3136,6 +3144,7 @@
       gap: 12px;
       padding: 6px 0 2px;
       white-space: normal;
+      animation: saoWindowSettle 0.68s var(--sao-easing-out) both;
     }
 
     .analysis-progress-row {
@@ -3145,6 +3154,7 @@
       align-items: center;
       color: rgba(241, 222, 194, 0.74);
       font-size: clamp(0.9375rem, 0.82rem + 0.32vw, 1.125rem);
+      animation: contentSlideUp 0.52s var(--sao-easing-out) both;
     }
 
     .analysis-progress-row b {
@@ -3169,6 +3179,20 @@
       border: 1px solid rgba(214, 166, 77, 0.18);
       background: rgba(0, 0, 0, 0.5);
       transform: translateZ(0);
+    }
+
+    .analysis-progress-bar::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, transparent 0 12%, rgba(255, 226, 160, 0.24), transparent 38% 100%),
+        repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.055) 0 1px, transparent 1px 14px);
+      opacity: 0.7;
+      transform: translateX(-74%);
+      animation: saoRailScan 1.55s linear infinite;
+      mix-blend-mode: screen;
     }
 
     .analysis-progress-bar::after {
@@ -3470,6 +3494,7 @@
       .notice.is-leaving {
         opacity: 0;
       }
+      .analysis-progress-bar::before,
       .analysis-progress-bar::after {
         animation: none !important;
       }
@@ -3669,6 +3694,22 @@
       transform-origin: center top;
     }
 
+    body.workbench-materializing .codex-session {
+      animation: contentSlideUp 0.72s var(--sao-easing-out) 0.3s both;
+    }
+
+    body.workbench-materializing .codex-panel {
+      animation: saoWindowSettle 0.98s var(--sao-easing-out) 0.52s both;
+    }
+
+    body.workbench-materializing .operational-actions .sao-btn {
+      animation: ctaWake 0.76s var(--sao-easing-back) 0.82s both;
+    }
+
+    body.workbench-materializing .analysis-dossier {
+      animation: saoWindowSettle 1.06s var(--sao-easing-out) 0.72s both;
+    }
+
     body.operational .codex-panel,
     body.operational .analysis-dossier {
       filter: none !important;
@@ -3751,7 +3792,7 @@
 
     @keyframes panelMaterialize {
       0% {
-        opacity: 0;
+        opacity: 1;
         transform: perspective(900px) scaleX(0.04) scaleY(0.002) rotateX(8deg);
         filter: blur(14px) brightness(2.4) saturate(0.58);
       }
@@ -3843,7 +3884,7 @@
 
     @keyframes contentSlideUp {
       0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(8px);
         filter: blur(4px);
       }
@@ -3857,7 +3898,7 @@
 
     @keyframes textGlow {
       0% {
-        opacity: 0;
+        opacity: 1;
         transform: translateY(6px);
         text-shadow: 0 0 0 rgba(214, 166, 77, 0);
       }
@@ -3876,7 +3917,7 @@
 
     @keyframes ctaWake {
       0% {
-        opacity: 0;
+        opacity: 1;
         transform: scale(0.92);
         box-shadow: 0 0 0 rgba(214, 166, 77, 0);
       }
@@ -3914,16 +3955,19 @@
       0%, 100% {
         clip-path: var(--sao-cyber-clip);
         filter: brightness(0.96);
+        background-position: -140% 0, 0 0;
       }
 
       28% {
         clip-path: var(--sao-glitch-clip-three);
         filter: brightness(1.24) saturate(1.1);
+        background-position: 42% 0, 0 0;
       }
 
       52% {
         clip-path: var(--sao-glitch-clip-six);
         filter: brightness(0.9) saturate(1.03);
+        background-position: 130% 0, 0 0;
       }
     }
 
@@ -4465,8 +4509,16 @@
       50% { transform: translateX(80%); opacity: 0.92; }
     }
 
+    @keyframes saoRailScan {
+      0% { transform: translateX(-74%) scaleX(0.72); opacity: 0.22; }
+      42% { opacity: 0.76; }
+      100% { transform: translateX(96%) scaleX(1); opacity: 0.1; }
+    }
+
     @keyframes saoHeroPlateBreath {
       0%, 100% {
+        transform: translate3d(0, 0, 0);
+        background-position: -140% 0, 0 0;
         filter: brightness(0.9) saturate(0.98);
         box-shadow:
           inset 0 1px 0 rgba(255, 226, 160, 0.22),
@@ -4476,6 +4528,8 @@
       }
 
       48% {
+        transform: translate3d(-1px, 0, 0);
+        background-position: 112% 0, 0 0;
         filter: brightness(1.08) saturate(1.04);
         box-shadow:
           inset 0 1px 0 rgba(255, 226, 160, 0.34),
@@ -4488,6 +4542,7 @@
 
     @keyframes saoUnderplatePulse {
       0%, 100% {
+        transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
         filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.72)) brightness(0.94);
         box-shadow:
           inset 0 0 0 1px rgba(214, 166, 77, 0.22),
@@ -4495,6 +4550,7 @@
       }
 
       48% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 1px));
         filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.82)) brightness(1.06);
         box-shadow:
           inset 0 0 0 1px rgba(214, 166, 77, 0.34),
@@ -7927,7 +7983,7 @@
         logoutConfirmWindow?.setAttribute("hidden", "");
         this.setOperationalDeckAvailability(true);
         document.body.classList.add("operational");
-        document.body.classList.toggle("workbench-materializing", !prefersReducedMotion && !gsap);
+        document.body.classList.toggle("workbench-materializing", !prefersReducedMotion);
         this.operationalDeck.style.filter = "none";
         this.operationalDeck.style.setProperty("backdrop-filter", "none");
         this.operationalDeck.style.setProperty("-webkit-backdrop-filter", "none");
@@ -8187,6 +8243,7 @@
           authPanel.style.filter = "none";
         }
         void document.body.offsetWidth;
+        document.body.classList.add("login-modal-entering");
         this.playAuthPanelMaterialize(authPanel);
         window.clearTimeout(this.modalEnterTimer);
         window.clearTimeout(this.modalStabilizeTimer);
