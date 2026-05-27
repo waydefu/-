@@ -104,8 +104,8 @@
       --sao-edge: 1px;
       --sao-edge-len: 14px;
       --sao-glow-default: 0 0 0 rgba(214, 166, 77, 0);
-      --sao-glow-hover: 0 0 22px rgba(214, 166, 77, 0.46), inset 0 0 16px rgba(255, 226, 160, 0.22);
-      --sao-glow-active: 0 0 38px rgba(255, 226, 160, 0.86), inset 0 0 26px rgba(255, 226, 160, 0.5);
+      --sao-glow-hover: 0 0 0 1px rgba(255, 226, 160, 0.34), 0 12px 28px rgba(0, 0, 0, 0.38), 0 0 18px rgba(214, 166, 77, 0.22), inset 0 0 12px rgba(255, 226, 160, 0.14);
+      --sao-glow-active: 0 0 0 1px rgba(255, 226, 160, 0.52), 0 0 28px rgba(214, 166, 77, 0.42), inset 0 0 20px rgba(255, 226, 160, 0.28);
       --sao-glow-focus: 0 0 0 2px rgba(255, 226, 160, 0.82), 0 0 26px rgba(214, 166, 77, 0.68);
       --sao-glow-danger: 0 0 22px rgba(185, 75, 25, 0.56), inset 0 0 16px rgba(255, 156, 100, 0.28);
       --sao-scan-color: rgba(255, 226, 160, 0.78);
@@ -118,15 +118,15 @@
       --sao-glitch-clip-six: polygon(0 40%, 100% 40%, 100% 85%, 8% 85%, 0 70%);
       --sao-glitch-clip-seven: polygon(0 63%, 100% 63%, 100% 80%, 8% 80%, 0 70%);
       --sao-glitch-shift: 5;
-      --sao-cyber-offset-x: clamp(12px, 1.05vw, 18px);
-      --sao-cyber-offset-y: clamp(8px, 0.72vw, 12px);
+      --sao-cyber-offset-x: clamp(16px, 1.45vw, 24px);
+      --sao-cyber-offset-y: clamp(10px, 0.92vw, 15px);
       --sao-cyber-border: clamp(4px, 0.35vw, 6px);
-      --sao-cyber-primary: linear-gradient(180deg, rgba(255, 224, 148, 0.82) 0%, rgba(172, 87, 8, 0.94) 44%, rgba(81, 31, 4, 0.99) 78%, rgba(12, 5, 1, 1) 100%);
-      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 232, 166, 0.9) 0%, rgba(190, 100, 12, 0.98) 48%, rgba(58, 20, 3, 1) 100%);
-      --sao-cyber-primary-active: linear-gradient(180deg, rgba(120, 56, 6, 0.96), rgba(18, 7, 2, 1));
-      --sao-cyber-underplate: linear-gradient(180deg, rgba(44, 27, 6, 1) 0%, rgba(12, 7, 2, 1) 60%, rgba(2, 1, 1, 1) 100%);
-      --sao-cyber-shadow-primary: rgba(49, 30, 8, 0.98);
-      --sao-cyber-shadow-secondary: rgba(211, 139, 39, 0.72);
+      --sao-cyber-primary: linear-gradient(180deg, rgba(242, 204, 126, 0.76) 0%, rgba(128, 65, 11, 0.94) 38%, rgba(43, 18, 4, 0.99) 74%, rgba(5, 2, 1, 1) 100%);
+      --sao-cyber-primary-hover: linear-gradient(180deg, rgba(255, 220, 143, 0.84) 0%, rgba(150, 76, 12, 0.96) 42%, rgba(49, 18, 4, 1) 100%);
+      --sao-cyber-primary-active: linear-gradient(180deg, rgba(78, 38, 6, 0.98), rgba(12, 5, 2, 1));
+      --sao-cyber-underplate: linear-gradient(90deg, rgba(4, 2, 1, 1) 0%, rgba(15, 8, 2, 1) 64%, rgba(58, 35, 8, 0.98) 84%, rgba(166, 111, 35, 0.92) 100%);
+      --sao-cyber-shadow-primary: rgba(18, 10, 3, 0.98);
+      --sao-cyber-shadow-secondary: rgba(230, 176, 82, 0.62);
       --sao-easing-out: cubic-bezier(0.22, 1, 0.36, 1);
       --sao-easing-back: cubic-bezier(0.34, 1.56, 0.64, 1);
       --sao-easing-decel: cubic-bezier(0.16, 1, 0.3, 1);
@@ -1190,6 +1190,9 @@
 
     .auth-panel.is-google-only .auth-actions {
       grid-template-columns: 1fr;
+      overflow: visible;
+      padding-right: calc(var(--sao-cyber-offset-x) + 4px);
+      padding-bottom: calc(var(--sao-cyber-offset-y) + 2px);
     }
 
     .auth-panel.is-google-only .primary-btn {
@@ -1202,6 +1205,7 @@
       min-height: 54px;
       padding-inline: 18px;
       gap: 12px;
+      width: 100%;
     }
 
     .google-mark {
@@ -1412,18 +1416,19 @@
       height: 1.55em;
       min-width: 1.55em;
       place-items: center;
-      border: 1px solid rgba(255, 226, 160, 0.42);
-      border-radius: 50%;
+      border: 1px solid rgba(255, 226, 160, 0.34);
+      border-radius: 0;
+      clip-path: polygon(16% 0, 100% 0, 100% 78%, 78% 100%, 0 100%, 0 22%);
       background:
-        radial-gradient(circle at 36% 30%, rgba(255, 246, 203, 0.5), rgba(214, 166, 77, 0.16) 46%, transparent 70%),
-        linear-gradient(145deg, rgba(78, 39, 10, 0.82), rgba(7, 3, 1, 0.94));
+        linear-gradient(135deg, rgba(255, 226, 160, 0.24), transparent 34%),
+        linear-gradient(145deg, rgba(48, 27, 7, 0.9), rgba(7, 3, 1, 0.96) 72%, rgba(166, 111, 35, 0.28));
       color: rgba(255, 246, 203, 0.94);
       font-family: var(--font-mono);
       font-size: 0.86em;
       font-weight: 700;
       line-height: 1;
       text-shadow: 0 0 10px rgba(255, 226, 160, 0.56);
-      box-shadow: 0 0 14px rgba(214, 166, 77, 0.18), inset 0 0 8px rgba(255, 226, 160, 0.12);
+      box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.42), inset 0 0 10px rgba(255, 226, 160, 0.1);
       transition:
         transform var(--sao-dur-mid) var(--sao-easing-back),
         border-color var(--sao-dur-mid) var(--sao-easing-out),
@@ -1432,9 +1437,9 @@
 
     .sao-btn:hover:not(:disabled) .sao-btn-symbol,
     .sao-btn:focus-visible .sao-btn-symbol {
-      transform: rotate(-10deg) scale(1.08);
-      border-color: rgba(255, 246, 203, 0.78);
-      box-shadow: 0 0 20px rgba(255, 226, 160, 0.34), inset 0 0 12px rgba(255, 226, 160, 0.22);
+      transform: translateX(-1px) skewX(-6deg);
+      border-color: rgba(255, 246, 203, 0.68);
+      box-shadow: 0 0 0 1px rgba(255, 226, 160, 0.2), inset 0 0 12px rgba(255, 226, 160, 0.16);
     }
 
     .sao-btn:hover:not(:disabled) .sao-btn-label,
@@ -1456,8 +1461,8 @@
       border-color: rgba(255, 156, 100, 0.52);
       color: rgba(255, 216, 184, 0.94);
       background:
-        radial-gradient(circle at 36% 30%, rgba(255, 190, 144, 0.42), rgba(185, 75, 25, 0.18) 46%, transparent 70%),
-        linear-gradient(145deg, rgba(110, 35, 15, 0.86), rgba(16, 4, 2, 0.96));
+        linear-gradient(135deg, rgba(255, 190, 144, 0.24), transparent 34%),
+        linear-gradient(145deg, rgba(82, 26, 10, 0.9), rgba(16, 4, 2, 0.96) 72%, rgba(185, 75, 25, 0.28));
     }
 
     .sao-btn::before,
@@ -1477,28 +1482,32 @@
       z-index: 1;
       background: var(--sao-cyber-underplate);
       transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
-      opacity: 0.96;
-      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.46));
+      opacity: 1;
+      box-shadow:
+        inset 0 0 0 1px rgba(214, 166, 77, 0.28),
+        inset -10px 0 0 rgba(214, 166, 77, 0.16);
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.72));
     }
 
     .sao-btn::after {
       z-index: 2;
       background: var(--sao-cyber-primary);
       box-shadow:
-        inset 0 1px 0 rgba(255, 226, 160, 0.32),
-        inset 0 -18px 28px rgba(12, 5, 1, 0.56),
-        inset 0 0 0 1px rgba(255, 226, 160, 0.18);
+        inset 0 1px 0 rgba(255, 226, 160, 0.28),
+        inset 0 -18px 28px rgba(12, 5, 1, 0.68),
+        inset 0 0 0 1px rgba(255, 226, 160, 0.2),
+        inset -5px 0 0 rgba(12, 5, 1, 0.42);
     }
 
     .sao-btn:hover:not(:disabled)::before {
       opacity: 1;
-      transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 2px));
-      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
+      transform: translate(calc(var(--sao-cyber-offset-x) + 4px), calc(var(--sao-cyber-offset-y) + 2px));
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.78)) brightness(1.02);
     }
 
     .sao-btn:hover:not(:disabled)::after {
       background: var(--sao-cyber-primary-hover);
-      filter: brightness(0.96);
+      filter: brightness(0.92) saturate(1.02);
       animation: saoButtonStrike 0.48s steps(2, end) both;
     }
 
@@ -1540,9 +1549,10 @@
       line-height: inherit;
       text-align: center;
       text-shadow:
-        2px 2px rgba(80, 48, 12, 0.98),
+        2px 2px rgba(48, 24, 4, 0.98),
         -2px -2px var(--sao-cyber-shadow-secondary);
-      background: var(--sao-cyber-underplate);
+      background:
+        linear-gradient(90deg, rgba(10, 4, 1, 1), rgba(74, 42, 8, 0.96) 72%, rgba(230, 176, 82, 0.86));
       clip-path: var(--sao-cyber-clip);
       opacity: 1;
       transform: translate3d(0, 0, 0);
@@ -4844,7 +4854,7 @@
     .sao-btn::before,
     .workbench-nav-actions > button.sao-btn::before,
     .account-menu button.sao-btn::before,
-      .history-delete.sao-btn::before {
+    .history-delete.sao-btn::before {
       inset: 0;
       z-index: 1;
       border: 0;
@@ -4853,7 +4863,10 @@
       clip-path: var(--sao-cyber-clip);
       opacity: 1;
       transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
-      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.46));
+      box-shadow:
+        inset 0 0 0 1px rgba(214, 166, 77, 0.28),
+        inset -10px 0 0 rgba(214, 166, 77, 0.16);
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.72));
     }
 
     .sao-btn::after,
@@ -4869,9 +4882,10 @@
       opacity: 1;
       transform: none;
       box-shadow:
-        inset 0 1px 0 rgba(255, 226, 160, 0.32),
-        inset 0 -18px 28px rgba(12, 5, 1, 0.56),
-        inset 0 0 0 1px rgba(255, 226, 160, 0.18);
+        inset 0 1px 0 rgba(255, 226, 160, 0.28),
+        inset 0 -18px 28px rgba(12, 5, 1, 0.68),
+        inset 0 0 0 1px rgba(255, 226, 160, 0.2),
+        inset -5px 0 0 rgba(12, 5, 1, 0.42);
     }
 
     .sao-btn.is-danger::after,
@@ -4892,6 +4906,7 @@
       background: var(--sao-cyber-primary-hover);
       opacity: 1;
       transform: none;
+      filter: brightness(0.92) saturate(1.02);
       animation: saoButtonStrike 0.48s steps(2, end) both;
     }
 
@@ -4904,8 +4919,8 @@
     .history-delete.sao-btn:hover::before,
     .history-delete.sao-btn:focus-visible::before {
       opacity: 1;
-      transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 2px));
-      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.54)) brightness(1.06);
+      transform: translate(calc(var(--sao-cyber-offset-x) + 4px), calc(var(--sao-cyber-offset-y) + 2px));
+      filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.78)) brightness(1.02);
     }
 
     .sao-btn .sao-btn-tag {

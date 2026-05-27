@@ -7,7 +7,7 @@ Purpose: current handoff map for the Fantasy Lore Guardian / Great Sage Manuscri
 ## Current State
 
 - S10.8 / S10.9 handoff state was preserved in commit `2e0737c`.
-- S11 execution is in progress; see `docs/s11-font-webgl-execution-log.md` for per-Phase status, validation, screenshots, commit hashes, and risks.
+- S11/S12/S13 execution records are in `docs/s11-font-webgl-execution-log.md` and `docs/s12-s13-execution-log.md`.
 - Current frontend source of truth is `public/index.html`.
 - `public/worldforge-login.html` is generated from `public/index.html` by `npm run sync:login-mother`.
 - Latest SAO button correction is based on the dev.to Cyberpunk 2077 button article, adapted to black/gold manuscript styling:
@@ -81,11 +81,63 @@ Preserve these unless the user explicitly requests a breaking migration:
 - Late overrides near the end of the stylesheet force the shared plate treatment across `.sao-btn`, nav, menu, history, dossier, and result buttons.
 - Current backing plate target:
   - black bronze underplate;
-  - `translate(10px, 7px)` at 390px viewport in computed style;
+  - `translate(16px, 10px)` at 390px viewport in resting computed style;
+  - hover computed style on desktop login CTA observed as `matrix(1, 0, 0, 1, 23.807, 14.5672)`;
   - hard slab shadow, not glow;
   - no `OR` / system tag badge.
 - `hydrateSaoButton` still creates `.sao-btn-glitch` and `.sao-btn-tag` layers for duplicate-text effects, but `.sao-btn-tag` is hidden globally.
 - History/account nav circles are visually hidden with `.history-chip .nav-glyph` and `.account-chip .account-avatar`.
+
+## Active Button Hotfix - Pre-Change Record
+
+Timestamp: 2026-05-27 Asia/Taipei.
+
+User confirmed the desired button effect is the final dev.to Cyberpunk 2077 style, but adapted to this project's black/gold SAO manuscript palette. The failure to fix is that the current offset backing plate reads as glow/highlight only, not a clearly displaced second slab.
+
+Planned safe scope before editing:
+
+- Strengthen the shared `.sao-btn` CSS plate model only.
+- Make `::before` read as a hard black-bronze offset backing plate.
+- Keep `::after` as the main clipped black/gold plate, with less bright hover color.
+- Keep the duplicated glitch label layer and make hover/focus slices visually distinct.
+- Remove circular icon treatment from button symbols, especially history/account surfaces.
+- Preserve all existing button ids, click handlers, Firebase/Auth flow, draft/history persistence, ARIA/focus-visible/skip-link, native dialog structure, reduced-motion path, 44 x 44 touch target floor, and Traditional Chinese copy.
+- After editing, sync `public/worldforge-login.html`, run visual validation, and record the result here.
+
+## Active Button Hotfix - Post-Change Record
+
+Timestamp: 2026-05-27 Asia/Taipei.
+
+Changed files:
+
+- `public/index.html`
+- `public/worldforge-login.html`
+- `tests/visual/worldforge.spec.ts-snapshots/login-1366-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/login-390-chromium-win32.png`
+- `tests/visual/worldforge.spec.ts-snapshots/workbench-390-chromium-win32.png`
+
+What changed:
+
+- Darkened the main SAO button plate so the project stays black/gold instead of bright amber.
+- Increased the offset backing plate and gave it a hard black-bronze slab edge.
+- Added inner right/bottom plate shadows so the `::before` plate reads as a displaced layer instead of a glow.
+- Converted shared button glyphs from round medallions to clipped angular chips.
+- Added right/bottom padding inside the Google-only auth action row so the login CTA underplate is no longer clipped by the auth panel.
+- Kept `.sao-btn-tag` hidden globally; duplicate glitch labels still hydrate and render on hover/focus.
+- Preserved existing ids, handlers, Firebase/Auth flow, draft/history persistence, ARIA/focus-visible/skip-link, reduced-motion handling, native dialog structure, and Traditional Chinese copy.
+
+Validation:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `git diff --check`: passed; Windows line-ending warnings only.
+- Manual hover screenshot: `output/playwright/sao-button-hotfix-login-hover-v2.png`.
+- `npm run build`: passed.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Production screenshot after deploy: `output/playwright/sao-button-hotfix-production-login.png`.
 
 ## Red Lines
 
