@@ -394,6 +394,31 @@ Validation after change:
 - `npm run build`: passed.
 - `git diff --check`: passed; Windows line-ending warnings only.
 
+Deploy / production audit:
+
+- Commit: `a82e266 fix(s13/animations): finish visible ritual motion`.
+- Firebase Hosting deploy: passed.
+- `npm run smoke:hosting`: passed.
+- Production static audit against cache-busted hosted HTML confirmed:
+  - `@keyframes saoRailScan` deployed.
+  - `login-modal-entering` trigger deployed.
+  - `workbench-materializing` no longer depends on GSAP absence.
+  - `historyEntryIn` deployed for history rows.
+  - underplate offset shift deployed.
+- Computed animation audit confirmed:
+  - Login panel: `panelMaterialize`.
+  - Login button underplate: `saoUnderplatePulse`.
+  - Login button plate: `saoHeroPlateBreath`.
+  - Workbench deck: `deckMaterialize`.
+  - Workbench session: `contentSlideUp`.
+  - Workbench panel/dossier: `saoWindowSettle`.
+  - Mobile output progress rail: `saoRailScan` plus `saoLeadingPulse`.
+  - Mobile output action buttons remain single-column, 294px wide and 46px high in the 390px viewport.
+- Screenshots reviewed:
+  - `output/playwright/production-final-static-login-animation.png`
+  - `output/playwright/production-final-static-workbench-animation.png`
+  - `output/playwright/production-final-static-mobile-output-animation.png`
+
 ## Next-Step Checklist
 
 Before any new UI task:
