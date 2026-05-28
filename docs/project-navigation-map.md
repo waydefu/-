@@ -135,6 +135,29 @@ Validation:
 - `git diff --check`: passed; Windows line-ending warnings only.
 - Manual hover screenshot: `output/playwright/sao-button-hotfix-login-hover-v2.png`.
 - `npm run build`: passed.
+
+Post-deploy visual correction:
+
+- Cache-busted deployed hover screenshot confirmed the new glitch/RGB animation is live, but it also exposed a rectangular focus-visible outline from the global `button:focus-visible` rule.
+- Correction scope:
+  - keep keyboard focus visible;
+  - remove the host-level rectangular outline/box-shadow only for `.sao-btn`;
+  - move the focus indication into the clipped `.sao-btn::after` plate via inset glow so it matches the SAO/cyber button shape.
+
+Post-correction record:
+
+- Updated final `.sao-btn:focus-visible` override to remove the global rectangular outline and host box-shadow.
+- Added the focus glow to the clipped `.sao-btn::after` plate with inset highlighting, preserving keyboard focus visibility without a rectangular hover/focus frame.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Validation after focus correction:
+
+- `npm run sync:login-mother`: passed.
+- `git diff --check`: passed.
+- `npm run check`: passed.
+- `npm run test:a11y`: 3 passed, axe impact counts `{}`.
+- `npm run test:visual:update`: 14 passed.
+- `npm run build`: passed.
 - `firebase deploy --only hosting --project project-7276420283723642146`: passed.
 - `npm run smoke:hosting`: passed.
 - Production screenshot after deploy: `output/playwright/sao-button-hotfix-production-login.png`.
