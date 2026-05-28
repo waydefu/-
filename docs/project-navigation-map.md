@@ -187,9 +187,43 @@ Final deployment verification:
   - host animation `none 0s`;
   - `saoCyberGlitch 1.84s`;
   - `saoButtonRgbSplit 1.68s`.
-- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
-- `npm run smoke:hosting`: passed.
-- Production screenshot after deploy: `output/playwright/sao-button-hotfix-production-login.png`.
+
+## S13.1 Button Shadow Removal Follow-Up
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Latest user request: remove the shadow-like thing behind all buttons.
+- The visible rear shadow is primarily the `.sao-btn::before` displaced underplate, plus `saoUnderplateDrift` / `saoUnderplateJolt` and state box-shadows.
+- Scope:
+  - hide the `.sao-btn::before` underplate for all SAO buttons;
+  - stop all underplate hover/focus/boot animations from drawing anything;
+  - remove SAO button host shadows in hover/focus/active/danger states;
+  - remove the login CTA padding that existed only to reserve space for the old underplate;
+  - keep the main clipped plate, scan/glitch/RGB text layers, button ids, Firebase/Auth, draft/history, native dialog, ARIA, focus-visible, reduced-motion, and Traditional Chinese copy unchanged.
+
+Implementation update:
+
+- Removed the old visible rear slab by forcing `.sao-btn::before` and the higher-specificity workbench/account/history/dossier button variants to `display: none`, `opacity: 0`, `box-shadow: none`, `filter: none`, and `animation: none`.
+- Removed underplate hover/focus animation effects from those same button variants.
+- Removed the danger override window button's old `0 18px 40px` outer shadow.
+- Removed login CTA right/bottom padding that only existed to reserve room for the old displaced underplate.
+- `npm run sync:login-mother`: passed after edits, updating `public/worldforge-login.html`.
+
+Manual visual / computed evidence:
+
+- Desktop screenshot: `output/playwright/s13-1-shadow-removal/login-button-no-shadow.png`.
+- Mobile screenshot: `output/playwright/s13-1-shadow-removal/mobile-login-button-no-shadow.png`.
+- Runtime computed check: 15 `.sao-btn` elements inspected; offenders = 0 for host outer `box-shadow`, visible `::before`, `::before` shadow, `::before` filter, and `::before` animation.
+
+Validation after implementation:
+
+- `git diff --check`: passed with existing LF/CRLF working-copy warnings only.
+- `npm run check`: passed.
+- `npm run test:a11y`: 3 passed, axe impact counts `{}`.
+- `npm run test:visual:update`: 14 passed; regenerated `login-1366-chromium-win32.png` and `login-390-chromium-win32.png` because the login CTA rear underplate was removed.
+- `npm run build`: passed.
 
 ## S13 Effects Visibility Hotfix
 

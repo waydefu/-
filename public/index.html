@@ -1195,8 +1195,8 @@
     .auth-panel.is-google-only .auth-actions {
       grid-template-columns: 1fr;
       overflow: visible;
-      padding-right: calc(var(--sao-cyber-offset-x) + 2px);
-      padding-bottom: calc(var(--sao-cyber-offset-y) + 1px);
+      padding-right: 0;
+      padding-bottom: 0;
     }
 
     .auth-panel.is-google-only .primary-btn {
@@ -1861,7 +1861,7 @@
       color: #1a0501;
       border-color: rgba(255, 192, 154, 0.6);
       background: linear-gradient(135deg, #ffc09a, #b94b19 52%, #55120d);
-      box-shadow: 0 18px 40px rgba(185, 75, 25, 0.28);
+      box-shadow: none;
     }
 
     .sao-confirm-window {
@@ -5481,8 +5481,8 @@
     }
 
     .sao-btn {
-      --sao-cyber-offset-x: clamp(12px, 1vw, 18px);
-      --sao-cyber-offset-y: clamp(9px, 0.72vw, 14px);
+      --sao-cyber-offset-x: 0px;
+      --sao-cyber-offset-y: 0px;
       --sao-glitch-shift: 7;
       --sao-cyber-primary: linear-gradient(
         180deg,
@@ -5497,7 +5497,7 @@
         rgba(52, 22, 5, 0.98) 45%,
         rgba(20, 8, 2, 1) 100%
       );
-      --sao-cyber-underplate: linear-gradient(90deg, rgba(5, 2, 1, 0.96), rgba(31, 18, 6, 0.96) 58%, rgba(92, 60, 18, 0.82));
+      --sao-cyber-underplate: transparent;
       --sao-cyber-shadow-primary: rgba(6, 2, 0, 0.92);
       --sao-cyber-shadow-secondary: rgba(170, 82, 28, 0.82);
       overflow: visible;
@@ -5513,14 +5513,20 @@
       z-index: 4;
     }
 
-    .sao-btn::before {
-      transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
-      background: var(--sao-cyber-underplate);
-      box-shadow:
-        inset 0 0 0 1px rgba(214, 166, 77, 0.2),
-        inset -18px 0 0 rgba(163, 111, 35, 0.18),
-        0 9px 0 rgba(0, 0, 0, 0.76);
-      filter: drop-shadow(0 7px 0 rgba(0, 0, 0, 0.68));
+    .sao-btn::before,
+    .workbench-nav-actions > button.sao-btn::before,
+    .account-menu button.sao-btn::before,
+    .history-head button.sao-btn::before,
+    .dossier-actions button.sao-btn::before,
+    .result-section-copy.sao-btn::before,
+    .history-delete.sao-btn::before {
+      display: none;
+      opacity: 0;
+      transform: none;
+      background: transparent;
+      box-shadow: none;
+      filter: none;
+      animation: none;
     }
 
     .sao-btn::after {
@@ -5644,11 +5650,44 @@
       animation: none;
     }
 
+    .sao-btn:active:not(:disabled),
+    .sao-btn.is-danger:hover:not(:disabled),
+    .sao-btn.is-danger:focus-visible,
+    .sao-btn.is-confirming,
+    .sao-btn.is-success,
+    .sao-btn.is-error,
+    .sao-btn[data-bloom-target="hero-cta"],
+    .sao-btn[data-bloom-target="hero-cta"]:hover:not(:disabled),
+    .sao-btn[data-bloom-target="hero-cta"]:focus-visible {
+      box-shadow: none;
+    }
+
+    .sao-btn[data-bloom-target="hero-cta"]:hover:not(:disabled),
+    .sao-btn[data-bloom-target="hero-cta"]:focus-visible {
+      filter: saturate(0.98) brightness(0.98);
+    }
+
     .sao-btn:hover:not(:disabled)::before,
-    .sao-btn:focus-visible::before {
-      transform: translate(calc(var(--sao-cyber-offset-x) + 10px), calc(var(--sao-cyber-offset-y) + 3px));
-      filter: drop-shadow(0 9px 0 rgba(0, 0, 0, 0.82)) brightness(0.92);
-      animation: saoUnderplateJolt 1.08s steps(2, end) infinite;
+    .sao-btn:focus-visible::before,
+    .workbench-nav-actions > button.sao-btn:hover::before,
+    .workbench-nav-actions > button.sao-btn:focus-visible::before,
+    .account-menu button.sao-btn:hover::before,
+    .account-menu button.sao-btn:focus-visible::before,
+    .history-head button.sao-btn:hover::before,
+    .history-head button.sao-btn:focus-visible::before,
+    .dossier-actions button.sao-btn:hover::before,
+    .dossier-actions button.sao-btn:focus-visible::before,
+    .result-section-copy.sao-btn:hover::before,
+    .result-section-copy.sao-btn:focus-visible::before,
+    .history-delete.sao-btn:hover::before,
+    .history-delete.sao-btn:focus-visible::before {
+      display: none;
+      opacity: 0;
+      background: transparent;
+      box-shadow: none;
+      transform: none;
+      filter: none;
+      animation: none;
     }
 
     .sao-btn:hover:not(:disabled)::after,
@@ -5657,8 +5696,7 @@
       box-shadow:
         inset 0 0 0 2px rgba(255, 226, 160, 0.62),
         inset 0 1px 0 rgba(255, 226, 160, 0.18),
-        inset 0 -18px 24px rgba(0, 0, 0, 0.78),
-        0 0 18px rgba(214, 166, 77, 0.16);
+        inset 0 -18px 24px rgba(0, 0, 0, 0.78);
       filter: brightness(0.9) saturate(0.94);
       animation: saoButtonStrike 0.94s steps(2, end) infinite;
     }
@@ -5704,7 +5742,8 @@
       }
 
       body.boot-complete .sao-btn:not(:disabled)::before {
-        animation: saoUnderplateDrift 7.2s cubic-bezier(0.2, 0.86, 0.18, 1) infinite;
+        display: none;
+        animation: none;
       }
 
       body.boot-complete .sao-btn:not(:disabled) .sao-btn-scan::before {
@@ -5728,7 +5767,8 @@
 
       body.boot-complete .sao-btn:hover:not(:disabled)::before,
       body.boot-complete .sao-btn:focus-visible::before {
-        animation: saoUnderplateJolt 1.08s steps(2, end) infinite;
+        display: none;
+        animation: none;
       }
 
       body.boot-complete .sao-btn:hover:not(:disabled) .sao-btn-glitch,
