@@ -96,12 +96,27 @@ export async function hydrateStaticSaoButtons(page: Page) {
       button.dataset.saoCompact = String(button.classList.contains("history-delete")
         || (!button.querySelector(".sao-btn-label, .btn-label, .nav-label") && (button.textContent || "").trim().length <= 2));
 
+      if (!button.querySelector(".sao-btn-scan")) {
+        const scan = document.createElement("span");
+        scan.className = "sao-btn-scan";
+        scan.setAttribute("aria-hidden", "true");
+        button.appendChild(scan);
+      }
+
       if (!button.querySelector(".sao-btn-glitch")) {
         const glitch = document.createElement("span");
         glitch.className = "sao-btn-glitch";
         glitch.setAttribute("aria-hidden", "true");
         glitch.textContent = label;
         button.appendChild(glitch);
+      }
+
+      if (!button.querySelector(".sao-btn-rgb")) {
+        const rgb = document.createElement("span");
+        rgb.className = "sao-btn-rgb";
+        rgb.setAttribute("aria-hidden", "true");
+        rgb.textContent = label;
+        button.appendChild(rgb);
       }
 
       if (!button.querySelector(".sao-btn-tag")) {
@@ -113,6 +128,51 @@ export async function hydrateStaticSaoButtons(page: Page) {
       }
     });
   });
+}
+
+export async function applyStaticSystemMenu(page: Page) {
+  await page.evaluate(() => {
+    const navActions = document.querySelector<HTMLElement>(".workbench-nav-actions");
+    if (!navActions) return;
+    const historyToggle = document.getElementById("historyToggle");
+    const accountToggle = document.getElementById("accountToggle");
+    const reanalyzeButton = document.getElementById("reanalyzeButton");
+    const clearDraftButton = document.getElementById("clearDraftButton");
+
+    let toggle = document.getElementById("systemMenuToggle") as HTMLButtonElement | null;
+    if (!toggle) {
+      toggle = document.createElement("button");
+      toggle.className = "system-menu-toggle sao-btn";
+      toggle.id = "systemMenuToggle";
+      toggle.type = "button";
+      toggle.title = "SYSTEM MENU";
+      toggle.setAttribute("aria-label", "SYSTEM MENU");
+      toggle.setAttribute("aria-haspopup", "menu");
+      toggle.setAttribute("aria-expanded", "false");
+      toggle.setAttribute("aria-controls", "systemMenuPanel");
+      toggle.innerHTML = `<span class="sao-btn-symbol" aria-hidden="true">SYS</span><span class="sao-btn-label">SYSTEM</span>`;
+    }
+    navActions.replaceChildren(toggle);
+
+    let panel = document.getElementById("systemMenuPanel") as HTMLDivElement | null;
+    if (!panel) {
+      panel = document.createElement("div");
+      panel.className = "sao-system-menu";
+      panel.id = "systemMenuPanel";
+      panel.setAttribute("role", "menu");
+      panel.setAttribute("aria-label", "SAO system menu");
+      panel.hidden = true;
+      navActions.after(panel);
+    }
+    [historyToggle, accountToggle, reanalyzeButton, clearDraftButton]
+      .filter((button): button is HTMLElement => button instanceof HTMLElement)
+      .forEach((button) => {
+        button.classList.add("system-menu-item");
+        button.setAttribute("role", "menuitem");
+        panel?.appendChild(button);
+      });
+  });
+  await hydrateStaticSaoButtons(page);
 }
 
 export async function stabilizeVisuals(page: Page) {
@@ -192,6 +252,7 @@ export async function enterOperationalWorkbench(page: Page) {
       `;
     }
   });
+  await applyStaticSystemMenu(page);
   await hydrateStaticSaoButtons(page);
 }
 

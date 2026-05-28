@@ -432,3 +432,104 @@ Before any new UI task:
 7. Run `npm run sync:login-mother`.
 8. Run the relevant validation commands.
 9. Update this map or the task log with what changed and what passed.
+
+## 2026-05-28 S13.1 Final Animation Rework
+
+Pre-change confirmation:
+
+- User explicitly rejected the prior S13/S10.9 visual result: buttons still read as bright plates or clipped bars, not Cyberpunk 2077-style glitch-offset effects.
+- Old assumption corrected: three visual layers are not enough. The required button model is five layers: black-copper offset underplate, black-gold main plate, dark scan layer, hover/focus horizontal glitch slice layer, and text/RGB split layer.
+- Old assumption corrected: passing Playwright, a11y, build, and deploy checks does not mean the user-facing animation standard is met.
+- Old assumption corrected: existing account/history dropdowns are not the requested SAO system menu. Non-copy workbench actions must move into one system-menu flow.
+- Old assumption corrected: the central `.arcane-lens` visual reads as a pasted foreground graphic and must be removed or demoted so it cannot compete with UI effects.
+- Confirmed current tracked worktree is clean before edits; only untracked `output/` exists.
+
+Implementation plan before editing:
+
+- Delete or replace old CSS/JS when it blocks the target effect, instead of layering compatibility fixes over it.
+- Remove `.primary-btn`, `.secondary-btn`, and `.ghost-btn` rectangular hover/bright sweep interference from `.sao-btn` controls.
+- Replace too-short login/workbench materialization timing with visible ritual-length sequences: login about 3.4s, auth handoff about 4.6s, workbench about 4.2s, menu open about 2.8s.
+- Keep all existing button ids and data contracts stable: Firebase/Auth, drafts, history, native login dialog, ARIA, focus-visible, skip-link, reduced-motion fallback, and 44x44 touch targets.
+- Update this section after each implementation group with concrete changes, removed legacy logic, validation commands, and screenshot paths.
+
+Implementation group 1, old-interference cleanup and final motion architecture:
+
+- Changed `public/index.html` so `.primary-btn`, `.secondary-btn`, and `.ghost-btn` legacy hover/shine rules no longer apply to `.sao-btn`. This removes the old rectangular hover frame path from SAO buttons.
+- Replaced the button runtime hydration with five concrete layers for every `.sao-btn`: underplate pseudo-layer, main plate pseudo-layer, `.sao-btn-scan`, `.sao-btn-glitch`, and `.sao-btn-rgb`.
+- Added a final S13.1 CSS override for darker black-copper / black-gold buttons, visible offset slab motion, dark scan sweep, hover/focus glitch slices, and RGB text split. The old bright yellow/orange look is no longer the final button source.
+- Removed the `.arcane-lens` DOM node from the live scene so the center no longer shows the pasted-looking foreground lens. The old CSS selectors remain inert until a later cleanup pass can delete them safely.
+- Added runtime SAO system-menu construction: one `systemMenuToggle` is inserted into the workbench nav, then existing `historyToggle`, `accountToggle`, `reanalyzeButton`, and `clearDraftButton` are moved into `systemMenuPanel` without changing their ids.
+- Converted history and account surfaces to fixed central panels, with system-menu open timing at about 2.8s and close timing at about 1.4s.
+- Extended visible timing: login panel about 3.4s, auth handoff about 4.6s, workbench reveal about 4.2s, logout/override modal open about 2.8s.
+- Mobile overrides now keep the system menu within the 390px viewport, increase workbench/output text readability, keep touch targets at 50px where possible, and make output action buttons full-width rather than covering text.
+- Removed legacy early-hide behavior by delaying auth handoff display cleanup until after collapse timing and by keeping `workbench-materializing` active for the full reveal duration.
+
+Removed old logic:
+
+- `.sao-btn` no longer inherits the `.primary/.secondary/.ghost` rectangular shine path.
+- The center `.arcane-lens` HTML has been deleted from the rendered document.
+- Workbench history/account/reanalyze/clear controls no longer stay in nav/dossier layout space after initialization; they are moved into the SAO system menu.
+
+Current risk before validation:
+
+- Runtime DOM relocation must be verified in browser because the initial HTML still contains the original buttons before JavaScript moves them.
+- The new system-menu WAAPI timing and CSS item stagger may need visual tuning after screenshots.
+- `public/worldforge-login.html` has not been synced yet in this phase.
+
+Implementation group 2, validation-driven corrections:
+
+- Screenshot review found the mobile system menu was anchored at `left: 50%` without a matching `translateX(-50%)`, causing the menu to extend off the right side of a 390px viewport. Fixed the mobile transform and the WAAPI base transform.
+- Screenshot review found the desktop system menu first item was too high and could hide behind the top HUD. Moved the desktop menu lower and narrowed it to 360px so the `historyToggle`, `accountToggle`, and `clearDraftButton` are all visible.
+- Added static visual-test support for the runtime system-menu relocation because the baseline helper strips scripts. `tests/visual/helpers.ts` now creates the same system menu and hydrates the new scan/rgb button layers for screenshots.
+- `public/worldforge-login.html` was resynced from `public/index.html` after the final CSS corrections.
+
+Validation after S13.1 implementation:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14. Updated workbench/history/account snapshots for the new system-menu layout.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+
+Animation duration audit:
+
+- Login modal materialization: about 3.4s.
+- Auth handoff: about 4.6s.
+- Workbench reveal: about 4.2s.
+- SAO system menu open: about 2.8s.
+- SAO system menu close: about 1.4s.
+- Logout / override modal open: about 2.8s.
+- Button hover/focus glitch layer: 2.4s loop with 1.18s RGB split burst.
+
+Screenshot review paths:
+
+- Desktop workbench: `output/playwright/s13-1-review-desktop-workbench.png`.
+- Desktop button hover: `output/playwright/s13-1-review-desktop-button-hover.png`.
+- Desktop system menu: `output/playwright/s13-1-review-desktop-system-menu.png`.
+- Desktop history modal: `output/playwright/s13-1-review-desktop-history-modal.png`.
+- Desktop logout modal: `output/playwright/s13-1-review-desktop-logout-modal.png`.
+- Mobile workbench/output: `output/playwright/s13-1-review-mobile-workbench.png`.
+- Mobile system menu: `output/playwright/s13-1-review-mobile-system-menu.png`.
+
+Mobile audit:
+
+- 390px viewport body scroll width: 390px, no horizontal overflow in the reviewed state.
+- Mobile system menu rect: x=12, width=366, within the viewport.
+- Output body font size: about 17.3px.
+- Visible action buttons reviewed at 44px or taller; most mobile controls are 48-52px.
+
+Remaining risk before deploy:
+
+- The screenshots are browser-rendered static states with scripts stripped for deterministic review; production runtime still needs deploy smoke and cache-busted verification.
+
+Deploy / production verification:
+
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- Hosting URL: `https://project-7276420283723642146.web.app`.
+- `npm run smoke:hosting`: passed.
+- Cache-busted production HTML verification passed:
+  - Five-layer button hydration markers exist: `sao-btn-scan`, `sao-btn-glitch`, `sao-btn-rgb`, `sao-btn-tag`.
+  - System menu runtime exists: `ensureSystemMenu()` and `systemMenuPanel`.
+  - Mobile centering fix exists: `translateX(-50%)` and `saoSystemMenuDissolveMobile`.
+  - Live DOM no longer contains `<div class="arcane-lens">`.
