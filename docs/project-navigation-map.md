@@ -147,10 +147,20 @@ Post-deploy visual correction:
 Post-correction record:
 
 - Updated final `.sao-btn:focus-visible` override to remove the global rectangular outline and host box-shadow.
+- Disabled the old host-level `saoFocusPulse` animation on `.sao-btn:focus-visible`; that legacy animation still wrote rectangular `box-shadow` even after the outline was removed.
 - Added the focus glow to the clipped `.sao-btn::after` plate with inset highlighting, preserving keyboard focus visibility without a rectangular hover/focus frame.
 - Synced `public/worldforge-login.html` from `public/index.html`.
 
 Validation after focus correction:
+
+- `npm run sync:login-mother`: passed.
+- `git diff --check`: passed.
+- `npm run check`: passed.
+- `npm run test:a11y`: 3 passed, axe impact counts `{}`.
+- `npm run test:visual:update`: 14 passed.
+- `npm run build`: passed.
+
+Validation after disabling legacy host focus pulse:
 
 - `npm run sync:login-mother`: passed.
 - `git diff --check`: passed.
