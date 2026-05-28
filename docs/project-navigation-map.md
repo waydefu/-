@@ -361,6 +361,78 @@ Validation after follow-up 2:
 - `npm run smoke:hosting`: passed.
 - Cache-busted deployed HTML check: passed for `saoUnderplateJolt`, `saoSystemMenuClipResolve`, full login WAAPI materialization frames, visible RGB split opacity, and label glitch.
 
+## S13.1 Reference Rebuild Follow-Up 3
+
+Timestamp: 2026-05-28 Asia/Taipei.
+
+Pre-change confirmation after web review:
+
+- The dev.to Cyberpunk 2077 reference is structurally simple:
+  - button is transparent and positioned;
+  - `::before` is the displaced shadow/backing plate;
+  - `::after` is the main plate;
+  - a duplicate glitch text layer sits above the main label;
+  - `clip-path` keyframes cut horizontal slices and translate them left/right.
+- Previous implementation still had the main label above the glitch layer in the late override, so the visible effect could read like a lower decorative strip instead of text slicing.
+- The project needs the reference behavior, recolored to black/gold/copper, not more static ornament.
+
+Planned safe scope:
+
+- Reorder SAO button layers so glitch/RGB copy text layers sit above the main label.
+- Add low-frequency ambient glitch in normal motion so effects are visible even without hover.
+- Keep hover/focus as the high-frequency 2077-style glitch state.
+- Keep Firebase/Auth, draft/history, button ids, native dialog, ARIA, focus-visible, skip-link, reduced-motion, touch target, and Traditional Chinese copy intact.
+
+## S13.1 Reference Rebuild Follow-Up 4
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Web reference re-check: the 2077 button effect is not a bright hover state. The visible behavior must come from a translated underplate, a clipped main plate, and duplicate text layers cut into horizontal glitch slices.
+- Current local frame capture shows the layer order is now correct (`scan` z=3, normal label z=4, glitch z=8, rgb z=9), but the visual still reads too much like a bottom scan strip at some frames.
+- Current login/workbench animation rules exist, but several content keyframes start at opacity `1`, making the sequence look already present instead of materializing.
+- Fix scope for this pass:
+  - strengthen the button glitch so hover/focus keeps visible duplicate text and RGB offsets for the full pointer hold;
+  - make login modal and workbench entry use clip-path horizontal generation followed by vertical unfold;
+  - make staged content enter from opacity `0` with blur/scan, so the effect is visible without changing copy, ids, Firebase/Auth, draft, or history contracts.
+
+Post-change record:
+
+- Rebuilt the SAO button hover/focus timing again:
+  - `saoCyberGlitch` now keeps stronger duplicate text slices visible instead of disappearing into a weak lower strip;
+  - `saoButtonRgbSplit` now uses larger left/right offsets and a longer loop, so the pointer-hold state keeps showing RGB/text slicing;
+  - the shared `.sao-btn` final override now raises the local glitch shift and keeps the displaced underplate moving longer.
+- Reworked modal/workbench materialization:
+  - `panelMaterialize` now starts as a center horizontal line, expands into a thin rail, then unfolds vertically into the full login panel;
+  - `deckMaterialize`, `contentSlideUp`, `ctaWake`, mobile login keyframes, and `saoWindowSettle` now use opacity `0` starts plus clip-path unfold states;
+  - the GSAP workbench handoff timeline now also animates `clipPath` and clears it after completion.
+- Deleted no data logic. Firebase/Auth, draft/history data flow, button ids, native dialog structure, ARIA, focus-visible, skip-link, reduced-motion support, and 44px touch targets remain in place.
+
+Screenshot evidence:
+
+- Button hover frames:
+  - `output/playwright/s13-1-reference-rebuild/button-hover-strong-0080ms.png`
+  - `output/playwright/s13-1-reference-rebuild/button-hover-strong-0900ms.png`
+  - `output/playwright/s13-1-reference-rebuild/button-hover-strong-1780ms.png`
+- Login materialize frames:
+  - `output/playwright/s13-1-reference-rebuild/login-materialize-paused-0180ms.png`
+  - `output/playwright/s13-1-reference-rebuild/login-materialize-paused-0620ms.png`
+  - `output/playwright/s13-1-reference-rebuild/login-materialize-paused-2080ms.png`
+- Workbench materialize frames:
+  - `output/playwright/s13-1-reference-rebuild/workbench-materialize-paused-0280ms.png`
+  - `output/playwright/s13-1-reference-rebuild/workbench-materialize-paused-1700ms.png`
+  - `output/playwright/s13-1-reference-rebuild/workbench-materialize-paused-4080ms.png`
+
+Validation after this pass:
+
+- `npm run sync:login-mother`: passed.
+- `git diff --check`: passed.
+- `npm run check`: passed.
+- `npm run test:visual:update`: 14 passed.
+- `npm run test:a11y`: first run was blocked by a stale local 5173 webServer; rerun after the port released passed 3/3 with axe impact counts `{}`.
+- `npm run build`: passed.
+
 ## Red Lines
 
 - Do not touch Firebase/Auth semantics unless explicitly requested.

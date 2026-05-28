@@ -1380,7 +1380,7 @@
       z-index: 4;
     }
 
-    .sao-btn > :not(.sao-btn-glitch):not(.sao-btn-tag):not(.sao-ripple) {
+    .sao-btn > :not(.sao-btn-scan):not(.sao-btn-glitch):not(.sao-btn-rgb):not(.sao-btn-tag):not(.sao-ripple) {
       position: relative;
       z-index: 4;
     }
@@ -3789,42 +3789,49 @@
 
     @keyframes panelMaterialize {
       0% {
-        opacity: 1;
-        transform: perspective(900px) scaleX(0.04) scaleY(0.002) rotateX(8deg);
-        filter: blur(14px) brightness(2.4) saturate(0.58);
+        opacity: 0;
+        clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%);
+        transform: perspective(900px) scaleX(0.03) scaleY(0.004) rotateX(10deg);
+        filter: blur(18px) brightness(2.65) saturate(0.52);
       }
 
       12% {
         opacity: 1;
-        transform: perspective(900px) scaleX(0.18) scaleY(0.012) rotateX(7deg);
-        filter: blur(8px) brightness(2.15) saturate(0.72);
+        clip-path: polygon(12% 47%, 88% 47%, 88% 53%, 12% 53%);
+        transform: perspective(900px) scaleX(0.42) scaleY(0.014) rotateX(8deg);
+        filter: blur(10px) brightness(2.3) saturate(0.7);
       }
 
       28% {
         opacity: 1;
-        transform: perspective(900px) scaleX(1.02) scaleY(0.028) rotateX(4deg);
-        filter: blur(4px) brightness(1.82) saturate(0.92);
+        clip-path: polygon(0 42%, 100% 42%, 100% 58%, 0 58%);
+        transform: perspective(900px) scaleX(1.02) scaleY(0.035) rotateX(5deg);
+        filter: blur(5px) brightness(1.92) saturate(0.92);
       }
 
       38% {
         opacity: 1;
-        transform: perspective(900px) scaleX(1) scaleY(0.08) rotateX(3deg);
+        clip-path: polygon(0 18%, 100% 18%, 100% 82%, 0 82%);
+        transform: perspective(900px) scaleX(1) scaleY(0.16) rotateX(3deg);
         filter: blur(3px) brightness(1.56) saturate(1);
       }
 
       72% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: perspective(900px) scaleX(1) scaleY(1.08) rotateX(-1deg);
         filter: blur(1px) brightness(1.2) saturate(1.05);
       }
 
       88% {
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: perspective(900px) scaleX(1) scaleY(0.98) rotateX(0deg);
         filter: blur(0) brightness(1.05) saturate(1.02);
       }
 
       100% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: perspective(900px) scaleX(1) scaleY(1) rotateX(0deg);
         filter: blur(0) brightness(1) saturate(1);
       }
@@ -3856,24 +3863,28 @@
     @keyframes deckMaterialize {
       0% {
         opacity: 0;
-        transform: translateY(10px) scaleX(0.02) scaleY(0.02);
-        filter: blur(10px) brightness(1.8);
+        clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%);
+        transform: translateY(14px) scaleX(0.02) scaleY(0.02);
+        filter: blur(14px) brightness(2);
       }
 
       32% {
         opacity: 1;
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
         transform: translateY(0) scaleX(1) scaleY(0.025);
         filter: blur(5px) brightness(1.55);
       }
 
       76% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: translateY(0) scaleX(1) scaleY(1.035);
         filter: blur(1px) brightness(1.16);
       }
 
       100% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: translateY(0) scaleX(1) scaleY(1);
         filter: blur(0) brightness(1);
       }
@@ -3881,13 +3892,22 @@
 
     @keyframes contentSlideUp {
       0% {
+        opacity: 0;
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
+        transform: translateY(14px) scaleY(0.84);
+        filter: blur(8px) brightness(1.44);
+      }
+
+      62% {
         opacity: 1;
-        transform: translateY(8px);
-        filter: blur(4px);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+        transform: translateY(-2px) scaleY(1.02);
+        filter: blur(1px) brightness(1.12);
       }
 
       100% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
         transform: translateY(0);
         filter: blur(0);
       }
@@ -3914,19 +3934,22 @@
 
     @keyframes ctaWake {
       0% {
-        opacity: 1;
-        transform: scale(0.92);
+        opacity: 0;
+        clip-path: polygon(50% 48%, 50% 48%, 50% 52%, 50% 52%);
+        transform: scaleX(0.18) scaleY(0.08);
         box-shadow: 0 0 0 rgba(214, 166, 77, 0);
       }
 
       60% {
         opacity: 1;
-        transform: scale(1.04);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%);
+        transform: scaleX(1.035) scaleY(1.05);
         box-shadow: 0 0 32px rgba(214, 166, 77, 0.48), inset 0 0 16px rgba(255, 226, 160, 0.32);
       }
 
       100% {
         opacity: 1;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%);
         transform: scale(1);
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.32), inset 0 1px 0 rgba(255, 226, 160, 0.32);
       }
@@ -3980,7 +4003,7 @@
     @keyframes saoCyberGlitch {
       0% {
         clip-path: var(--sao-glitch-clip-one);
-        opacity: 0.34;
+        opacity: 0.62;
         transform: translate3d(0, 0, 0);
       }
 
@@ -4011,7 +4034,7 @@
       13% {
         clip-path: var(--sao-glitch-clip-three);
         transform: translate3d(0, 0, 0);
-        opacity: 0.6;
+        opacity: 0.72;
       }
 
       14%, 21% {
@@ -4047,7 +4070,7 @@
       50% {
         clip-path: var(--sao-glitch-clip-six);
         transform: translate3d(0, 0, 0);
-        opacity: 0.52;
+        opacity: 0.68;
       }
 
       55% {
@@ -4059,7 +4082,7 @@
       60% {
         clip-path: var(--sao-glitch-clip-seven);
         transform: translate3d(0, 0, 0);
-        opacity: 0.58;
+        opacity: 0.7;
       }
 
       31%, 61% {
@@ -4069,7 +4092,35 @@
 
       100% {
         clip-path: var(--sao-glitch-clip-one);
-        opacity: 0.34;
+        opacity: 0.62;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @keyframes saoCyberAmbientGlitch {
+      0%, 68%, 100% {
+        clip-path: var(--sao-glitch-clip-four);
+        opacity: 0;
+        transform: translate3d(0, 0, 0);
+      }
+      70% {
+        clip-path: var(--sao-glitch-clip-two);
+        opacity: 0.78;
+        transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+      }
+      73% {
+        clip-path: var(--sao-glitch-clip-three);
+        opacity: 0.86;
+        transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+      }
+      76% {
+        clip-path: var(--sao-glitch-clip-six);
+        opacity: 0.82;
+        transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+      }
+      80% {
+        clip-path: var(--sao-glitch-clip-four);
+        opacity: 0;
         transform: translate3d(0, 0, 0);
       }
     }
@@ -4443,9 +4494,9 @@
     }
 
     @keyframes mobileRitualStackConjure {
-      0% { transform: translateY(14px) scale(0.82); opacity: 0; }
-      48% { opacity: 0.86; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
+      0% { clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%); transform: translateY(18px) scaleX(0.12) scaleY(0.02); opacity: 0; filter: blur(12px) brightness(1.9); }
+      44% { clip-path: polygon(0 42%, 100% 42%, 100% 58%, 0 58%); transform: translateY(4px) scaleX(1) scaleY(0.12); opacity: 0.9; filter: blur(5px) brightness(1.45); }
+      100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translateY(0) scale(1); opacity: 1; filter: blur(0) brightness(1); }
     }
 
     @keyframes mobileAuthPanelWake {
@@ -4462,15 +4513,15 @@
     }
 
     @keyframes mobileAuthCtaWake {
-      0% { transform: translateY(10px) scale(0.94); opacity: 0; }
-      64% { transform: translateY(-2px) scale(1.012); opacity: 1; }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
+      0% { clip-path: polygon(50% 48%, 50% 48%, 50% 52%, 50% 52%); transform: translateY(10px) scaleX(0.2) scaleY(0.08); opacity: 0; filter: blur(8px) brightness(1.6); }
+      64% { clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%); transform: translateY(-2px) scaleX(1.02) scaleY(1.04); opacity: 1; filter: blur(1px) brightness(1.18); }
+      100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%); transform: translateY(0) scale(1); opacity: 1; filter: blur(0) brightness(1); }
     }
 
     @keyframes mobileAuthCollapse {
-      0% { transform: scale(1); opacity: 1; }
-      44% { transform: scale(1.018); opacity: 0.92; }
-      100% { transform: scale(0.82); opacity: 0; }
+      0% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: scale(1); opacity: 1; filter: blur(0); }
+      44% { clip-path: polygon(0 42%, 100% 42%, 100% 58%, 0 58%); transform: scaleX(1.02) scaleY(0.16); opacity: 0.92; filter: blur(3px) brightness(1.45); }
+      100% { clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%); transform: scaleX(0.12) scaleY(0.02); opacity: 0; filter: blur(10px) brightness(1.9); }
     }
 
     @keyframes leylineFall {
@@ -4629,8 +4680,9 @@
     }
 
     @keyframes saoWindowSettle {
-      from { transform: translateY(10px) scale(0.992); filter: brightness(1.12); }
-      to { transform: translateY(0) scale(1); filter: brightness(1); }
+      0% { opacity: 0; clip-path: polygon(0 48%, 100% 48%, 100% 52%, 0 52%); transform: translateY(14px) scaleX(0.92) scaleY(0.18); filter: blur(8px) brightness(1.5); }
+      58% { opacity: 1; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translateY(-2px) scaleX(1.012) scaleY(1.024); filter: blur(1px) brightness(1.16); }
+      100% { opacity: 1; clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translateY(0) scale(1); filter: brightness(1); }
     }
 
     @media (max-width: 1100px) {
@@ -5242,34 +5294,62 @@
 
     @keyframes saoButtonRgbSplit {
       0%, 100% {
-        clip-path: polygon(0 48%, 100% 48%, 100% 56%, 0 56%);
+        clip-path: polygon(0 8%, 100% 8%, 100% 92%, 0 92%);
         transform: translate3d(0, 0, 0);
-        opacity: 0.32;
+        opacity: 0.42;
       }
       10% {
-        clip-path: polygon(0 10%, 100% 10%, 100% 26%, 0 26%);
-        transform: translate3d(-7px, 0, 0);
+        clip-path: polygon(0 8%, 100% 8%, 100% 30%, 0 30%);
+        transform: translate3d(-11px, 0, 0);
         opacity: 0.94;
       }
       24% {
         clip-path: polygon(0 38%, 100% 38%, 100% 52%, 0 52%);
-        transform: translate3d(8px, 0, 0);
-        opacity: 0.86;
+        transform: translate3d(12px, 0, 0);
+        opacity: 0.9;
       }
       38% {
         clip-path: polygon(0 68%, 100% 68%, 100% 82%, 0 82%);
-        transform: translate3d(-6px, 0, 0);
-        opacity: 0.78;
+        transform: translate3d(-10px, 0, 0);
+        opacity: 0.86;
       }
       56% {
         clip-path: polygon(0 22%, 100% 22%, 100% 38%, 0 38%);
-        transform: translate3d(6px, 0, 0);
-        opacity: 0.9;
+        transform: translate3d(10px, 0, 0);
+        opacity: 0.94;
       }
       72% {
         clip-path: polygon(0 58%, 100% 58%, 100% 74%, 0 74%);
-        transform: translate3d(-8px, 0, 0);
-        opacity: 0.82;
+        transform: translate3d(-12px, 0, 0);
+        opacity: 0.9;
+      }
+    }
+
+    @keyframes saoButtonAmbientRgbSplit {
+      0%, 66%, 100% {
+        clip-path: polygon(0 50%, 100% 50%, 100% 50%, 0 50%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
+      }
+      70% {
+        clip-path: polygon(0 18%, 100% 18%, 100% 29%, 0 29%);
+        transform: translate3d(-5px, 0, 0);
+        opacity: 0.8;
+      }
+      74% {
+        clip-path: polygon(0 54%, 100% 54%, 100% 65%, 0 65%);
+        transform: translate3d(6px, 0, 0);
+        opacity: 0.72;
+      }
+      78% {
+        clip-path: polygon(0 72%, 100% 72%, 100% 84%, 0 84%);
+        transform: translate3d(-4px, 0, 0);
+        opacity: 0.64;
+      }
+      82% {
+        clip-path: polygon(0 50%, 100% 50%, 100% 50%, 0 50%);
+        transform: translate3d(0, 0, 0);
+        opacity: 0;
       }
     }
 
@@ -5401,8 +5481,9 @@
     }
 
     .sao-btn {
-      --sao-cyber-offset-x: clamp(10px, 0.9vw, 16px);
-      --sao-cyber-offset-y: clamp(8px, 0.62vw, 12px);
+      --sao-cyber-offset-x: clamp(12px, 1vw, 18px);
+      --sao-cyber-offset-y: clamp(9px, 0.72vw, 14px);
+      --sao-glitch-shift: 7;
       --sao-cyber-primary: linear-gradient(
         180deg,
         rgba(82, 49, 16, 0.96) 0%,
@@ -5429,7 +5510,7 @@
 
     .sao-btn > :not(.sao-btn-scan):not(.sao-btn-glitch):not(.sao-btn-rgb):not(.sao-btn-tag):not(.sao-ripple) {
       position: relative;
-      z-index: 7;
+      z-index: 4;
     }
 
     .sao-btn::before {
@@ -5470,6 +5551,10 @@
       mix-blend-mode: normal;
     }
 
+    .sao-btn > .sao-btn-scan.sao-btn-scan {
+      z-index: 3;
+    }
+
     .sao-btn .sao-btn-scan::before {
       content: "";
       position: absolute;
@@ -5479,7 +5564,7 @@
     }
 
     .sao-btn .sao-btn-glitch {
-      z-index: 6;
+      z-index: 8;
       top: calc(var(--sao-cyber-border) * -1);
       right: calc(var(--sao-cyber-border) * -1);
       bottom: calc(var(--sao-cyber-border) * -1);
@@ -5487,7 +5572,8 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: 0 14px;
+      overflow: hidden;
+      padding: 0 clamp(14px, 1.7vw, 24px);
       color: rgba(255, 238, 188, 0.98);
       background:
         linear-gradient(90deg, rgba(8, 2, 1, 0.98), rgba(51, 24, 4, 0.98) 68%, rgba(119, 76, 20, 0.82));
@@ -5496,18 +5582,34 @@
       white-space: nowrap;
       text-align: center;
       text-shadow:
-        2px 0 rgba(67, 233, 229, 0.46),
-        -2px 0 rgba(168, 70, 34, 0.62),
-        0 0 14px rgba(214, 166, 77, 0.22);
+        5px 0 rgba(67, 233, 229, 0.62),
+        -5px 0 rgba(168, 70, 34, 0.76),
+        0 0 16px rgba(214, 166, 77, 0.28);
       clip-path: var(--clip-four, var(--sao-cyber-clip));
       opacity: 0;
     }
 
-    .sao-btn .sao-btn-rgb {
+    .sao-btn > .sao-btn-glitch.sao-btn-glitch {
       z-index: 8;
+    }
+
+    .sao-btn .sao-btn-glitch::before {
+      content: "";
+      position: absolute;
+      inset: var(--sao-cyber-border);
+      z-index: -1;
+      clip-path: var(--sao-cyber-clip);
+      background:
+        var(--sao-cyber-primary),
+        repeating-linear-gradient(90deg, rgba(255, 226, 160, 0.12) 0 1px, transparent 1px 10px);
+    }
+
+    .sao-btn .sao-btn-rgb {
+      z-index: 9;
       display: none;
       place-items: center;
-      padding: 0 14px;
+      overflow: hidden;
+      padding: 0 clamp(14px, 1.7vw, 24px);
       color: rgba(255, 238, 188, 0.96);
       font: inherit;
       line-height: 1;
@@ -5515,10 +5617,15 @@
       text-align: center;
       white-space: nowrap;
       text-shadow:
-        3px 0 rgba(68, 255, 238, 0.48),
-        -3px 0 rgba(187, 71, 32, 0.58);
-      mix-blend-mode: screen;
+        6px 0 rgba(68, 255, 238, 0.66),
+        -6px 0 rgba(187, 71, 32, 0.72),
+        0 0 9px rgba(255, 226, 160, 0.2);
+      mix-blend-mode: normal;
       opacity: 0;
+    }
+
+    .sao-btn > .sao-btn-rgb.sao-btn-rgb {
+      z-index: 9;
     }
 
     .sao-btn:hover:not(:disabled),
@@ -5539,9 +5646,9 @@
 
     .sao-btn:hover:not(:disabled)::before,
     .sao-btn:focus-visible::before {
-      transform: translate(calc(var(--sao-cyber-offset-x) + 7px), calc(var(--sao-cyber-offset-y) + 2px));
+      transform: translate(calc(var(--sao-cyber-offset-x) + 10px), calc(var(--sao-cyber-offset-y) + 3px));
       filter: drop-shadow(0 9px 0 rgba(0, 0, 0, 0.82)) brightness(0.92);
-      animation: saoUnderplateJolt 0.9s steps(2, end) infinite;
+      animation: saoUnderplateJolt 1.08s steps(2, end) infinite;
     }
 
     .sao-btn:hover:not(:disabled)::after,
@@ -5573,13 +5680,13 @@
     .sao-btn:focus-visible .sao-btn-glitch {
       display: flex;
       opacity: 0.98;
-      animation: saoCyberGlitch 1.6s steps(2, end) infinite;
+      animation: saoCyberGlitch 1.84s steps(2, end) infinite;
     }
 
     .sao-btn:hover:not(:disabled) .sao-btn-rgb,
     .sao-btn:focus-visible .sao-btn-rgb {
       display: grid;
-      animation: saoButtonRgbSplit 1.18s steps(2, end) infinite;
+      animation: saoButtonRgbSplit 1.68s steps(2, end) infinite;
     }
 
     .sao-btn .sao-btn-tag {
@@ -5599,6 +5706,16 @@
         animation: saoButtonDarkScan 5.6s cubic-bezier(0.2, 0.86, 0.18, 1) infinite;
       }
 
+      body.boot-complete .sao-btn:not(:disabled) .sao-btn-glitch {
+        display: flex;
+        animation: saoCyberAmbientGlitch 5.4s steps(2, end) infinite;
+      }
+
+      body.boot-complete .sao-btn:not(:disabled) .sao-btn-rgb {
+        display: grid;
+        animation: saoButtonAmbientRgbSplit 5.4s steps(2, end) infinite;
+      }
+
       body.boot-complete .sao-btn:hover:not(:disabled)::after,
       body.boot-complete .sao-btn:focus-visible::after {
         animation: saoButtonStrike 0.94s steps(2, end) infinite;
@@ -5606,7 +5723,17 @@
 
       body.boot-complete .sao-btn:hover:not(:disabled)::before,
       body.boot-complete .sao-btn:focus-visible::before {
-        animation: saoUnderplateJolt 0.9s steps(2, end) infinite;
+        animation: saoUnderplateJolt 1.08s steps(2, end) infinite;
+      }
+
+      body.boot-complete .sao-btn:hover:not(:disabled) .sao-btn-glitch,
+      body.boot-complete .sao-btn:focus-visible .sao-btn-glitch {
+        animation: saoCyberGlitch 1.84s steps(2, end) infinite;
+      }
+
+      body.boot-complete .sao-btn:hover:not(:disabled) .sao-btn-rgb,
+      body.boot-complete .sao-btn:focus-visible .sao-btn-rgb {
+        animation: saoButtonRgbSplit 1.68s steps(2, end) infinite;
       }
     }
 
@@ -8634,6 +8761,7 @@
           this.operationalDeck.style.removeProperty("transform");
           this.operationalDeck.style.removeProperty("scale");
           this.operationalDeck.style.removeProperty("filter");
+          this.operationalDeck.style.removeProperty("clip-path");
           document.body.classList.remove("workbench-materializing");
         };
         window.clearTimeout(this._workbenchRevealTimer);
@@ -8652,10 +8780,10 @@
 
           const deckTl = gsap.timeline();
           deckTl
-            .set(this.operationalDeck, { opacity: 0, y: 10, scaleX: 0.02, scaleY: 0.02, transformOrigin: "center top", filter: "blur(10px) brightness(1.8)" })
-            .to(this.operationalDeck, { opacity: 1, y: 0, scaleX: 1, scaleY: 0.025, filter: "blur(5px) brightness(1.55)", duration: 0.9, ease: "power2.out" }, 0.3)
-            .to(this.operationalDeck, { scaleX: 1, scaleY: 1.035, filter: "blur(1px) brightness(1.16)", duration: 1.45, ease: "power3.out" }, 1.2)
-            .to(this.operationalDeck, { scaleX: 1, scaleY: 1, filter: "blur(0px) brightness(1)", duration: 0.72, ease: "power2.out", onComplete: ensureWorkbenchVisible }, 3.42)
+            .set(this.operationalDeck, { opacity: 0, y: 14, scaleX: 0.02, scaleY: 0.02, clipPath: "polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%)", transformOrigin: "center top", filter: "blur(14px) brightness(2)" })
+            .to(this.operationalDeck, { opacity: 1, y: 0, scaleX: 1, scaleY: 0.03, clipPath: "polygon(0 46%, 100% 46%, 100% 54%, 0 54%)", filter: "blur(5px) brightness(1.55)", duration: 0.9, ease: "power2.out" }, 0.3)
+            .to(this.operationalDeck, { scaleX: 1, scaleY: 1.035, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", filter: "blur(1px) brightness(1.16)", duration: 1.45, ease: "power3.out" }, 1.2)
+            .to(this.operationalDeck, { scaleX: 1, scaleY: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", filter: "blur(0px) brightness(1)", duration: 0.72, ease: "power2.out", onComplete: ensureWorkbenchVisible }, 3.42)
             .to(".tool-module", {
               opacity: 1,
               x: 0,
@@ -8887,42 +9015,49 @@
         authPanel.getAnimations().forEach((animation) => animation.cancel());
         authPanel.animate([
           {
-            opacity: 1,
-            transform: "perspective(900px) scaleX(0.04) scaleY(0.002) rotateX(8deg)",
-            filter: "blur(14px) brightness(2.4) saturate(0.58)"
+            opacity: 0,
+            clipPath: "polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%)",
+            transform: "perspective(900px) scaleX(0.03) scaleY(0.004) rotateX(10deg)",
+            filter: "blur(18px) brightness(2.65) saturate(0.52)"
           },
           {
             opacity: 1,
-            transform: "perspective(900px) scaleX(0.18) scaleY(0.012) rotateX(7deg)",
-            filter: "blur(8px) brightness(2.15) saturate(0.72)",
+            clipPath: "polygon(12% 47%, 88% 47%, 88% 53%, 12% 53%)",
+            transform: "perspective(900px) scaleX(0.42) scaleY(0.014) rotateX(8deg)",
+            filter: "blur(10px) brightness(2.3) saturate(0.7)",
             offset: 0.12
           },
           {
             opacity: 1,
-            transform: "perspective(900px) scaleX(1.02) scaleY(0.028) rotateX(4deg)",
-            filter: "blur(4px) brightness(1.82) saturate(0.92)",
+            clipPath: "polygon(0 42%, 100% 42%, 100% 58%, 0 58%)",
+            transform: "perspective(900px) scaleX(1.02) scaleY(0.035) rotateX(5deg)",
+            filter: "blur(5px) brightness(1.92) saturate(0.92)",
             offset: 0.28
           },
           {
             opacity: 1,
-            transform: "perspective(900px) scaleX(1) scaleY(0.08) rotateX(3deg)",
+            clipPath: "polygon(0 18%, 100% 18%, 100% 82%, 0 82%)",
+            transform: "perspective(900px) scaleX(1) scaleY(0.16) rotateX(3deg)",
             filter: "blur(3px) brightness(1.56) saturate(1)",
             offset: 0.38
           },
           {
             opacity: 1,
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
             transform: "perspective(900px) scaleX(1) scaleY(1.08) rotateX(-1deg)",
             filter: "blur(1px) brightness(1.2) saturate(1.05)",
             offset: 0.72
           },
           {
             opacity: 1,
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
             transform: "perspective(900px) scaleX(1) scaleY(0.98) rotateX(0deg)",
             filter: "blur(0) brightness(1.05) saturate(1.02)",
             offset: 0.88
           },
           {
             opacity: 1,
+            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
             transform: "perspective(900px) rotateX(0deg) scaleX(1) scaleY(1)",
             filter: "blur(0) brightness(1)"
           }
@@ -8942,9 +9077,9 @@
         staged.forEach(([node, delay]) => {
           if (!(node instanceof HTMLElement)) return;
           node.animate([
-            { opacity: 0, transform: "translateY(10px)", filter: "blur(5px) brightness(1.42)" },
-            { opacity: 1, transform: "translateY(-2px)", filter: "brightness(1.16)", offset: 0.62 },
-            { opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
+            { opacity: 0, clipPath: "polygon(0 48%, 100% 48%, 100% 52%, 0 52%)", transform: "translateY(14px) scaleY(0.86)", filter: "blur(7px) brightness(1.42)" },
+            { opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", transform: "translateY(-2px) scaleY(1.02)", filter: "brightness(1.16)", offset: 0.62 },
+            { opacity: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", transform: "translateY(0) scaleY(1)", filter: "blur(0)" }
           ], {
             duration: 900,
             delay,
