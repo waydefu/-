@@ -3980,75 +3980,97 @@
     @keyframes saoCyberGlitch {
       0% {
         clip-path: var(--sao-glitch-clip-one);
+        opacity: 0.34;
+        transform: translate3d(0, 0, 0);
       }
 
       2%, 8% {
         clip-path: var(--sao-glitch-clip-two);
         transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+        opacity: 0.98;
       }
 
       6% {
         clip-path: var(--sao-glitch-clip-two);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0.92;
       }
 
       9% {
         clip-path: var(--sao-glitch-clip-two);
         transform: translate3d(0, 0, 0);
+        opacity: 0.76;
       }
 
       10% {
         clip-path: var(--sao-glitch-clip-three);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0.96;
       }
 
       13% {
         clip-path: var(--sao-glitch-clip-three);
         transform: translate3d(0, 0, 0);
+        opacity: 0.6;
       }
 
       14%, 21% {
         clip-path: var(--sao-glitch-clip-four);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0;
       }
 
       25% {
         clip-path: var(--sao-glitch-clip-five);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0;
       }
 
       30% {
         clip-path: var(--sao-glitch-clip-five);
         transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+        opacity: 0;
       }
 
       35%, 45% {
         clip-path: var(--sao-glitch-clip-six);
         transform: translate3d(calc(var(--sao-glitch-shift) * -1%), 0, 0);
+        opacity: 0.95;
       }
 
       40% {
         clip-path: var(--sao-glitch-clip-six);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0.88;
       }
 
       50% {
         clip-path: var(--sao-glitch-clip-six);
         transform: translate3d(0, 0, 0);
+        opacity: 0.52;
       }
 
       55% {
         clip-path: var(--sao-glitch-clip-seven);
         transform: translate3d(calc(var(--sao-glitch-shift) * 1%), 0, 0);
+        opacity: 0.92;
       }
 
       60% {
         clip-path: var(--sao-glitch-clip-seven);
         transform: translate3d(0, 0, 0);
+        opacity: 0.58;
       }
 
-      31%, 61%, 100% {
+      31%, 61% {
         clip-path: var(--sao-glitch-clip-four);
+        opacity: 0;
+      }
+
+      100% {
+        clip-path: var(--sao-glitch-clip-one);
+        opacity: 0.34;
+        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -5220,30 +5242,33 @@
 
     @keyframes saoButtonRgbSplit {
       0%, 100% {
-        clip-path: polygon(0 0, 100% 0, 100% 0, 0 0);
+        clip-path: polygon(0 48%, 100% 48%, 100% 56%, 0 56%);
         transform: translate3d(0, 0, 0);
-        opacity: 0;
+        opacity: 0.32;
       }
       10% {
-        clip-path: polygon(0 10%, 100% 10%, 100% 24%, 0 24%);
-        transform: translate3d(-4px, 0, 0);
-        opacity: 0.9;
+        clip-path: polygon(0 10%, 100% 10%, 100% 26%, 0 26%);
+        transform: translate3d(-7px, 0, 0);
+        opacity: 0.94;
       }
       24% {
         clip-path: polygon(0 38%, 100% 38%, 100% 52%, 0 52%);
-        transform: translate3d(5px, 0, 0);
+        transform: translate3d(8px, 0, 0);
+        opacity: 0.86;
       }
       38% {
         clip-path: polygon(0 68%, 100% 68%, 100% 82%, 0 82%);
-        transform: translate3d(-3px, 0, 0);
+        transform: translate3d(-6px, 0, 0);
+        opacity: 0.78;
       }
       56% {
-        clip-path: polygon(0 22%, 100% 22%, 100% 34%, 0 34%);
-        transform: translate3d(3px, 0, 0);
+        clip-path: polygon(0 22%, 100% 22%, 100% 38%, 0 38%);
+        transform: translate3d(6px, 0, 0);
+        opacity: 0.9;
       }
       72% {
         clip-path: polygon(0 58%, 100% 58%, 100% 74%, 0 74%);
-        transform: translate3d(-5px, 0, 0);
+        transform: translate3d(-8px, 0, 0);
         opacity: 0.82;
       }
     }
@@ -5260,6 +5285,24 @@
       }
     }
 
+    @keyframes saoUnderplateJolt {
+      0%, 100% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 6px), calc(var(--sao-cyber-offset-y) + 2px));
+      }
+      18% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 14px), calc(var(--sao-cyber-offset-y) + 5px));
+      }
+      34% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 8px), calc(var(--sao-cyber-offset-y) + 1px));
+      }
+      52% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 16px), calc(var(--sao-cyber-offset-y) + 4px));
+      }
+      74% {
+        transform: translate(calc(var(--sao-cyber-offset-x) + 10px), calc(var(--sao-cyber-offset-y) + 3px));
+      }
+    }
+
     @keyframes saoMenuRailSweep {
       0% {
         transform: translateY(-112%) scaleY(0.12);
@@ -5272,6 +5315,21 @@
       100% {
         transform: translateY(112%) scaleY(0.2);
         opacity: 0;
+      }
+    }
+
+    @keyframes saoSystemMenuClipResolve {
+      0% {
+        clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%);
+      }
+      32% {
+        clip-path: polygon(0 48%, 100% 48%, 100% 52%, 0 52%);
+      }
+      68% {
+        clip-path: polygon(18px 0, 100% 0, 100% 62%, calc(100% - 18px) 68%, 0 68%, 0 18px);
+      }
+      100% {
+        clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
       }
     }
 
@@ -5429,10 +5487,14 @@
       display: none;
       align-items: center;
       justify-content: center;
-      padding: inherit;
+      padding: 0 14px;
       color: rgba(255, 238, 188, 0.98);
       background:
         linear-gradient(90deg, rgba(8, 2, 1, 0.98), rgba(51, 24, 4, 0.98) 68%, rgba(119, 76, 20, 0.82));
+      font: inherit;
+      line-height: 1;
+      white-space: nowrap;
+      text-align: center;
       text-shadow:
         2px 0 rgba(67, 233, 229, 0.46),
         -2px 0 rgba(168, 70, 34, 0.62),
@@ -5445,11 +5507,13 @@
       z-index: 8;
       display: none;
       place-items: center;
-      padding: inherit;
+      padding: 0 14px;
       color: rgba(255, 238, 188, 0.96);
       font: inherit;
+      line-height: 1;
       letter-spacing: inherit;
       text-align: center;
+      white-space: nowrap;
       text-shadow:
         3px 0 rgba(68, 255, 238, 0.48),
         -3px 0 rgba(187, 71, 32, 0.58);
@@ -5477,13 +5541,27 @@
     .sao-btn:focus-visible::before {
       transform: translate(calc(var(--sao-cyber-offset-x) + 7px), calc(var(--sao-cyber-offset-y) + 2px));
       filter: drop-shadow(0 9px 0 rgba(0, 0, 0, 0.82)) brightness(0.92);
+      animation: saoUnderplateJolt 0.9s steps(2, end) infinite;
     }
 
     .sao-btn:hover:not(:disabled)::after,
     .sao-btn:focus-visible::after {
       background: var(--sao-cyber-primary-hover);
       filter: brightness(0.9) saturate(0.94);
-      animation: saoButtonStrike 0.94s steps(2, end) both;
+      animation: saoButtonStrike 0.94s steps(2, end) infinite;
+    }
+
+    .sao-btn:hover:not(:disabled) .sao-btn-label,
+    .sao-btn:hover:not(:disabled) .btn-label,
+    .sao-btn:hover:not(:disabled) .nav-label,
+    .sao-btn:focus-visible .sao-btn-label,
+    .sao-btn:focus-visible .btn-label,
+    .sao-btn:focus-visible .nav-label {
+      animation: saoLabelGlitch 0.82s steps(2, end) infinite;
+      text-shadow:
+        1px 0 rgba(68, 255, 238, 0.34),
+        -1px 0 rgba(187, 71, 32, 0.42),
+        0 0 12px rgba(214, 166, 77, 0.26);
     }
 
     .sao-btn:hover:not(:disabled) .sao-btn-scan::before,
@@ -5523,7 +5601,12 @@
 
       body.boot-complete .sao-btn:hover:not(:disabled)::after,
       body.boot-complete .sao-btn:focus-visible::after {
-        animation: saoButtonStrike 0.94s steps(2, end) both;
+        animation: saoButtonStrike 0.94s steps(2, end) infinite;
+      }
+
+      body.boot-complete .sao-btn:hover:not(:disabled)::before,
+      body.boot-complete .sao-btn:focus-visible::before {
+        animation: saoUnderplateJolt 0.9s steps(2, end) infinite;
       }
     }
 
@@ -5548,6 +5631,10 @@
         inset 0 0 0 1px rgba(255, 226, 160, 0.1),
         inset 0 -28px 56px rgba(0, 0, 0, 0.44);
       transform-origin: top right;
+    }
+
+    .sao-system-menu:not([hidden]):not(.is-closing) {
+      animation: saoSystemMenuClipResolve 2.8s cubic-bezier(0.18, 0.92, 0.2, 1) both;
     }
 
     .sao-system-menu::before {
@@ -8801,20 +8888,38 @@
         authPanel.animate([
           {
             opacity: 1,
-            transform: "none",
-            filter: "brightness(1.28) saturate(1.08)"
+            transform: "perspective(900px) scaleX(0.04) scaleY(0.002) rotateX(8deg)",
+            filter: "blur(14px) brightness(2.4) saturate(0.58)"
           },
           {
             opacity: 1,
-            transform: "perspective(900px) rotateX(1.4deg) scaleX(1.01) scaleY(0.985)",
-            filter: "brightness(1.18) saturate(1.06)",
-            offset: 0.36
+            transform: "perspective(900px) scaleX(0.18) scaleY(0.012) rotateX(7deg)",
+            filter: "blur(8px) brightness(2.15) saturate(0.72)",
+            offset: 0.12
           },
           {
             opacity: 1,
-            transform: "perspective(900px) rotateX(-0.6deg) scaleX(1.006) scaleY(1.018)",
-            filter: "brightness(1.08)",
-            offset: 0.74
+            transform: "perspective(900px) scaleX(1.02) scaleY(0.028) rotateX(4deg)",
+            filter: "blur(4px) brightness(1.82) saturate(0.92)",
+            offset: 0.28
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) scaleX(1) scaleY(0.08) rotateX(3deg)",
+            filter: "blur(3px) brightness(1.56) saturate(1)",
+            offset: 0.38
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) scaleX(1) scaleY(1.08) rotateX(-1deg)",
+            filter: "blur(1px) brightness(1.2) saturate(1.05)",
+            offset: 0.72
+          },
+          {
+            opacity: 1,
+            transform: "perspective(900px) scaleX(1) scaleY(0.98) rotateX(0deg)",
+            filter: "blur(0) brightness(1.05) saturate(1.02)",
+            offset: 0.88
           },
           {
             opacity: 1,
@@ -8822,32 +8927,29 @@
             filter: "blur(0) brightness(1)"
           }
         ], {
-          duration: 1550,
+          duration: Math.round(uiMotion.loginPanel * 1000),
           easing: "cubic-bezier(0.18, 0.92, 0.2, 1)",
           fill: "none"
         });
 
         const staged = [
-          [authPanel.querySelector(".auth-header"), 480],
-          [authPanel.querySelector(".seal-strip"), 520],
-          [authPanel.querySelector("#authTitle"), 680],
-          [authPanel.querySelector("#authPrompt"), 830],
-          [authPanel.querySelector(".auth-actions"), 980]
+          [authPanel.querySelector(".auth-header"), 1160],
+          [authPanel.querySelector(".seal-strip"), 1160],
+          [authPanel.querySelector("#authTitle"), 1540],
+          [authPanel.querySelector("#authPrompt"), 1940],
+          [authPanel.querySelector(".auth-actions"), 2420]
         ];
         staged.forEach(([node, delay]) => {
           if (!(node instanceof HTMLElement)) return;
-          node.style.opacity = "1";
-          node.style.transform = "none";
-          node.style.filter = "none";
           node.animate([
-            { opacity: 1, transform: "translateY(0)", filter: "brightness(1.34)" },
-            { opacity: 1, transform: "translateY(-2px)", filter: "brightness(1.12)", offset: 0.48 },
+            { opacity: 0, transform: "translateY(10px)", filter: "blur(5px) brightness(1.42)" },
+            { opacity: 1, transform: "translateY(-2px)", filter: "brightness(1.16)", offset: 0.62 },
             { opacity: 1, transform: "translateY(0)", filter: "blur(0)" }
           ], {
-            duration: 620,
+            duration: 900,
             delay,
             easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-            fill: "none"
+            fill: "backwards"
           });
         });
       }

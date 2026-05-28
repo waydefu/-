@@ -295,6 +295,72 @@ Validation after the fix:
 - `npm run smoke:hosting`: passed.
 - Cache-busted deployed HTML check: passed for hover `box-shadow: none`, RGB infinite loop, glitch 1.6s infinite loop, and scan infinite loop.
 
+## S13.1 Animation Correctness Follow-Up 2
+
+Timestamp: 2026-05-28 Asia/Taipei.
+
+Pre-change confirmation:
+
+- User acceptance is still not met; continue editing until the effect reads correctly.
+- Additional code review found `AnimationTimeline.playAuthPanelMaterialize()` still running a short 1.55s subtle WAAPI on top of the intended 3.4s CSS materialization, making the login ritual visually too weak in the real app.
+- Button hover was improved, but the underplate is still mostly ambient drift during `body.boot-complete`; hover/focus needs an explicit displaced slab jolt, not only scan/RGB overlays.
+- The desired button behavior is effect-first:
+  - dark black/gold/copper palette;
+  - no rectangular hover box;
+  - visible offset backing plate;
+  - repeated horizontal glitch slices;
+  - RGB/text split that stays aligned to the main label and remains visible while hovered.
+
+Planned safe scope:
+
+- Replace the weak login WAAPI frames with the full horizontal-line to vertical-panel materialization.
+- Make button underplate jolt during hover/focus.
+- Make hover/focus text split and RGB slices more frequent and aligned.
+- Keep Firebase/Auth, draft/history, existing button ids, native dialog, ARIA, focus-visible, skip-link, reduced-motion, touch targets, and Traditional Chinese copy intact.
+
+Post-change record:
+
+- Replaced `AnimationTimeline.playAuthPanelMaterialize()` with the full 3.4s panel materialization:
+  - starts as a bright horizontal line;
+  - widens first;
+  - vertically unfolds into the full auth panel;
+  - content resolves in staggered stages after the frame is visible.
+- Added `saoUnderplateJolt` and bound it to `.sao-btn:hover::before` / `:focus-visible::before`, including `body.boot-complete` override, so hover has a visible displaced backing slab instead of passive drift.
+- Changed hover/focus main plate strike to infinite.
+- Strengthened `saoButtonRgbSplit` so RGB slices stay visible through the loop and shift farther horizontally.
+- Strengthened `saoCyberGlitch` opacity and timing so horizontal slices recur more often.
+- Added label-level `saoLabelGlitch` on hover/focus for `.sao-btn-label`, `.btn-label`, and `.nav-label`.
+- Added `saoSystemMenuClipResolve` so the system menu itself clips from a line to a panel while the WAAPI transform opens it.
+- Synced `public/worldforge-login.html` from `public/index.html`.
+
+Animation evidence:
+
+- Follow-up live-frame screenshots:
+  - `output/playwright/s13-1-animation-correctness-2/button-hover-0650ms.png`
+  - `output/playwright/s13-1-animation-correctness-2/button-hover-2500ms.png`
+  - `output/playwright/s13-1-animation-correctness-2/menu-0120ms.png`
+  - `output/playwright/s13-1-animation-correctness-2/menu-0820ms.png`
+  - `output/playwright/s13-1-animation-correctness-2/menu-1800ms.png`
+- Computed hover result:
+  - `box-shadow: none`
+  - `::before`: `saoUnderplateJolt`, `infinite`
+  - `::after`: `saoButtonStrike`, `infinite`
+  - `.sao-btn-rgb`: `saoButtonRgbSplit`, `infinite`
+  - `.sao-btn-glitch`: `saoCyberGlitch`, `infinite`
+  - `.sao-btn-label`: `saoLabelGlitch`, `infinite`
+
+Validation after follow-up 2:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check: passed for `saoUnderplateJolt`, `saoSystemMenuClipResolve`, full login WAAPI materialization frames, visible RGB split opacity, and label glitch.
+
 ## Red Lines
 
 - Do not touch Firebase/Auth semantics unless explicitly requested.
