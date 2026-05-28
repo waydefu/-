@@ -224,6 +224,14 @@ Validation after implementation:
 - `npm run test:a11y`: 3 passed, axe impact counts `{}`.
 - `npm run test:visual:update`: 14 passed; regenerated `login-1366-chromium-win32.png` and `login-390-chromium-win32.png` because the login CTA rear underplate was removed.
 - `npm run build`: passed.
+- Commit: `d978992 fix(s13.1): remove SAO button rear shadows`.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check passed:
+  - `--sao-cyber-underplate: transparent;` present;
+  - final `.sao-btn::before` removal block present;
+  - `.override-window .danger-btn` keeps `box-shadow: none;`;
+  - Google-only auth action padding stays `0`.
 
 ## S13 Effects Visibility Hotfix
 
