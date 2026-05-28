@@ -168,6 +168,25 @@ Validation after disabling legacy host focus pulse:
 - `npm run test:a11y`: 3 passed, axe impact counts `{}`.
 - `npm run test:visual:update`: 14 passed.
 - `npm run build`: passed.
+
+Final deployment verification:
+
+- Commit deployed after this correction: `b3dfcc3 fix(s13.1): suppress legacy SAO focus pulse shadow`.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check passed:
+  - `saoButtonRgbSplit 1.68s` present;
+  - `.sao-btn:focus-visible` host animation disabled;
+  - clipped focus inset glow present;
+  - login materialize `clipPath` WAAPI frame present.
+- Deployed hover screenshot:
+  - `output/playwright/s13-1-reference-rebuild/deployed-button-hover-final-0900ms.png`
+  - `output/playwright/s13-1-reference-rebuild/deployed-button-hover-final-1780ms.png`
+- Runtime computed deployed hover state:
+  - host `box-shadow: none`;
+  - host animation `none 0s`;
+  - `saoCyberGlitch 1.84s`;
+  - `saoButtonRgbSplit 1.68s`.
 - `firebase deploy --only hosting --project project-7276420283723642146`: passed.
 - `npm run smoke:hosting`: passed.
 - Production screenshot after deploy: `output/playwright/sao-button-hotfix-production-login.png`.
