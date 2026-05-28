@@ -5461,9 +5461,16 @@
     .sao-btn:focus-visible {
       transform: translateY(-1px);
       filter: saturate(0.98) brightness(0.98);
+    }
+
+    .sao-btn:hover:not(:disabled) {
+      box-shadow: none;
+    }
+
+    .sao-btn:focus-visible {
       box-shadow:
-        0 0 0 1px rgba(214, 166, 77, 0.16),
-        0 0 20px rgba(214, 166, 77, 0.12);
+        0 0 0 2px rgba(255, 226, 160, 0.62),
+        0 0 18px rgba(214, 166, 77, 0.18);
     }
 
     .sao-btn:hover:not(:disabled)::before,
@@ -5481,20 +5488,20 @@
 
     .sao-btn:hover:not(:disabled) .sao-btn-scan::before,
     .sao-btn:focus-visible .sao-btn-scan::before {
-      animation: saoButtonDarkScan 1.35s cubic-bezier(0.2, 0.86, 0.18, 1) both;
+      animation: saoButtonDarkScan 1.35s cubic-bezier(0.2, 0.86, 0.18, 1) infinite;
     }
 
     .sao-btn:hover:not(:disabled) .sao-btn-glitch,
     .sao-btn:focus-visible .sao-btn-glitch {
       display: flex;
       opacity: 0.98;
-      animation: saoCyberGlitch 2.4s steps(2, end) infinite;
+      animation: saoCyberGlitch 1.6s steps(2, end) infinite;
     }
 
     .sao-btn:hover:not(:disabled) .sao-btn-rgb,
     .sao-btn:focus-visible .sao-btn-rgb {
       display: grid;
-      animation: saoButtonRgbSplit 1.18s steps(2, end) both;
+      animation: saoButtonRgbSplit 1.18s steps(2, end) infinite;
     }
 
     .sao-btn .sao-btn-tag {

@@ -230,6 +230,71 @@ Validation:
 - `npm run build`: passed.
 - `git diff --check`: passed; Windows line-ending warnings only.
 
+## S13.1 Animation Evidence Follow-Up
+
+Timestamp: 2026-05-28 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Shutdown was checked with `shutdown /a`; Windows reported no shutdown was in progress.
+- Playwright screenshots must be captured with `animations: "allow"` for animation evidence. Earlier static screenshots and default screenshots can fast-forward finite animations, so they are not enough for visual acceptance.
+- Real time-frame captures with `animations: "allow"` confirmed:
+  - login modal materializes from a thin horizontal line into the full panel;
+  - system menu opens with runtime WAAPI expansion over 2.8s;
+  - workbench reveal starts from collapsed state and settles by 4.2s.
+- Remaining issue before editing:
+  - `.sao-btn .sao-btn-rgb` runs only one iteration on hover/focus, so the 2077-style RGB separation disappears if the pointer stays on the button.
+  - `.sao-btn:hover` still adds a rectangular `box-shadow`, which reads as a hover rectangle instead of a clipped SAO/cyber glitch surface.
+
+Planned safe scope:
+
+- Keep Firebase/Auth, draft/history, button ids, native dialog, ARIA, focus-visible, skip-link, reduced-motion, 44x44 touch targets, and Traditional Chinese copy unchanged.
+- Change only shared `.sao-btn` normal-motion hover/focus behavior:
+  - remove hover-only rectangular box-shadow;
+  - keep focus-visible affordance for keyboard users;
+  - make RGB separation and scan layer loop while hovered/focused;
+  - keep dark black/gold/copper palette.
+
+Post-change record:
+
+- Removed the hover-only rectangular `box-shadow` from `.sao-btn:hover`.
+- Kept keyboard `:focus-visible` feedback, but scoped it separately from hover.
+- Changed hover/focus `.sao-btn-scan::before` from one-shot to infinite scan.
+- Changed hover/focus `.sao-btn-glitch` from a slower 2.4s cycle to a more visible 1.6s loop.
+- Changed hover/focus `.sao-btn-rgb` from one-shot to infinite RGB slice separation.
+- No Firebase/Auth, data, button id, native dialog, ARIA, reduced-motion, touch target, or Traditional Chinese copy changes were made.
+
+Animation evidence:
+
+- Live-frame screenshots with `animations: "allow"`:
+  - `output/playwright/s13-1-animation-liveframes/login-live-0120ms.png`
+  - `output/playwright/s13-1-animation-liveframes/login-live-0900ms.png`
+  - `output/playwright/s13-1-animation-liveframes/menu-live-0120ms.png`
+  - `output/playwright/s13-1-animation-liveframes/menu-live-1800ms.png`
+  - `output/playwright/s13-1-animation-liveframes/workbench-live-0160ms.png`
+  - `output/playwright/s13-1-animation-liveframes/workbench-live-2900ms.png`
+- Button follow-up screenshots after the hover fix:
+  - `output/playwright/s13-1-animation-liveframes-after-button-fix/button-fixed-hover-0080ms.png`
+  - `output/playwright/s13-1-animation-liveframes-after-button-fix/button-fixed-hover-2500ms.png`
+  - `output/playwright/s13-1-animation-liveframes-after-button-fix/button-fixed-hover-3600ms.png`
+- Computed hover result after the fix:
+  - `box-shadow: none`
+  - `.sao-btn-rgb`: `saoButtonRgbSplit`, `infinite`
+  - `.sao-btn-glitch`: `saoCyberGlitch`, `infinite`
+  - `.sao-btn-scan::before`: `saoButtonDarkScan`, `infinite`
+
+Validation after the fix:
+
+- `npm run sync:login-mother`: passed.
+- `npm run test:visual:update`: passed, 14/14.
+- `npm run check`: passed.
+- `npm run test:a11y`: passed, 3/3, axe impact counts `{}`.
+- `npm run build`: passed.
+- `git diff --check`: passed; Windows line-ending warnings only.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check: passed for hover `box-shadow: none`, RGB infinite loop, glitch 1.6s infinite loop, and scan infinite loop.
+
 ## Red Lines
 
 - Do not touch Firebase/Auth semantics unless explicitly requested.
