@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證
-- 進行中：無
-- 下一步：請使用者重新整理 `http://localhost:5599/`，登出或清除 localhost 站台資料後重測登入動畫；若仍無動畫，確認是否 reduced motion 或 Auth 未成功
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff
+- 進行中：Step 9 log 回寫
+- 下一步：提交 Step 9 log；請使用者用 `http://localhost:5599/?flgMotion=full` 重測完整 Link Start，之後可用 `?flgMotion=system` 還原系統 motion 設定
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -222,3 +222,27 @@
   - 若使用 LAN IP 或 Google Auth 失敗，依「真 Auth 成功才 handoff」紅線不會播放成功過場。
 - Commit：`9978824`
 - Log Commit：`c87124e`
+
+### Step 9 - reduced-motion 根因與全動效測試 override
+- 狀態：產品變更完成；本 log 回寫中。
+- 觸發：使用者再次回報「一樣沒」。
+- 診斷：
+  - 依 Browser 外掛打開 `http://localhost:5599/`，頁面狀態顯示 `matchMedia("(prefers-reduced-motion: reduce)").matches === true`，`<html>` 帶 `motion-reduced`。
+  - 既有規格在 reduced-motion 下會直接跳過 Link Start；因此使用者環境若啟用減少動態效果，就會合理地「完全看不到動畫」。
+- 修改：
+  - `public/index.html:5220-5241`：加入 motion preference 讀取，支援 `?flgMotion=full` 強制完整動效、`?flgMotion=reduce` 強制 reduced、`?flgMotion=system` 清除本機 override 並回到系統設定；偏好只存在 localStorage。
+  - `public/index.html:5310-5311`：把 motion preference 寫到 `data-motion-preference` 供診斷。
+  - `public/index.html:7675-7695`：reduced-motion 登入成功不再瞬切，改成低動態金色封印停頓約 640ms，再進工作區；不跑 Link Start WebGL 隧道與高動態 rAF。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+  - Browser 可見頁確認 `?flgMotion=full` 會讓 `<html>` 不再帶 `motion-reduced` 並設定 `data-motion-preference="full"`；Browser 內 Firebase SDK 載入不穩，故真 Auth 動效仍以使用者本機實測為準。
+- 待使用者重測：
+  - 完整 Link Start：`http://localhost:5599/?flgMotion=full`
+  - 還原系統 motion 設定：`http://localhost:5599/?flgMotion=system`
+  - 若用 LAN IP 或 Auth 失敗，仍不會播放成功 handoff。
+- Commit：`1e21911`
