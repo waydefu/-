@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash
 - 進行中：無
-- 下一步：Step 3 盤點固定 px 字級清單，準備 Part B 字級 token 與 L1 功能層替換
+- 下一步：Step 4 修改 Part B 字級 token 與 L1 功能層固定 px
 - 未決 / 待我確認：無
 - 待裝置驗收：字級手感需使用者在 POCO F6 Pro 或實機確認
 
@@ -54,3 +54,19 @@
   - 行動 reduced-motion：`overrideWindow`、`logoutConfirmWindow` 均可見、置中、無動畫，centeredDelta `(0,0)`
 - 風險：只影響 `@media (max-width: 620px)` 的 `.override-window` 與 mobile keyframes；可能改變小螢幕彈窗垂直位置，但驗證結果符合置中需求
 - Commit：`1e635b6`
+
+### Step 3 - Part B 固定 px 字級盤點
+- 狀態：完成
+- 指令：`rg -n "font(-size)?: *[0-9.]+px" public/index.html`
+- 結果：共 37 個命中
+- L1 功能層優先替換候選：
+  - `2091`, `2139`：工作台 nav action / avatar
+  - `2353`, `2434`, `2446`：帳號/歷史操作與空狀態
+  - `2554`, `2571`, `2580`：手稿 meta / spell chip
+  - `2965`, `2985`, `3049`, `3162`：結果操作、複製、狀態 / 進度
+  - `4924`, `5020`, `5030`, `5043`, `5047`, `5086`, `5100`, `5116`：行動版功能文字覆寫
+- 先保留或延後候選：
+  - `422`, `429`, `702`, `1036`, `1181`, `1827`, `2726`, `2776`, `2971`, `3225`, `4752`：偏裝飾 HUD / mono 角標或非主要閱讀文字，避免本單過度改動視覺語彙
+  - `717`, `723`, `1850`, `2734`, `2803`, `2820`：需再看上下文，若屬功能文案再納入
+- 備註：執行單給的 `rg -nE` 在此環境會被 ripgrep 視為 encoding 旗標而失敗，改用 ripgrep 原生 regex
+- Commit：待建立
