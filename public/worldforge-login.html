@@ -3590,6 +3590,22 @@
       animation: contentSlideUp 0.72s var(--sao-easing-out) 4.18s both;
     }
 
+    body.operational .tool-module {
+      opacity: 1;
+      transform: none;
+    }
+
+    body.workbench-materializing .tool-module {
+      animation: contentSlideUp 0.72s var(--sao-easing-out) both;
+    }
+
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(1) { animation-delay: 1.22s; }
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(2) { animation-delay: 1.4s; }
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(3) { animation-delay: 1.58s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(1) { animation-delay: 1.76s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(2) { animation-delay: 1.94s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(3) { animation-delay: 2.12s; }
+
     body.operational .codex-panel,
     body.operational .analysis-dossier {
       filter: none !important;
@@ -5211,6 +5227,42 @@
     const bloomBaseForStage = () => isCompactStage() ? 0.48 : 0.68;
     const BLOOM_SCENE = 1;
     const clamp = (value, min, max) => Math.min(Math.max(value, min), max);
+    const clamp01 = (value) => clamp(value, 0, 1);
+    const lerp = (from, to, t) => from + (to - from) * t;
+    const ease = {
+      inPow2: (t) => t * t,
+      outPow2: (t) => 1 - (1 - t) * (1 - t),
+      inOutSine: (t) => 0.5 - Math.cos(Math.PI * t) / 2
+    };
+    function runPhaseClock(durationMs, onUpdate, onComplete) {
+      if (durationMs <= 0) {
+        onUpdate(1, durationMs);
+        onComplete?.();
+        return { kill() {} };
+      }
+      const startedAt = performance.now();
+      let frame = 0;
+      let killed = false;
+      const tick = (now) => {
+        if (killed) return;
+        const elapsed = now - startedAt;
+        const progress = clamp01(elapsed / durationMs);
+        onUpdate(progress, elapsed);
+        if (progress < 1) {
+          frame = requestAnimationFrame(tick);
+        } else {
+          onComplete?.();
+        }
+      };
+      frame = requestAnimationFrame(tick);
+      return {
+        kill() {
+          killed = true;
+          if (frame) cancelAnimationFrame(frame);
+        }
+      };
+    }
+    const phaseProgress = (elapsedMs, startMs, durationMs) => clamp01((elapsedMs - startMs) / durationMs);
     const isLowPowerDevice = () => (
       prefersReducedMotion ||
       Number(navigator.deviceMemory || 8) <= 4 ||
@@ -7343,8 +7395,22 @@
       }
 
       pulseError() {
-        if (!gsap) return;
-        gsap.fromTo(this.ritualStack, { x: -7 }, { x: 7, yoyo: true, repeat: 5, duration: 0.045, clearProps: "x" });
+        if (prefersReducedMotion || !this.ritualStack?.animate) return;
+        this.ritualStack.getAnimations()
+          .filter((animation) => animation.id === "sao-error-shake")
+          .forEach((animation) => animation.cancel());
+        const animation = this.ritualStack.animate([
+          { transform: "translateX(-7px)" },
+          { transform: "translateX(7px)" },
+          { transform: "translateX(-6px)" },
+          { transform: "translateX(6px)" },
+          { transform: "translateX(-3px)" },
+          { transform: "translateX(0)" }
+        ], {
+          duration: 270,
+          easing: "linear"
+        });
+        animation.id = "sao-error-shake";
       }
 
       setAuthCopy({ header, state, title, prompt, button }) {
@@ -7380,12 +7446,20 @@
       abortOverride() {
         this.setStatus("編修儀式已中斷");
         this.hud.showNotice("封印覆寫已中斷");
-        if (!gsap) {
-          this.collapseWindow(this.overrideWindow, uiMotion.collapse);
-          return;
-        }
         this.collapseWindow(this.overrideWindow, uiMotion.collapse);
-        gsap.to(this.ritualStack, { opacity: 1, scale: 1, filter: "blur(0px)", duration: uiMotion.retreat, ease: "power2.out" });
+        if (this.ritualStack?.animate && !prefersReducedMotion) {
+          this.ritualStack.animate([
+            { opacity: 0.82, transform: "scale(0.985)", filter: "blur(4px)" },
+            { opacity: 1, transform: "scale(1)", filter: "blur(0px)" }
+          ], {
+            duration: Math.round(uiMotion.retreat * 1000),
+            easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+            fill: "none"
+          });
+        }
+        this.ritualStack.style.opacity = "1";
+        this.ritualStack.style.scale = "1";
+        this.ritualStack.style.filter = "blur(0px)";
       }
 
       restoreLoginControls() {
@@ -7730,28 +7804,23 @@
           sysStateHud.innerHTML = "MULTILAYER BARRIER LIFTED<br />APPRAISAL ENGINE ONLINE<br />SYSTEM ID: SAGE-09";
         }
 
-        if (gsap) {
-          gsap.to(this.leylineRain, { opacity: 0.42, duration: 1.2, ease: "power2.out" });
-          gsap.to(this.core.group.position, { z: -1.5, duration: 1.8, ease: "power3.out" });
-          gsap.to(this.core.group.scale, { x: 0.82, y: 0.82, z: 0.82, duration: 1.8, ease: "power3.out" });
-          gsap.to(this.runes.group.scale, { x: 0.86, y: 0.86, z: 0.86, duration: 1.8, ease: "power3.out" });
-          gsap.to(this.particles.group.scale, { x: 0.9, y: 0.9, z: 0.9, duration: 1.8, ease: "power3.out" });
-
-          const deckTl = gsap.timeline();
-          deckTl
-            .set(this.operationalDeck, { opacity: 0, y: 14, scaleX: 0.02, scaleY: 0.02, clipPath: "polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%)", transformOrigin: "center top", filter: "blur(14px) brightness(2)" })
-            .to(this.operationalDeck, { opacity: 1, y: 0, scaleX: 1, scaleY: 0.03, clipPath: "polygon(0 46%, 100% 46%, 100% 54%, 0 54%)", filter: "blur(5px) brightness(1.55)", duration: 0.9, ease: "power2.out" }, 0.3)
-            .to(this.operationalDeck, { scaleX: 1, scaleY: 1.035, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", filter: "blur(1px) brightness(1.16)", duration: 1.45, ease: "power3.out" }, 1.2)
-            .to(this.operationalDeck, { scaleX: 1, scaleY: 1, clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)", filter: "blur(0px) brightness(1)", duration: 0.72, ease: "power2.out", onComplete: ensureWorkbenchVisible }, 3.42)
-            .to(".tool-module", {
-              opacity: 1,
-              x: 0,
-              scale: 1,
-              duration: 1.05,
-              stagger: 0.18,
-              ease: "power3.out",
-              onStart: () => document.querySelectorAll(".tool-module").forEach((node) => node.classList.add("deploy-sweep"))
-            }, 2.65);
+        const startingLeylineOpacity = Number.parseFloat(getComputedStyle(this.leylineRain).opacity || "0");
+        const startCoreZ = this.core.group.position.z;
+        const startCoreScale = this.core.group.scale.x;
+        const startRuneScale = this.runes.group.scale.x;
+        const startParticleScale = this.particles.group.scale.x;
+        runPhaseClock(prefersReducedMotion ? 0 : 1800, (progress) => {
+          const eased = ease.outPow2(progress);
+          this.leylineRain.style.opacity = String(lerp(startingLeylineOpacity, 0.42, ease.outPow2(clamp01(progress * 1.5))));
+          this.core.group.position.z = lerp(startCoreZ, -1.5, eased);
+          this.core.group.scale.setScalar(lerp(startCoreScale, 0.82, eased));
+          this.runes.group.scale.setScalar(lerp(startRuneScale, 0.86, eased));
+          this.particles.group.scale.setScalar(lerp(startParticleScale, 0.9, eased));
+        });
+        if (!prefersReducedMotion) {
+          window.setTimeout(() => {
+            document.querySelectorAll(".tool-module").forEach((node) => node.classList.add("deploy-sweep"));
+          }, 1220);
         }
       }
 
@@ -7905,32 +7974,24 @@
       }
 
       triggerSmallPulse() {
-        const driver = { shock: 0 };
         this.post.triggerChromaticAberration(0.0062, 0.54);
-        if (!gsap) return;
-        gsap.to(driver, {
-          shock: 0.32,
-          duration: 0.22,
-          ease: "power2.out",
-          onUpdate: () => {
-            this.core.setShock(driver.shock);
-            this.runes.setShock(driver.shock);
-            this.particles.setShock(driver.shock);
-            this.post.setShock(driver.shock);
-          },
-          onComplete: () => {
-            gsap.to(driver, {
-              shock: 0,
-              duration: 0.9,
-              ease: "power2.out",
-              onUpdate: () => {
-                this.core.setShock(driver.shock);
-                this.runes.setShock(driver.shock);
-                this.particles.setShock(driver.shock);
-                this.post.setShock(driver.shock);
-              }
-            });
-          }
+        this._smallPulseClock?.kill?.();
+        const applyShock = (shock) => {
+          this.core.setShock(shock);
+          this.runes.setShock(shock);
+          this.particles.setShock(shock);
+          this.post.setShock(shock);
+        };
+        this._smallPulseClock = runPhaseClock(prefersReducedMotion ? 0 : 1120, (progress, elapsed) => {
+          const rise = phaseProgress(elapsed, 0, 220);
+          const fall = phaseProgress(elapsed, 220, 900);
+          const shock = elapsed < 220
+            ? lerp(0, 0.32, ease.outPow2(rise))
+            : lerp(0.32, 0, ease.outPow2(fall));
+          applyShock(shock);
+        }, () => {
+          applyShock(0);
+          this._smallPulseClock = null;
         });
       }
     }
@@ -8070,49 +8131,58 @@
           return;
         }
         this.forceTimer = window.setTimeout(() => this.forceBootComplete(), 4200);
-        if (!gsap) {
-          this.forceBootComplete();
-          return;
-        }
-
-        gsap.set(".top-hud", { opacity: 0 });
-        gsap.set(".ritual-stack", { opacity: 0, clearProps: "transform,scale,x,y,xPercent,yPercent" });
-        gsap.set(".boot-sequence", { opacity: 0, scale: 0.94, y: 10 });
-        gsap.set("#connectionWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
-        gsap.set("#overrideWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
-        gsap.set("#logoutConfirmWindow", { xPercent: -50, yPercent: -50, x: 0, y: 0, display: "none", opacity: 0, scaleX: 0, scaleY: 0.02, transformOrigin: "center center" });
-        gsap.set("#bootVeil", { opacity: 1, display: "grid" });
-        const tl = gsap.timeline({
-          defaults: { ease: "power3.out" },
-          onComplete: () => {
-            this.timeline = null;
-            window.clearTimeout(this.forceTimer);
-            document.body.classList.remove("is-booting");
-            document.body.classList.add("boot-complete");
-            this.hud.startNoticeLoop();
-            const bootVeil = document.getElementById("bootVeil");
-            if (bootVeil) bootVeil.style.display = "none";
-          }
+        document.querySelectorAll(".top-hud").forEach((node) => {
+          node.style.opacity = "0";
+          node.style.transform = "translateY(0)";
         });
-        this.timeline = tl;
-        tl
-          .set("#bootVeil", { opacity: 1, display: "grid" })
-          .to(".boot-sequence", { opacity: 1, scale: 1, y: 0, duration: 0.4, ease: "power2.out" }, 0)
-          .to(reveal, {
-            wake: 1,
-            intensity: loginIdleIntensity(),
-            duration: 1.65,
-            ease: "sine.inOut",
-            onUpdate: () => {
-              this.applyWake(reveal.wake);
-              this.core.setIntensity(reveal.intensity);
-            }
-          }, 0.2)
-          .to(".boot-sequence", { opacity: 0, scale: 0.96, y: -8, duration: 0.36 }, 1.18)
-          .to("#bootVeil", { opacity: 0, duration: 0.62, ease: "power2.out" }, 1.34)
-          .set("#bootVeil", { display: "none" }, 2.02)
-          .to(".top-hud", { opacity: 1, y: 0, duration: 0.52 }, 1.34)
-          .call(() => {
+        document.querySelectorAll("#connectionWindow, #overrideWindow, #logoutConfirmWindow").forEach((node) => {
+          node.style.display = "none";
+          node.style.opacity = "0";
+          node.style.transform = "translate(-50%, -50%) scaleX(0) scaleY(0.02)";
+          node.style.transformOrigin = "center center";
+        });
+        const ritualStack = document.getElementById("ritualStack");
+        if (ritualStack) {
+          ritualStack.style.opacity = "0";
+          ritualStack.style.transform = "";
+        }
+        const bootSequence = document.querySelector(".boot-sequence");
+        if (bootSequence) {
+          bootSequence.style.opacity = "0";
+          bootSequence.style.transform = "translateY(10px) scale(0.94)";
+        }
+        const bootVeil = document.getElementById("bootVeil");
+        if (bootVeil) {
+          bootVeil.style.opacity = "1";
+          bootVeil.style.display = "grid";
+        }
+        let dialogShown = false;
+        this.timeline = runPhaseClock(2020, (progress, elapsed) => {
+          const bootIn = ease.outPow2(phaseProgress(elapsed, 0, 400));
+          const bootOut = phaseProgress(elapsed, 1180, 360);
+          const wake = ease.inOutSine(phaseProgress(elapsed, 200, 1650));
+          reveal.wake = lerp(0.05, 1, wake);
+          reveal.intensity = lerp(0.05, loginIdleIntensity(), wake);
+          this.applyWake(reveal.wake);
+          this.core.setIntensity(reveal.intensity);
+          if (bootSequence) {
+            const bootOpacity = elapsed < 1180 ? bootIn : lerp(1, 0, ease.outPow2(bootOut));
+            const bootScale = elapsed < 1180 ? lerp(0.94, 1, bootIn) : lerp(1, 0.96, ease.outPow2(bootOut));
+            const bootY = elapsed < 1180 ? lerp(10, 0, bootIn) : lerp(0, -8, ease.outPow2(bootOut));
+            bootSequence.style.opacity = String(bootOpacity);
+            bootSequence.style.transform = `translateY(${bootY}px) scale(${bootScale})`;
+          }
+          if (bootVeil) {
+            const veilOut = phaseProgress(elapsed, 1340, 620);
+            bootVeil.style.opacity = String(lerp(1, 0, ease.outPow2(veilOut)));
+          }
+          const hudIn = ease.outPow2(phaseProgress(elapsed, 1340, 520));
+          document.querySelectorAll(".top-hud").forEach((node) => {
+            node.style.opacity = String(hudIn);
+            node.style.transform = `translateY(${lerp(8, 0, hudIn)}px)`;
+          });
+          if (!dialogShown && elapsed >= 1640) {
+            dialogShown = true;
             const dlg = document.getElementById("ritualStack");
             if (dlg) {
               dlg.style.display = "";
@@ -8129,7 +8199,16 @@
               window.__FLG_SAO_AUDIO__?.playOpenChime();
             }
             this.markLoginModalEntering();
-          }, null, 1.64);
+          }
+        }, () => {
+          this.timeline = null;
+          window.clearTimeout(this.forceTimer);
+          document.body.classList.remove("is-booting");
+          document.body.classList.add("boot-complete");
+          this.hud.startNoticeLoop();
+          const completedBootVeil = document.getElementById("bootVeil");
+          if (completedBootVeil) completedBootVeil.style.display = "none";
+        });
       }
 
       forceBootComplete() {
