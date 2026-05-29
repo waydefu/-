@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（Step 1 hash 回寫待提交）；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況
-- 進行中：Step 1 hash 回寫
-- 下一步：提交 Step 1 hash；接著建立 S14-4 修改前 handoff / 待機背景基準
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash
+- 進行中：Step 2 修改前基準記錄
+- 下一步：提交 Step 2 基準；接著進入第一個產品小步，優先處理既有 post pipeline 的 mobile/lowPower/reduced gating 與 fallback
 - 未決 / 待我確認：無；本單視覺成果需小步提交並等待使用者裝置驗收
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -54,3 +54,33 @@
 - 修改：僅更新本 log，未改產品碼。
 - 風險：文件-only，無產品行為風險。
 - Commit：`fb84a50`
+- Log Commit：`e8f8850`
+
+### Step 2 - S14-4 修改前真頁 render 基準
+- 狀態：完成；本 log 回寫中。
+- 目的：在動 L0 奇觀層前留下可對照的真頁 WebGL render、handoff 中途畫面、工作區待機背景與 runtime 狀態。
+- 方法：
+  - 本機靜態 server serving `public/index.html`。
+  - Playwright 真頁載入，等待 `__FLG_LOGIN_CONTROLLER__` / `__FLG_TIMELINE__`。
+  - `forceBootComplete()` 後擷取登入待機背景。
+  - 呼叫 `beginAuthentication("S14-4 before handoff baseline", { skipAuth: true })`，擷取 handoff 0.76s、2.26s、工作區待機與 390px 工作區。
+  - 記錄 canvas `toDataURL()` 可用性與 runtime metrics。
+- 產物：
+  - `output/s14-4/before/login-idle-1366.png`
+  - `output/s14-4/before/handoff-0760ms-1366.png`
+  - `output/s14-4/before/handoff-2260ms-1366.png`
+  - `output/s14-4/before/workbench-idle-1366.png`
+  - `output/s14-4/before/workbench-idle-390.png`
+  - `output/s14-4/before/runtime-baseline-report.json`
+- 結果：
+  - 5 張真頁截圖皆成功。
+  - Runtime 無 pageerror。
+  - `linkStartShader` 為 ready，`composerPasses` 為 6，`selectiveBloom` active，`bloomTargets` 127。
+  - handoff 後成功進入 `body.operational`，`#operationalDeck` 為 `aria-hidden="false"` 且無 `inert`。
+  - canvas `toDataURL()` 成功；headless console 僅有 WebGL `GPU stall due to ReadPixels` warning。
+- 限制：
+  - headless 截圖可確認非黑屏與流程，但不能判斷 POCO F6 Pro 實機 60fps、手感、眩光舒適度。
+  - 390px 截圖是在同頁 resize 後取樣，profile metrics 仍顯示初始 desktop `mobile:false`；後續若要手機效能驗證，需新開 mobile context。
+- 修改：僅更新本 log；baseline 產物保留在未追蹤 `output/`。
+- 風險：文件-only，無產品行為風險。
+- Commit：待提交
