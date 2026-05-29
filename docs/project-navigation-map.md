@@ -233,6 +233,62 @@ Validation after implementation:
   - `.override-window .danger-btn` keeps `box-shadow: none;`;
   - Google-only auth action padding stays `0`.
 
+## S13.2 Animation Visibility Recovery
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Latest user correction: do not shut down; button effects still read as weak, core/page/menu animations are not visually obvious, and mobile menu/dialog panels can overflow the viewport.
+- Root-cause notes:
+  - Formal visual tests disable animations, so a passing screenshot baseline does not prove animation quality.
+  - The previous rear-shadow removal correctly removed `.sao-btn::before`, but the remaining hover effect relied too much on text-only RGB split. It needs visible horizontal button-slice distortion that does not reintroduce the rear shadow.
+  - Touch devices do not have reliable hover, so button effects must also trigger on pointer/tap focus with a short `.is-glitching` state.
+  - Mobile system menu and central panels need viewport-bounded `left/right/top/bottom` rules instead of narrow centered transforms that can exceed the visible Chrome viewport.
+- Reference notes from user-supplied material:
+  - Jhey Tompkins' Cyberpunk 2077 button article describes the core technique as duplicated hidden text/layers with `clip-path` slices and `transform` shifts on hover, plus decorative content hidden from screen readers.
+  - Warren Uhrich's SAO-UI reference keeps SAO menus readable through clear panel staging and item-level motion rather than relying on static glow alone.
+- Planned safe scope:
+  - keep button ids, Firebase/Auth, draft/history, native dialog semantics, ARIA, focus-visible, reduced-motion, and Traditional Chinese copy intact;
+  - keep the user-requested removal of the rear shadow/underplate;
+  - strengthen hover/focus/tap visual glitch layers using CSS/DOM only;
+  - strengthen menu materialization keyframes and mobile fit rules;
+  - validate with real screenshots in addition to tests.
+
+Implementation update:
+
+- Button effects:
+  - kept `.sao-btn::before` disabled so the rear shadow/underplate stays removed;
+  - strengthened `.sao-btn-glitch` into a full in-button horizontal slice layer with copper/black plate interference, cyan/red RGB split, and scanline slice flashes;
+  - added `.is-glitching` so pointer/tap/keyboard activation on mobile triggers the same effect as hover/focus;
+  - kept host `box-shadow: none` for the affected buttons.
+- Menu/dialog effects and mobile fit:
+  - strengthened `saoSystemMenuClipResolve` with opacity/filter staging so system menu opening is not only a static clip change;
+  - added `saoMenuSignalFlicker` for visible menu scan/signal motion;
+  - changed mobile system menu to viewport-bounded `left/right/top` layout with no centered translate;
+  - changed mobile account/history panels and override/logout dialogs to viewport-bounded rules;
+  - added mobile-specific override dialog materialize/dissolve keyframes to avoid `translate(-50%, -50%)` overflow.
+- JavaScript:
+  - `hydrateSaoButton` now binds a one-time pointer/key activation handler that applies `.is-glitching` for 980ms;
+  - `playPanelOpen` no longer applies desktop centered transforms on mobile panels.
+
+Manual visual / computed evidence:
+
+- Desktop button hover screenshot: `output/playwright/s13-2-animation-recovery/desktop-button-hover-520ms.png`.
+- Mobile system menu screenshot: `output/playwright/s13-2-animation-recovery/mobile-system-menu-fit.png`.
+- Mobile logout dialog settled screenshot: `output/playwright/s13-2-animation-recovery/mobile-logout-dialog-fit-settled.png`.
+- Runtime mobile system menu rect at 390x844: `left=10`, `right=380`, `top=82`, `bottom=286`, `overflowX=false`, `overflowY=false`, animation `saoSystemMenuClipResolve`.
+- Runtime mobile logout dialog rect at 390x844: `left=10`, `right=380`, `top=10`, `bottom=304.48`, `overflowX=false`, `overflowY=false`, animation `overrideMaterializeMobile`.
+
+Validation after implementation:
+
+- `git diff --check`: passed with existing LF/CRLF working-copy warnings only.
+- `npm run check`: passed.
+- `npm test`: 23 passed.
+- `npm run test:visual`: 14 passed.
+- `npm run build`: passed.
+- `npm run test:a11y`: 3 passed, axe impact counts `{}`. The first attempt was invalid because it was launched in parallel with another Playwright suite and both tried to start `127.0.0.1:5173`; the standalone rerun passed.
+
 ## S13 Effects Visibility Hotfix
 
 Timestamp: 2026-05-28 Asia/Taipei.
