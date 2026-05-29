@@ -2,7 +2,7 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中
 - 進行中：無
 - 下一步：Step 3 盤點固定 px 字級清單，準備 Part B 字級 token 與 L1 功能層替換
 - 未決 / 待我確認：無
@@ -53,4 +53,4 @@
   - 行動 375x812：三個視窗均在 viewport 內；`overrideWindow`、`logoutConfirmWindow` centeredDelta `(0,0)`，rect `left:11 top:261 right:364 bottom:551`
   - 行動 reduced-motion：`overrideWindow`、`logoutConfirmWindow` 均可見、置中、無動畫，centeredDelta `(0,0)`
 - 風險：只影響 `@media (max-width: 620px)` 的 `.override-window` 與 mobile keyframes；可能改變小螢幕彈窗垂直位置，但驗證結果符合置中需求
-- Commit：待建立
+- Commit：`1e635b6`
