@@ -1,11 +1,11 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker
-- 進行中：無；S14-3 暫停於基準確認
-- 下一步：等待使用者確認是否接受「靜態/狀態取樣基準」後再拆 GSAP，或改由使用者裝置錄製 baseline
-- 未決 / 待我確認：headless / in-app browser 均無法取得可靠改前 handoff 基準；S14-3 風險中高，未取得基準前不動產品碼
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交使用者確認記錄；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地
+- 進行中：Step 2 記錄使用者接受替代基準
+- 下一步：建立改前靜態截圖 + DOM 狀態取樣 baseline，再開始拆 GSAP
+- 未決 / 待我確認：無；使用者已接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
 
 ## 前置狀態
@@ -52,3 +52,10 @@
 - 待確認：
   - 是否接受改用「靜態截圖 + DOM 狀態取樣 + full test + 實機待驗收」作為 S14-3 基準後繼續。
   - 或由使用者先在裝置錄製現行 GSAP handoff baseline，再繼續拆除。
+
+### Step 2 - 使用者接受替代基準策略
+- 狀態：完成，待 commit
+- 決策：使用者於 2026-05-30 接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」作為 S14-3 基準與驗收策略。
+- 影響：可繼續拆 GSAP；但過場節奏、白光、WebGL 能量感、實機 60fps 仍明確列為待裝置驗收。
+- 修改：僅更新本 log 的恢復區塊與決策紀錄。
+- 風險：文件-only，無產品行為風險。
