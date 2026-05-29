@@ -1,9 +1,9 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 S14-3 log 初始化；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`
-- 進行中：Step 0 初始化 S14-3 執行 log
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log
+- 進行中：無
 - 下一步：Step 1 盤點 GSAP 使用點與修改前 handoff 基準
 - 未決 / 待我確認：無
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
@@ -19,7 +19,8 @@
 ## 步驟紀錄
 
 ### Step 0 - 初始化執行 log
-- 狀態：完成，待 commit
+- 狀態：完成
 - 目的：建立 S14-3 的唯一恢復來源
 - 修改：新增本檔與固定恢復區塊
 - 風險：文件-only，無產品行為風險
+- Commit：`d47fcce`
