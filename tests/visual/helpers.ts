@@ -135,9 +135,9 @@ export async function applyStaticSystemMenu(page: Page) {
     const navActions = document.querySelector<HTMLElement>(".workbench-nav-actions");
     if (!navActions) return;
     const historyToggle = document.getElementById("historyToggle");
-    const accountToggle = document.getElementById("accountToggle");
     const reanalyzeButton = document.getElementById("reanalyzeButton");
     const clearDraftButton = document.getElementById("clearDraftButton");
+    const logoutButton = document.getElementById("logoutButton");
 
     let toggle = document.getElementById("systemMenuToggle") as HTMLButtonElement | null;
     if (!toggle) {
@@ -164,7 +164,7 @@ export async function applyStaticSystemMenu(page: Page) {
       panel.hidden = true;
       navActions.after(panel);
     }
-    [historyToggle, accountToggle, reanalyzeButton, clearDraftButton]
+    [historyToggle, clearDraftButton, reanalyzeButton, logoutButton]
       .filter((button): button is HTMLElement => button instanceof HTMLElement)
       .forEach((button) => {
         button.classList.add("system-menu-item");

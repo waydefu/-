@@ -299,6 +299,46 @@ Validation after implementation:
   - `overrideMaterializeMobile` present;
   - mobile `left/right` safe-area bounded fit rules present.
 
+## S13.3 Menu Order And Ritual Timing Follow-Up
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Latest user request: menu/dialog animations must be long enough; system menu should not include account hub; put the red logout button directly in the system menu; move clear draft up one slot.
+- Current runtime system menu order is built by `OperationalModeController.ensureSystemMenu()` from existing button ids. Before this change it appends `historyToggle`, `accountToggle`, `reanalyzeButton`, and `clearDraftButton`.
+- Static Playwright helpers also rebuild the menu, so test helper order must be updated with runtime order.
+- Safe scope:
+  - keep existing button ids (`historyToggle`, `clearDraftButton`, `reanalyzeButton`, `logoutButton`) and event handlers;
+  - keep Firebase/Auth, draft/history contracts, native dialog semantics, ARIA, focus-visible, reduced-motion, and Traditional Chinese labels unchanged;
+  - do not reintroduce the removed rear button shadow/underplate.
+
+Implementation update:
+
+- Runtime system menu order changed to `historyToggle -> clearDraftButton -> reanalyzeButton -> logoutButton`.
+- `accountToggle` is no longer appended to the system menu; `logoutButton` is moved directly into `systemMenuPanel` and remains red via its existing `is-danger` class.
+- Static Playwright helper `applyStaticSystemMenu()` now mirrors the runtime order so visual tests do not preserve the old account-hub menu.
+- System menu opening was lengthened from 2.8s to 4.2s; close from 1.4s to 1.8s.
+- Override/logout dialog opening was lengthened from 2.8s to 3.8s; close from 1.4s to 1.8s; staged header/body/action delays were pushed later to match.
+- JS panel open/close timers and dialog focus/close timing were aligned with the longer CSS animations.
+
+Manual evidence:
+
+- Mobile system menu mid-open screenshot: `output/playwright/s13-3-menu-order/mobile-system-menu-order.png`.
+- Mobile system menu settled screenshot: `output/playwright/s13-3-menu-order/mobile-system-menu-settled.png`.
+- Runtime menu order at 390x844: visible ids `historyToggle`, `clearDraftButton`, `logoutButton`; `logoutButton.parentElement.id = systemMenuPanel`; `accountToggle.parentElement = null`.
+- Runtime menu animation durations: panel `4.2s`, rail sweep `4.2s`, signal flicker `4.2s`.
+- Runtime settled mobile menu rect: `left=10`, `right=380`, `top=82`, `bottom=286`, `overflowX=false`, `overflowY=false`.
+
+Validation after implementation:
+
+- `git diff --check`: passed with existing LF/CRLF working-copy warnings only.
+- `npm run check`: passed.
+- `npm test`: 23 passed.
+- `npm run test:visual:update`: 14 passed.
+- `npm run test:a11y`: 3 passed, axe impact counts `{}`.
+- `npm run build`: passed.
+
 ## S13 Effects Visibility Hotfix
 
 Timestamp: 2026-05-28 Asia/Taipei.
