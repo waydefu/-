@@ -6007,21 +6007,21 @@
     @keyframes overrideMaterializeMobile {
       0% {
         opacity: 0;
-        transform: scaleX(0.04) scaleY(0.02);
+        transform: translate(-50%, -50%) scaleX(0.04) scaleY(0.02);
         filter: blur(14px) brightness(2.2) saturate(0.6);
       }
       32% {
         opacity: 1;
-        transform: scaleX(1) scaleY(0.06);
+        transform: translate(-50%, -50%) scaleX(1) scaleY(0.06);
         filter: blur(4px) brightness(1.7) saturate(1);
       }
       68% {
-        transform: scaleX(1) scaleY(1.04);
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1.04);
         filter: blur(1px) brightness(1.18) saturate(1.04);
       }
       100% {
         opacity: 1;
-        transform: scaleX(1) scaleY(1);
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
         filter: blur(0) brightness(1) saturate(1);
       }
     }
@@ -6029,12 +6029,12 @@
     @keyframes overrideDissolveMobile {
       0% {
         opacity: 1;
-        transform: scaleX(1) scaleY(1);
+        transform: translate(-50%, -50%) scaleX(1) scaleY(1);
         filter: blur(0);
       }
       100% {
         opacity: 0;
-        transform: scaleX(0.96) scaleY(0.04);
+        transform: translate(-50%, -50%) scaleX(0.96) scaleY(0.04);
         filter: blur(8px) brightness(1.4);
       }
     }
@@ -6277,17 +6277,17 @@
       }
 
       .override-window {
-        top: max(10px, env(safe-area-inset-top));
+        top: 50%;
+        left: 50%;
+        right: auto;
         bottom: auto;
-        left: max(10px, env(safe-area-inset-left));
-        right: max(10px, env(safe-area-inset-right));
-        height: auto;
-        width: auto;
+        width: min(94vw, 460px);
         max-width: none;
+        height: auto;
         max-height: calc(100dvh - 20px - env(safe-area-inset-bottom));
         box-sizing: border-box;
-        transform: scaleX(0) scaleY(0.02);
-        transform-origin: center top;
+        transform: translate(-50%, -50%) scaleX(0) scaleY(0.02);
+        transform-origin: center center;
         overflow: auto;
         overflow-x: hidden;
         overscroll-behavior: contain;
