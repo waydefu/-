@@ -1,10 +1,10 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物
-- 進行中：無
-- 下一步：開始第一批產品碼搬遷，先替換非 handoff GSAP DOM/WebGL pulse
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 Step 4 log；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween
+- 進行中：Step 4 log 回寫
+- 下一步：Step 5 將主 auth handoff timeline 改為原生 rAF phase clock
 - 未決 / 待我確認：無；使用者已接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
 
@@ -76,3 +76,24 @@
 - 修改：僅更新本 log；baseline 產物保留在未追蹤 `output/`。
 - 風險：文件-only，無產品行為風險。
 - Commit：`28c3fd7`
+
+### Step 4 - 第一批產品碼搬遷：非 handoff GSAP tween
+- 狀態：完成，待 log commit
+- 目的：先移除非主 auth handoff 的 GSAP 依賴，保留主 timeline 與 script 到下一步，降低拆除風險。
+- 修改：
+  - `public/index.html`：新增 `clamp01`、`lerp`、`ease`、`runPhaseClock`、`phaseProgress` 等原生 helper。
+  - `public/index.html`：`pulseError()` 改用 Web Animations API 做登入錯誤 shake。
+  - `public/index.html`：`abortOverride()` 移除 GSAP branch，改用原生 animation / final style。
+  - `public/index.html`：`enterOperationalMode()` 的 leyline / WebGL group tween 改用 rAF；工作台 deck 與 tool module 進場交給 CSS `contentSlideUp` 與 `body.workbench-materializing`。
+  - `public/index.html`：`triggerSmallPulse()` 改用 `runPhaseClock` 驅動 shock pulse。
+  - `public/index.html`：`AnimationTimeline.start()` boot 序列改用原生 rAF，保留 `forceBootComplete()` 可 kill 的 timeline 介面。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步母檔。
+- 剩餘 GSAP：`script`、`const gsap = window.gsap`、主 auth handoff `gsap.timeline()`，留給 Step 5/6。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `rg "gsap\\.(to|set|from|fromTo|timeline)\\(|\\bgsap\\b" public/index.html`：僅剩 script、`const gsap`、主 auth handoff timeline。
+  - `npm run check`：通過。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待裝置驗收：boot/handoff/workbench 進場手感仍需實機確認；visual test 不驗動畫/WebGL。
+- Commit：`8b747b1`
