@@ -1,10 +1,10 @@
 # S14-2 Execution Log - 拆除 DOM 假特效層
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 docs log 更新；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash；`6a5eab8` - 標記 Part B 第二輪 log 已落地；`988a93e` - 收斂 glass/backdrop-filter token
-- 進行中：Step 5 log 回寫與 docs commit
-- 下一步：commit 本次 log，然後更新恢復區塊為 tracked clean
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash；`6a5eab8` - 標記 Part B 第二輪 log 已落地；`988a93e` - 收斂 glass/backdrop-filter token；`f55ce5c` - 回寫 Part C hash 與驗證
+- 進行中：無
+- 下一步：S14-2 收尾狀態確認
 - 未決 / 待我確認：無
 - 待裝置驗收：本單會移除 DOM 動效與收斂 keyframes，動效手感與 60fps 需使用者裝置驗收
 
@@ -104,7 +104,7 @@
 - Commit：`cd14a8b`
 
 ### Step 5 - Part C：glass/backdrop-filter token 收斂
-- 狀態：完成，正在回寫 log commit
+- 狀態：完成
 - 目的：將 L1 面板毛玻璃收斂成 CSS token，讓桌面 glass 一致、手機維持關閉 blur 以避免效能成本。
 - 修改：
   - `public/index.html`：新增 `--glass-filter-panel` / `--glass-filter-status` / `--glass-filter-backdrop` / `--glass-filter-none`。
