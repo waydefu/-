@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證；`b9d1a76` - 標記 Step 9 log 完成；`8fb7c88` - 解除 dialog top-layer 遮擋並強化 Link Start 切場
-- 進行中：Step 10 log 回寫
-- 下一步：提交 Step 10 log；請使用者用 `http://localhost:5599/?flgMotion=full` 重測完整 Link Start 過場辨識度
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證；`b9d1a76` - 標記 Step 9 log 完成；`8fb7c88` - 解除 dialog top-layer 遮擋並強化 Link Start 切場；`43c376e` - 回寫 Step 10 過場辨識度修正
+- 進行中：無
+- 下一步：請使用者用 `http://localhost:5599/?flgMotion=full` 重測完整 Link Start 過場辨識度
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -270,3 +270,4 @@
   - `http://localhost:5599/?flgMotion=full`。
   - 此版已確認過場站到前景；仍需使用者裝置驗收亮度、青藍比例與 60fps 手感。
 - Commit：`8fb7c88`
+- Log Commit：`43c376e`
