@@ -348,6 +348,138 @@ Validation after implementation:
   - desktop override dialog open duration `3.8s` present;
   - mobile override dialog open duration `3.8s` present.
 
+## S13.4 High-Impact Animation Overdrive
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Latest user correction: performance is not the priority; current animation still reads as weak/low-impact.
+- Design correction:
+  - button effects must be visible as active horizontal tearing, not a faint text shimmer;
+  - hover/tap should last long enough to be perceived, especially on touch devices;
+  - idle UI may pulse/glitch visibly because the user explicitly rejected performance-first restraint.
+- Reference confirmation:
+  - Cyberpunk-style glitch relies on duplicated layers, hard `clip-path` horizontal bands, and large lateral shifts;
+  - menu/dialog rituals should show staged horizontal generation, vertical expansion, and signal sweeps rather than static opacity/blur.
+- Safe scope:
+  - keep user-requested no rear shadow/underplate;
+  - keep existing button ids, Firebase/Auth, draft/history contracts, native dialog semantics, ARIA, focus-visible, reduced-motion, and Traditional Chinese labels;
+  - increase visible motion intensity without changing data behavior.
+
+Implementation update:
+
+- Increased `--sao-glitch-shift` from `7` to `18`.
+- Rebuilt `.sao-btn-glitch` as a high-contrast copper/black signal layer with stronger cyan/red RGB offsets and blocky horizontal interference.
+- Added `saoButtonOverdrivePlate` to distort the main button plate itself during hover/focus/tap.
+- Re-tuned `saoButtonPanelGlitch`, `saoButtonSliceFlash`, and hover/tap RGB split to use larger horizontal offsets, stronger opacity, and faster 0.74s-0.92s loops.
+- Replaced subtle idle button glitch with `saoButtonAmbientOverdrive`, a visible low-frequency pulse for normal-motion users.
+- Extended touch/keyboard `.is-glitching` duration from 980ms to 1800ms so mobile users can actually perceive the effect.
+- Kept host `box-shadow: none` and kept `.sao-btn::before` disabled so the removed rear shadow/underplate does not return.
+
+Manual evidence:
+
+- Desktop overdrive hover screenshot at 280ms: `output/playwright/s13-4-overdrive/desktop-button-overdrive-280ms.png`.
+- Desktop overdrive hover screenshot at 800ms: `output/playwright/s13-4-overdrive/desktop-button-overdrive-800ms.png`.
+- Runtime computed state on `#openRitualBtn`:
+  - `::after` animation `saoButtonOverdrivePlate 0.74s`;
+  - glitch layer animation `saoButtonPanelGlitch 0.78s`;
+  - glitch slice animation `saoButtonSliceFlash 1.22s`;
+  - RGB layer animation `saoButtonRgbSplit 0.92s`;
+  - host `box-shadow: none`.
+
+## S13.5 Animation Quality Recovery
+
+Timestamp: 2026-05-29 Asia/Taipei.
+
+Pre-change confirmation:
+
+- Latest user correction: the current build still feels like weak highlight effects, not deliberate animation.
+- User priority for this pass:
+  - ignore performance-first restraint for normal-motion users;
+  - button effects must read as Cyberpunk 2077 style glitch displacement, not clipped-corner styling or a rear shadow;
+  - login dialog, workbench entrance, system menu, and logout/history modal must be long and visible enough to perceive;
+  - mobile menu/modal must stay inside the viewport;
+  - system menu keeps direct red logout, keeps clear draft one slot above reanalyze, and does not include account hub.
+- Corrected design interpretation:
+  - the button main plate should remain readable while duplicate visual layers tear horizontally over it;
+  - the 2077 reference relies on cloned layers, animated `clip-path` bands, lateral shimmy, and RGB split;
+  - SAO-style menu should generate as a line, expand vertically, then resolve items in sequence.
+- Old logic allowed to remove or override:
+  - subtle plate-only flicker that is visually indistinguishable from hover highlight;
+  - mobile WAAPI overshoot that can make centered panels exceed a 390px viewport;
+  - short 3.4s/4.2s rituals that finish before users can perceive the sequence.
+- Protected scope:
+  - no Firebase/Auth contract edits;
+  - no draft/history data contract edits;
+  - no existing button id changes;
+  - keep native dialogs, ARIA, focus-visible, skip-link, reduced-motion branch, and Traditional Chinese labels.
+
+Implementation update:
+
+- Reworked the final `.sao-btn` layer behavior:
+  - host is clipped to the SAO/cyber polygon and `overflow: hidden`, so hover no longer exposes a rectangular box;
+  - host `box-shadow` remains `none`;
+  - the main plate stays readable while `.sao-btn-glitch` and `.sao-btn-rgb` perform the horizontal tearing;
+  - hover/focus/tap glitch loops now run at `1.08s` and tap `.is-glitching` remains for `2400ms`;
+  - the old main-plate-only overdrive animation was effectively replaced by persistent cloned-layer tearing.
+- Re-timed core rituals for normal-motion users:
+  - login panel from `3.4s` to `5.2s`;
+  - auth handoff from `4.6s` to `5.8s`;
+  - workbench reveal from `4.2s` to `5.8s`;
+  - override/logout modal open from `3.8s` to `5.2s`;
+  - modal/menu close from `1.8s` to `2.2s`.
+- Rebuilt the early animation phases so the first second is not blank:
+  - login starts as a visible gold horizontal signal line, then expands vertically;
+  - workbench deck starts as a visible signal slab, then opens into the full workspace;
+  - system menu starts as a line, expands into a panel, then reveals menu items.
+- Adjusted runtime WAAPI frames to match the CSS animations, so actual app behavior does not regress to the old thin/invisible timing.
+- Mobile fixes:
+  - mobile menu/modal/account/history panels use viewport-bounded sizing with `box-sizing: border-box` and `overflow-x: hidden`;
+  - mobile WAAPI panel opening no longer overshoots horizontally;
+  - 390px viewport checks confirmed no menu or logout-modal overflow.
+
+Deleted / overridden old weak logic:
+
+- Removed hover reliance on the old `saoButtonOverdrivePlate` main-plate distortion.
+- Overrode too-thin login/workbench/menu generation frames that made long animations look blank.
+- Replaced mobile panel overshoot with bounded no-horizontal-overshoot frames.
+
+Manual screenshot review:
+
+- `output/playwright/s13-5-animation-recovery/desktop-login-materialize-0900ms.png`: login is a visible horizontal gold signal line at 0.9s.
+- `output/playwright/s13-5-animation-recovery/desktop-login-button-glitch-settled-0520ms.png`: login CTA shows cloned-layer horizontal tearing and RGB split.
+- `output/playwright/s13-5-animation-recovery/desktop-workbench-materialize-2800ms.png`: workbench reveal is mid-materialization.
+- `output/playwright/s13-5-animation-recovery/desktop-system-menu-open-1900ms.png`: system menu opening is visible as a horizontal/expanding panel.
+- `output/playwright/s13-5-animation-recovery/mobile-workbench-materialize-2800ms.png`: mobile workbench remains readable during reveal.
+- `output/playwright/s13-5-animation-recovery/mobile-system-menu-open-1900ms.png`: mobile system menu stays in viewport.
+- `output/playwright/s13-5-animation-recovery/mobile-logout-modal-materialize-1700ms.png`: mobile logout dialog stays in viewport.
+
+Runtime checks:
+
+- `#openRitualBtn` host clip: polygon SAO/cyber shape.
+- `#openRitualBtn` host overflow: `hidden`.
+- `#openRitualBtn` host shadow: `none`.
+- `#openRitualBtn::after` animation: `none`.
+- `.sao-btn-glitch`: `saoButtonPanelGlitch 1.08s steps(2) infinite`.
+- `.sao-btn-rgb`: `saoButtonRgbSplit 1.08s steps(2) infinite`.
+- Mobile system menu rect at 390px: `left=32`, `right=364`, overflow false.
+- Mobile logout modal rect at 390px: `left=10`, `right=380`, overflow false.
+
+Validation:
+
+- `npm run sync:login-mother`: passed.
+- `npm run check`: passed.
+- `npm run test:visual:update`: passed, 14/14.
+- `npm run test:a11y`: passed, 3/3, no critical / serious axe findings.
+- `npm run build`: passed.
+- `git diff --check`: passed, LF-to-CRLF warnings only.
+
+Risk:
+
+- Normal-motion users now see intentionally stronger and longer UI motion. Reduced-motion remains available for users who request it.
+- Visual tests disable animations, so the manual screenshot review above is required; automated snapshot pass alone is not considered visual acceptance.
+
 ## S13 Effects Visibility Hotfix
 
 Timestamp: 2026-05-28 Asia/Taipei.
