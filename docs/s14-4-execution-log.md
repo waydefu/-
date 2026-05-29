@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正
-- 進行中：無
-- 下一步：請使用者重新整理 `http://localhost:5599/` 並必要時先登出/清站台資料再測登入動畫；若仍無動畫，檢查瀏覽器/系統 reduced motion 設定與是否使用 LAN IP
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影
+- 進行中：Step 8 記錄與恢復區塊更新
+- 下一步：提交 Step 8 log；請使用者重新整理 `http://localhost:5599/`，登出或清除 localhost 站台資料後重測登入動畫
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -183,3 +183,41 @@
   - 若仍看不到登入動畫，請先登出或清除 localhost 站台資料，避免直接帶著已完成的工作區狀態回來。
 - Commit：`5858953`
 - Log Commit：`c4c4d35`
+
+### Step 7 - 追查使用者回報仍無動畫
+- 狀態：完成。
+- 觸發：使用者回報「好像還是沒」。
+- 診斷：
+  - 重新讀 `README.md`、本 log 恢復區塊、S14 總綱與 04 單。
+  - 確認 `http://localhost:5599/` 可連線，server 仍在 port 5599。
+  - Playwright 真頁載入確認 Firebase SDK、`__FLG_LOGIN_CONTROLLER__`、`__FLG_TIMELINE__` 皆有載入，無 pageerror。
+  - 以 stub 成功的 `signInWithPopup()` 觸發實際 `#authForm` submit 路徑，確認有呼叫 `__FLG_LINK_START__.start(5800)`。
+- 結論：
+  - Google 成功後的產品路徑已接到 Link Start，但現行 shader 前 13% 進度接近全黑，且 `runPhaseClock` / `LinkStartFX` 以呼叫當下的 `performance.now()` 起算；若瀏覽器、Google popup 或低效能裝置讓首個可見 rAF 延遲，使用者可能只看到極短或幾乎不可見的過場。
+  - 若使用者其實在 LAN IP 或 Auth 失敗狀態，依紅線不會播放成功 handoff；仍需使用 `localhost` 或授權 HTTPS preview 才能測真登入。
+- 產物：
+  - `output/s14-4/step7/click-auth-stub-report.json`
+  - `output/s14-4/step7/01-0200ms.png`
+- 修改：此步只診斷與產生未追蹤 `output/` 產物，未改產品碼。
+- 風險：診斷-only，無產品行為風險。
+
+### Step 8 - 讓 Link Start 從首個可見幀起算並提早顯影
+- 狀態：產品變更完成；本 log 回寫中。
+- 目的：回應使用者仍看不到動畫的實機感受，把原本偏「先黑場」的 Link Start 改成更早出現金色隧道，並避免首幀延遲吃掉過場時間。
+- 修改：
+  - `public/index.html:5236-5258`：`runPhaseClock()` 改為第一個 rAF tick 才設定 `startedAt`，避免主執行緒或瀏覽器延遲時直接跳過動畫前段。
+  - `public/index.html:6599-6622`：Link Start shader 的 `presence` / `tunnelPhase` 提早顯影，並提高金色符文、青藍外環與中央光核 alpha。
+  - `public/index.html:6663-6694`：`LinkStartFX` 改為第一個 draw 才設定 `startedAt`，避免 canvas 過場在首幀前被延遲吃掉。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+  - Runtime stub submit 截圖：`output/s14-4/step8/0120ms.png` 可見金色隧道與中央光核；無 pageerror。
+- 限制 / 待使用者重測：
+  - Headless 截圖仍無法判定實機幀率與手感。
+  - 若瀏覽器或系統開啟 reduced motion，依規格仍會跳過高動態 Link Start。
+  - 若使用 LAN IP 或 Google Auth 失敗，依「真 Auth 成功才 handoff」紅線不會播放成功過場。
+- Commit：`9978824`
