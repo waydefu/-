@@ -2,7 +2,7 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline
 - 進行中：無
 - 下一步：Step 2 Part A 拔掉 `.sao-btn-glitch` / `.sao-btn-rgb` 三疊字
 - 未決 / 待我確認：無
@@ -41,4 +41,4 @@
   - `output/s14-2/before/mobile-logout-confirm.png`
 - 來源：S14-1 後已通過的 visual snapshots 與 S14-1 headless 彈窗產物；僅作本地 baseline，不納入 git
 - 工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- Commit：待建立
+- Commit：`83e6f34`
