@@ -1,9 +1,9 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 Step 4 log；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween
-- 進行中：Step 4 log 回寫
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween；`637f228` - 回寫 Step 4 驗證
+- 進行中：無
 - 下一步：Step 5 將主 auth handoff timeline 改為原生 rAF phase clock
 - 未決 / 待我確認：無；使用者已接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
@@ -78,7 +78,7 @@
 - Commit：`28c3fd7`
 
 ### Step 4 - 第一批產品碼搬遷：非 handoff GSAP tween
-- 狀態：完成，待 log commit
+- 狀態：完成
 - 目的：先移除非主 auth handoff 的 GSAP 依賴，保留主 timeline 與 script 到下一步，降低拆除風險。
 - 修改：
   - `public/index.html`：新增 `clamp01`、`lerp`、`ease`、`runPhaseClock`、`phaseProgress` 等原生 helper。
