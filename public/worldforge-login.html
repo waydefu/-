@@ -106,6 +106,10 @@
       --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.78), 0 0 38px rgba(214, 166, 77, 0.2);
       --glow-hot: 0 0 28px rgba(255, 226, 160, 0.34);
       --text-glow: 0 0 22px rgba(214, 166, 77, 0.28);
+      --glass-filter-panel: blur(12px) saturate(1.08);
+      --glass-filter-status: blur(10px) saturate(1.14);
+      --glass-filter-backdrop: blur(3px) saturate(1.12);
+      --glass-filter-none: none;
       --sao-edge: 1px;
       --sao-edge-len: 14px;
       --sao-glow-default: 0 0 0 rgba(214, 166, 77, 0);
@@ -657,8 +661,8 @@
         0 24px 80px rgba(0, 0, 0, 0.86),
         0 0 42px rgba(214, 166, 77, 0.16),
         inset 0 0 32px rgba(214, 166, 77, 0.08);
-      backdrop-filter: blur(10px) saturate(1.14);
-      -webkit-backdrop-filter: blur(10px) saturate(1.14);
+      backdrop-filter: var(--glass-filter-status);
+      -webkit-backdrop-filter: var(--glass-filter-status);
     }
 
     .connection-window::before {
@@ -839,8 +843,8 @@
         repeating-linear-gradient(0deg, rgba(214, 166, 77, 0.022) 0 1px, transparent 1px 8px);
       box-shadow: var(--shadow-md), inset 0 0 42px rgba(214, 166, 77, 0.04);
       clip-path: var(--edge);
-      backdrop-filter: blur(12px) saturate(1.08);
-      -webkit-backdrop-filter: blur(12px) saturate(1.08);
+      backdrop-filter: var(--glass-filter-panel);
+      -webkit-backdrop-filter: var(--glass-filter-panel);
     }
 
     .auth-panel::before,
@@ -906,8 +910,8 @@
         radial-gradient(circle at 50% 50%, transparent 0 23%, rgba(0, 0, 0, 0.18) 46%, rgba(0, 0, 0, 0.78) 100%),
         repeating-linear-gradient(0deg, transparent 0 3px, rgba(214, 166, 77, 0.022) 3px 4px),
         linear-gradient(180deg, rgba(0, 0, 0, 0.22), rgba(0, 0, 0, 0.5));
-      backdrop-filter: blur(3px) saturate(1.12);
-      -webkit-backdrop-filter: blur(3px) saturate(1.12);
+      backdrop-filter: var(--glass-filter-backdrop);
+      -webkit-backdrop-filter: var(--glass-filter-backdrop);
       animation: backdropRipple 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
     }
 
@@ -1856,6 +1860,8 @@
         repeating-linear-gradient(0deg, rgba(255, 226, 160, 0.02) 0 1px, transparent 1px 26px);
       box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.78), 0 0 34px rgba(214, 166, 77, 0.08);
       clip-path: var(--edge);
+      backdrop-filter: var(--glass-filter-panel);
+      -webkit-backdrop-filter: var(--glass-filter-panel);
       display: grid;
       grid-template-rows: none;
       gap: clamp(8px, 0.8vw, 13px);
@@ -2176,6 +2182,8 @@
         repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.026) 0 1px, transparent 1px 18px);
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
+      backdrop-filter: var(--glass-filter-panel);
+      -webkit-backdrop-filter: var(--glass-filter-panel);
       pointer-events: auto;
       overflow: hidden;
       transform-origin: top right;
@@ -2272,6 +2280,8 @@
         repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.026) 0 1px, transparent 1px 18px);
       box-shadow: var(--shadow-md), inset 0 0 28px rgba(214, 166, 77, 0.05);
       clip-path: var(--edge);
+      backdrop-filter: var(--glass-filter-panel);
+      -webkit-backdrop-filter: var(--glass-filter-panel);
       pointer-events: auto;
       overflow: auto;
       transform-origin: top right;
@@ -3555,8 +3565,8 @@
       visibility: visible;
       transform: none;
       filter: none !important;
-      backdrop-filter: none;
-      -webkit-backdrop-filter: none;
+      backdrop-filter: var(--glass-filter-none);
+      -webkit-backdrop-filter: var(--glass-filter-none);
     }
 
     body.workbench-materializing .operational-deck {
@@ -3871,8 +3881,16 @@
         background:
           linear-gradient(180deg, rgba(37, 8, 5, 0.92), rgba(5, 2, 1, 0.86)),
           repeating-linear-gradient(0deg, rgba(255, 171, 112, 0.03) 0 1px, transparent 1px 7px);
-        backdrop-filter: none;
-        -webkit-backdrop-filter: none;
+        backdrop-filter: var(--glass-filter-none);
+        -webkit-backdrop-filter: var(--glass-filter-none);
+      }
+
+      .auth-panel,
+      .codex-panel,
+      .account-menu,
+      .history-drawer {
+        backdrop-filter: var(--glass-filter-none);
+        -webkit-backdrop-filter: var(--glass-filter-none);
       }
 
       .operational-deck {
@@ -7682,8 +7700,8 @@
         document.body.classList.add("operational");
         document.body.classList.toggle("workbench-materializing", !prefersReducedMotion);
         this.operationalDeck.style.filter = "none";
-        this.operationalDeck.style.setProperty("backdrop-filter", "none");
-        this.operationalDeck.style.setProperty("-webkit-backdrop-filter", "none");
+        this.operationalDeck.style.setProperty("backdrop-filter", "var(--glass-filter-none)");
+        this.operationalDeck.style.setProperty("-webkit-backdrop-filter", "var(--glass-filter-none)");
         this.core.setShock(0);
         this.core.setIntensity(0.82);
         this.runes.setShock(0);
