@@ -1,10 +1,10 @@
 # S14-1 Execution Log - 行動版彈窗修復與字級系統
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；驗證結果 log 尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級；`7d7fd67` - 統一功能文字字級 token；`84c68fa` - 記錄 Part B commit hash
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（7 張 visual snapshot 與本 log 尚未 commit；另有既有未追蹤 `.claude/`、`output/`）
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級；`7d7fd67` - 統一功能文字字級 token；`84c68fa` - 記錄 Part B commit hash；`06d3622` - 記錄初次收尾驗證結果
 - 進行中：無
-- 下一步：Step 6 本單結案，整理最終工作樹與待裝置驗收項
+- 下一步：Step 6 commit visual baseline 更新，重跑最終狀態檢查
 - 未決 / 待我確認：無
 - 待裝置驗收：字級手感需使用者在 POCO F6 Pro 或實機確認
 
@@ -100,14 +100,23 @@
   - `check:frontend` 通過
   - `check:functions` 通過
 - `npm test`：通過，23/23
-- `npm run test:visual`：未通過，符合本單字級與彈窗版面改動預期
+- `npm run test:visual`（更新 baseline 前）：未通過，符合本單字級與彈窗版面改動預期
   - 通過：7 tests（dialog / zoom / CLS）
   - 失敗：7 個 `worldforge.spec.ts` snapshot（登入頁 1366、登入頁手機 390、工作區 1366、工作區手機 390、歷史抽屜 1366、帳號選單 1366、登出確認彈窗 1366）
   - 失敗原因：snapshot pixel diff，比例約 0.02 到 0.06；已人工檢視代表性 actual/diff，差異集中於字級、換行與彈窗置中位置，未見水平溢出或彈窗跑出 viewport
-  - 未執行 `npm run test:visual:update`，需使用者確認是否接受新 baseline
+- 人工檢視：代表性 actual/diff 顯示差異集中於字級、換行與彈窗置中位置；未見破版或水平溢出
+- `npm run test:visual:update`：通過，14/14；更新 7 張 worldforge snapshot
+  - `tests/visual/worldforge.spec.ts-snapshots/login-1366-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/login-390-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/workbench-1366-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/workbench-390-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/history-drawer-1366-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/account-menu-1366-chromium-win32.png`
+  - `tests/visual/worldforge.spec.ts-snapshots/logout-confirm-1366-chromium-win32.png`
+- `npm run test:visual`（更新 baseline 後）：通過，14/14
 - Headless 產物：
   - `output/s14-1/before/`
   - `output/s14-1/part-a/`
   - `output/s14-1/part-b/`
 - 工作樹：tracked clean；仍有既有未追蹤 `.claude/` 與本輪截圖 `output/`
-- Commit：待建立
+- Commit：`06d3622`（初次驗證 log）；snapshot 更新 commit 待建立
