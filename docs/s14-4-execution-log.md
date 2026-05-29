@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash
-- 進行中：Step 1 WebGL orchestrator 現況盤點
-- 下一步：提交 Step 1 盤點；接著建立 S14-4 修改前 handoff / 待機背景基準
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（Step 1 hash 回寫待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況
+- 進行中：Step 1 hash 回寫
+- 下一步：提交 Step 1 hash；接著建立 S14-4 修改前 handoff / 待機背景基準
 - 未決 / 待我確認：無；本單視覺成果需小步提交並等待使用者裝置驗收
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -29,7 +29,7 @@
 - Log Commit：`3780ab9`
 
 ### Step 1 - WebGL orchestrator / render pipeline 現況盤點
-- 狀態：完成；本 log 回寫中。
+- 狀態：完成。
 - 目的：在動 S14-4 產品碼前，確認實際 WebGL 入口、rAF、post pass、Link Start 與 fallback 現況，避免照過期假設改壞高風險視覺層。
 - 重要差異：
   - 04 執行單寫「目前無 post-processing pipeline」，但現況已存在 `EffectComposer` / `UnrealBloomPass` / `SAOPass` / `ShaderPass` / `OutputPass`。
@@ -53,4 +53,4 @@
   - 主 rAF 與 Link Start rAF 都無 visibility pause；Part C 應列前段實作。
 - 修改：僅更新本 log，未改產品碼。
 - 風險：文件-only，無產品行為風險。
-- Commit：待提交
+- Commit：`fb84a50`
