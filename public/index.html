@@ -5239,11 +5239,12 @@
         onComplete?.();
         return { kill() {} };
       }
-      const startedAt = performance.now();
+      let startedAt = 0;
       let frame = 0;
       let killed = false;
       const tick = (now) => {
         if (killed) return;
+        if (!startedAt) startedAt = now;
         const elapsed = now - startedAt;
         const progress = clamp01(elapsed / durationMs);
         onUpdate(progress, elapsed);
@@ -6595,10 +6596,10 @@
             float r = length(p);
             float angle = atan(p.y, p.x);
             float angular = (angle + PI) / (2.0 * PI);
-            float presence = smoothstep(0.13, 0.2, uProgress);
+            float presence = smoothstep(0.02, 0.1, uProgress);
             float vanish = 1.0 - smoothstep(0.92, 1.0, uProgress);
-            float tunnelPhase = smoothstep(0.13, 0.55, uProgress) * vanish;
-            float focusPhase = smoothstep(0.55, 0.82, uProgress);
+            float tunnelPhase = smoothstep(0.04, 0.55, uProgress) * vanish;
+            float focusPhase = smoothstep(0.48, 0.82, uProgress);
             float speed = mix(8.2, 1.85, focusPhase);
             float depth = 1.0 / max(r, 0.045) + uTime * speed;
             float ringBands = pow(0.5 + 0.5 * sin(depth * 6.7 - uProgress * 18.0), 9.0);
@@ -6615,11 +6616,11 @@
             vec3 cyan = vec3(0.0, 0.78, 0.92);
             vec3 deep = vec3(0.015, 0.006, 0.0);
             vec3 color = deep;
-            color += gold * goldGlyphs * (0.48 + tunnelPhase * 1.35);
-            color += cyan * (cyanData * 0.72 + outerCircuit * 0.48) * tunnelPhase;
-            color += brightGold * centerCore * (0.82 + focusPhase * 1.25);
+            color += gold * goldGlyphs * (0.72 + tunnelPhase * 1.55);
+            color += cyan * (cyanData * 0.86 + outerCircuit * 0.56) * tunnelPhase;
+            color += brightGold * centerCore * (1.0 + focusPhase * 1.36);
             color = mix(color, vec3(1.0, 0.88, 0.58), whiteout * 0.42);
-            float alpha = clamp((0.16 + goldGlyphs * 0.5 + cyanData * 0.28 + centerCore * 0.38) * vignette * presence, 0.0, 0.82);
+            float alpha = clamp((0.24 + goldGlyphs * 0.58 + cyanData * 0.34 + centerCore * 0.42) * vignette * presence, 0.0, 0.9);
             alpha = max(alpha * vanish, whiteout * 0.38);
             gl_FragColor = vec4(color, alpha);
           }
@@ -6662,6 +6663,7 @@
       draw(now) {
         const gl = this.gl;
         if (!gl || !this.program || !this.active) return;
+        if (!this.startedAt) this.startedAt = now;
         const elapsed = now - this.startedAt;
         const progress = clamp(elapsed / this.duration, 0, 1);
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -6686,7 +6688,7 @@
         if (!this.gl || !this.canvas || prefersReducedMotion) return 0;
         this.stop(true);
         this.duration = Math.max(900, duration);
-        this.startedAt = performance.now();
+        this.startedAt = 0;
         this.active = true;
         this.canvas.style.display = "block";
         this.canvas.classList.add("is-active");
