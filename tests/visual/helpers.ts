@@ -63,7 +63,7 @@ export async function waitForLoginReady(page: Page) {
 export async function hydrateStaticSaoButtons(page: Page) {
   await page.evaluate(() => {
     function resolveLabel(button: HTMLElement) {
-      const explicit = button.dataset.saoGlitchLabel || "";
+      const explicit = button.dataset.saoLabel || "";
       if (explicit.trim()) return explicit.trim();
       const labelNode = button.querySelector(".sao-btn-label, .btn-label, .nav-label, .history-time");
       const label = labelNode?.textContent?.trim();
@@ -91,7 +91,6 @@ export async function hydrateStaticSaoButtons(page: Page) {
 
     document.querySelectorAll<HTMLElement>(".sao-btn").forEach((button) => {
       const label = resolveLabel(button) || "SYSTEM";
-      button.dataset.saoGlitch = label;
       button.dataset.saoTag = resolveTag(button);
       button.dataset.saoCompact = String(button.classList.contains("history-delete")
         || (!button.querySelector(".sao-btn-label, .btn-label, .nav-label") && (button.textContent || "").trim().length <= 2));
@@ -101,22 +100,6 @@ export async function hydrateStaticSaoButtons(page: Page) {
         scan.className = "sao-btn-scan";
         scan.setAttribute("aria-hidden", "true");
         button.appendChild(scan);
-      }
-
-      if (!button.querySelector(".sao-btn-glitch")) {
-        const glitch = document.createElement("span");
-        glitch.className = "sao-btn-glitch";
-        glitch.setAttribute("aria-hidden", "true");
-        glitch.textContent = label;
-        button.appendChild(glitch);
-      }
-
-      if (!button.querySelector(".sao-btn-rgb")) {
-        const rgb = document.createElement("span");
-        rgb.className = "sao-btn-rgb";
-        rgb.setAttribute("aria-hidden", "true");
-        rgb.textContent = label;
-        button.appendChild(rgb);
       }
 
       if (!button.querySelector(".sao-btn-tag")) {
