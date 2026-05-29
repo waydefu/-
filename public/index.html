@@ -5232,6 +5232,7 @@
     const ease = {
       inPow2: (t) => t * t,
       outPow2: (t) => 1 - (1 - t) * (1 - t),
+      inExpo: (t) => t === 0 ? 0 : Math.pow(2, 10 * t - 10),
       inOutSine: (t) => 0.5 - Math.cos(Math.PI * t) / 2
     };
     function runPhaseClock(durationMs, onUpdate, onComplete) {
@@ -7578,52 +7579,79 @@
           index += 1;
         }, 900);
 
-        const driver = { shock: 0, spiral: 0, op: 0, intensity: 1 };
-        const timeline = gsap ? gsap.timeline({
-          onComplete: () => {
-            window.clearInterval(messageTimer);
-            this.enterOperationalMode();
-          }
-        }) : null;
-
-        if (timeline) {
-          timeline
-            .call(() => {
-              document.body.classList.remove("login-modal-entering");
-              document.body.classList.add("auth-handoff-collapsing");
-              this.disintegrateAuthPanel(this.ritualStack);
-            }, null, 0)
-            .to([this.ritualStack, this.overrideWindow, this.connectionWindow], {
-              scaleY: 0.02,
-              opacity: 0,
-              filter: "blur(12px) brightness(2)",
-              duration: uiMotion.collapse,
-              stagger: 0.08,
-              ease: "power2.in"
-            }, 0)
-            .set([this.ritualStack, this.overrideWindow, this.connectionWindow], { display: "none", clearProps: "filter" }, uiMotion.collapse + 0.2)
-            .to(driver, {
-              shock: 1,
-              spiral: 1,
-              intensity: 3.5,
-              duration: 2.2,
-              ease: "expo.in",
-              onUpdate: () => this.applyAuthenticationEnergy(driver)
-            }, 0)
-            .fromTo(this.shockwave, { opacity: 0.72, scale: 0.18 }, { opacity: 0, scale: 10, duration: 1.8, ease: "power2.out" }, 2.2)
-            .set(this.bootVeil, { display: "block", backgroundColor: "#ddccaa", opacity: 0.62 }, 2.2)
-            .to(this.bootVeil, { backgroundColor: "#020101", opacity: 0, duration: 2.34, ease: "power2.out" }, 2.26)
-            .to(driver, {
-              shock: 0,
-              op: 1,
-              intensity: 0.82,
-              duration: 2.4,
-              ease: "power2.out",
-              onUpdate: () => this.applyAuthenticationEnergy(driver)
-            }, 2.2);
-        } else {
-          setTimeout(() => this.enterOperationalMode(), Math.round(uiMotion.authHandoff * 1000));
+        if (prefersReducedMotion) {
+          window.clearInterval(messageTimer);
+          this.enterOperationalMode();
+          return;
         }
+
+        const driver = { shock: 0, spiral: 0, op: 0, intensity: 1 };
+        const collapseNodes = [
+          { node: this.ritualStack, transformPrefix: "" },
+          { node: this.overrideWindow, transformPrefix: "translate(-50%, -50%) " },
+          { node: this.connectionWindow, transformPrefix: "translate(-50%, -50%) " }
+        ].filter(({ node }) => node instanceof HTMLElement);
+        const collapseMs = Math.round(uiMotion.collapse * 1000);
+        let surfacesHidden = false;
+        let veilShown = false;
+
+        document.body.classList.remove("login-modal-entering");
+        document.body.classList.add("auth-handoff-collapsing");
+        this.disintegrateAuthPanel(this.ritualStack);
+        this._authHandoffClock?.kill?.();
+        this._authHandoffClock = runPhaseClock(Math.round(uiMotion.authHandoff * 1000), (progress, elapsed) => {
+          const collapseT = ease.inPow2(phaseProgress(elapsed, 0, collapseMs));
+          collapseNodes.forEach(({ node, transformPrefix }) => {
+            node.style.opacity = String(lerp(1, 0, collapseT));
+            node.style.transform = `${transformPrefix}scaleY(${lerp(1, 0.02, collapseT)})`;
+            node.style.filter = `blur(${lerp(0, 12, collapseT)}px) brightness(${lerp(1, 2, collapseT)})`;
+          });
+          if (!surfacesHidden && elapsed >= collapseMs + 200) {
+            surfacesHidden = true;
+            collapseNodes.forEach(({ node }) => {
+              node.style.display = "none";
+              node.style.removeProperty("filter");
+            });
+          }
+
+          const energyUp = phaseProgress(elapsed, 0, 2200);
+          const energyDown = phaseProgress(elapsed, 2200, 2400);
+          if (elapsed < 2200) {
+            const charged = ease.inExpo(energyUp);
+            driver.shock = charged;
+            driver.spiral = charged;
+            driver.op = 0;
+            driver.intensity = lerp(1, 3.5, charged);
+          } else {
+            const settled = ease.outPow2(energyDown);
+            driver.shock = lerp(1, 0, settled);
+            driver.spiral = 1;
+            driver.op = settled;
+            driver.intensity = lerp(3.5, 0.82, settled);
+          }
+          this.applyAuthenticationEnergy(driver);
+
+          if (this.shockwave) {
+            const shockwaveT = phaseProgress(elapsed, 2200, 1800);
+            this.shockwave.style.opacity = String(lerp(0.72, 0, ease.outPow2(shockwaveT)));
+            this.shockwave.style.transform = `translate(-50%, -50%) scale(${lerp(0.18, 10, ease.outPow2(shockwaveT))})`;
+          }
+          if (this.bootVeil && elapsed >= 2200) {
+            if (!veilShown) {
+              veilShown = true;
+              this.bootVeil.style.display = "block";
+              this.bootVeil.style.backgroundColor = "#ddccaa";
+              this.bootVeil.style.opacity = "0.62";
+            }
+            const veilT = phaseProgress(elapsed, 2260, 2340);
+            this.bootVeil.style.backgroundColor = veilT > 0 ? "#020101" : "#ddccaa";
+            this.bootVeil.style.opacity = String(lerp(0.62, 0, ease.outPow2(veilT)));
+          }
+        }, () => {
+          this._authHandoffClock = null;
+          window.clearInterval(messageTimer);
+          this.enterOperationalMode();
+        });
       }
 
       disintegrateAuthPanel(panel) {
