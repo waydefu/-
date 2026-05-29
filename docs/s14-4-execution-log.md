@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat
-- 進行中：無
-- 下一步：等待使用者改用 `http://localhost:5599/` 驗收桌面登入，或決定是否需要 Firebase Hosting preview/deploy 給手機真登入驗收
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start
+- 進行中：Step 6 無動畫修正記錄
+- 下一步：提交 Step 6 log；請使用者重新整理 `http://localhost:5599/` 並必要時先登出/清站台資料再測登入動畫
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -156,3 +156,29 @@
 - 修改：僅更新本 log，未改產品碼。
 - 風險：文件-only，無產品行為風險。
 - Commit：`6ad98ba`
+
+### Step 6 - 修正已登入 auto-handoff 跳過動畫
+- 狀態：產品變更完成；本 log 回寫中。
+- 觸發：使用者回報「無動畫」。
+- 原因：
+  - `handoffSignedInUser()` 在偵測到既有 Firebase 登入狀態時，原本直接呼叫 `login.enterOperationalMode()`。
+  - 這會跳過 `beginAuthentication()`，因此不會觸發 S14-4 Link Start shader / handoff phase clock。
+  - 在本機預覽反覆測試時，若瀏覽器保留 Google/Firebase session，最容易走到這條直切路徑。
+- 修改：
+  - `public/index.html:9145-9148`：auto signed-in handoff 改為 `await login.beginAuthentication("已偵測到 Google 登入，正在進入工作區", { skipAuth: true })`。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+  - Runtime auto-handoff 探針：`output/s14-4/step6/auto-handoff-report.json`。
+- Runtime 結果：
+  - 強制呼叫 `__FLG_HANDOFF_SIGNED_IN_USER__()` 後 0.52s：`handoffClock: true`、`linkStartActive: true`、`particleCanvasCount: 0`。
+  - 完成後：`body.operational`、`#operationalDeck` 為 `aria-hidden="false"` 且無 `inert`。
+  - 無 pageerror；console 僅 headless WebGL `GPU stall due to ReadPixels` warning。
+- 待使用者重測：
+  - 桌面預覽用 `http://localhost:5599/`。
+  - 若仍看不到登入動畫，請先登出或清除 localhost 站台資料，避免直接帶著已完成的工作區狀態回來。
+- Commit：`5858953`
