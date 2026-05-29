@@ -1,10 +1,10 @@
 # S14-2 Execution Log - 拆除 DOM 假特效層
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash
-- 進行中：無
-- 下一步：Step 5 Part C glass/backdrop-filter 收斂
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 docs log 更新；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash；`6a5eab8` - 標記 Part B 第二輪 log 已落地；`988a93e` - 收斂 glass/backdrop-filter token
+- 進行中：Step 5 log 回寫與 docs commit
+- 下一步：commit 本次 log，然後更新恢復區塊為 tracked clean
 - 未決 / 待我確認：無
 - 待裝置驗收：本單會移除 DOM 動效與收斂 keyframes，動效手感與 60fps 需使用者裝置驗收
 
@@ -102,3 +102,26 @@
   - `git diff --check`：通過（僅 CRLF 提示）。
 - 待裝置驗收：入口/回饋動畫改得更安靜；test:visual 仍拔 script / 藏 WebGL，實機動效手感與 60fps 待使用者裝置驗收。
 - Commit：`cd14a8b`
+
+### Step 5 - Part C：glass/backdrop-filter token 收斂
+- 狀態：完成，正在回寫 log commit
+- 目的：將 L1 面板毛玻璃收斂成 CSS token，讓桌面 glass 一致、手機維持關閉 blur 以避免效能成本。
+- 修改：
+  - `public/index.html`：新增 `--glass-filter-panel` / `--glass-filter-status` / `--glass-filter-backdrop` / `--glass-filter-none`。
+  - `public/index.html`：把 `.connection-window`、`.auth-panel` / `.operational-deck` / `.override-window`、`.ritual-stack::backdrop` 的 hardcoded `backdrop-filter` 改為 token。
+  - `public/index.html`：為 `.codex-panel`、`.account-menu`、`.history-drawer` 接上桌面 `--glass-filter-panel`。
+  - `public/index.html`：在 operational mode 與 820px 以下覆寫 `--glass-filter-none`，手機 `.auth-panel`、`.codex-panel`、`.account-menu`、`.history-drawer`、`.override-window` 均關閉 blur。
+  - `public/index.html`：JS 進入 operational deck 時的 inline `backdrop-filter` 改用 `var(--glass-filter-none)`。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步母檔。
+- 驗證：
+  - `npm run sync:login-mother`：通過，`worldforge-login.html` 已更新。
+  - `rg` 檢查 `backdrop-filter` / `--glass-filter`：兩份 HTML 的 CSS 與 JS backdrop-filter 均走 `var(--glass-filter-*)`。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+  - `npm run check`：通過。
+  - `npm run test:visual`：14 passed，無 snapshot 更新。
+  - `npm test`：23 passed。
+  - headless screenshots：`output/s14-2/part-c/login-glass-1366.png`、`output/s14-2/part-c/history-glass-1366.png`、`output/s14-2/part-c/account-glass-1366.png`、`output/s14-2/part-c/mobile-history-glass-390.png`、`output/s14-2/part-c/mobile-account-glass-390.png`。
+  - headless computed style 報告：`output/s14-2/part-c/glass-report.json`；桌面主要 glass 面板為 `blur(12px) saturate(1.08)`，手機 390 的 auth/deck/codex/account/history/override 均為 `none`。
+- 截圖限制：為避免 headless Chromium 卡在外部 CDN module/font pipeline，截圖時攔截非 localhost 請求；本項驗證 DOM/CSS glass 與可讀性，不驗 WebGL 或動畫流暢度。
+- 待裝置驗收：本單整體移除 DOM 動效與收斂 keyframes；test:visual 與上述截圖仍無法驗 POCO F6 Pro 實機 60fps 與動效手感。
+- Commit：`988a93e`
