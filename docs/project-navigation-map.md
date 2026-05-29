@@ -288,6 +288,16 @@ Validation after implementation:
 - `npm run test:visual`: 14 passed.
 - `npm run build`: passed.
 - `npm run test:a11y`: 3 passed, axe impact counts `{}`. The first attempt was invalid because it was launched in parallel with another Playwright suite and both tried to start `127.0.0.1:5173`; the standalone rerun passed.
+- Commit: `516b279 fix(s13.2): restore visible SAO motion and mobile panel fit`.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check passed:
+  - `saoButtonPanelGlitch` present;
+  - `saoButtonSliceFlash` present;
+  - `.is-glitching` tap/focus state present;
+  - `saoMenuSignalFlicker` present;
+  - `overrideMaterializeMobile` present;
+  - mobile `left/right` safe-area bounded fit rules present.
 
 ## S13 Effects Visibility Hotfix
 
