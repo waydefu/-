@@ -66,16 +66,21 @@
       --font-mono: "Share Tech Mono", ui-monospace, monospace;
       --font-cyber: "Cyber", "Noto Sans TC", system-ui, sans-serif;
       font-size: clamp(1rem, 0.92rem + 0.5vw, 1.25rem);
-      --text-nano: clamp(0.625rem, 0.55rem + 0.15vw, 0.6875rem);
-      --text-hud: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
-      --text-label: clamp(0.6875rem, 0.6rem + 0.18vw, 0.75rem);
-      --text-status: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
-      --text-body: clamp(0.875rem, 0.78rem + 0.25vw, 1rem);
-      --text-btn-cn: clamp(0.9375rem, 0.84rem + 0.24vw, 1.0625rem);
-      --text-btn-en: clamp(0.8125rem, 0.72rem + 0.22vw, 0.9375rem);
-      --text-input: clamp(1rem, 0.88rem + 0.32vw, 1.1875rem);
-      --text-core: clamp(1rem, 0.84rem + 0.42vw, 1.25rem);
-      --text-section: clamp(0.875rem, 0.74rem + 0.32vw, 1.0625rem);
+      --fs-nano: clamp(0.625rem, 0.58rem + 0.18vw, 0.72rem);
+      --fs-caption: clamp(0.75rem, 0.7rem + 0.22vw, 0.875rem);
+      --fs-body: clamp(0.9375rem, 0.9rem + 0.3vw, 1.0625rem);
+      --fs-title: clamp(1.05rem, 0.98rem + 0.6vw, 1.45rem);
+      --fs-display: clamp(1.4rem, 1.2rem + 1.4vw, 2.2rem);
+      --text-nano: var(--fs-nano);
+      --text-hud: var(--fs-caption);
+      --text-label: var(--fs-caption);
+      --text-status: var(--fs-caption);
+      --text-body: var(--fs-body);
+      --text-btn-cn: var(--fs-body);
+      --text-btn-en: var(--fs-caption);
+      --text-input: var(--fs-body);
+      --text-core: var(--fs-title);
+      --text-section: var(--fs-caption);
       --text-hero-cn: clamp(1.75rem, 1.2rem + 1.8vw, 2.6rem);
       --text-hero-en: clamp(1.5rem, 1.1rem + 1.4vw, 2.25rem);
       --text-btn: var(--text-btn-cn);
@@ -699,7 +704,7 @@
       padding: 12px 15px;
       border-bottom: 1px solid rgba(214, 166, 77, 0.22);
       color: rgba(243, 154, 34, 0.86);
-      font: 11px/1.3 var(--font-mono);
+      font: var(--fs-nano)/1.3 var(--font-mono);
       letter-spacing: 0.18em;
       text-transform: uppercase;
     }
@@ -714,13 +719,13 @@
     .connection-body b {
       color: var(--gold-hot);
       font-family: var(--font-serif);
-      font-size: 20px;
+      font-size: var(--fs-title);
       letter-spacing: 0.16em;
     }
 
     .connection-body span {
       color: rgba(241, 222, 194, 0.7);
-      font-size: 13px;
+      font-size: var(--fs-caption);
       letter-spacing: 0.08em;
     }
 
@@ -1178,7 +1183,7 @@
       border: 1px solid rgba(0, 212, 255, 0.16);
       background: rgba(2, 7, 18, 0.34);
       clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-      font-size: 10.5px;
+      font-size: var(--fs-nano);
       letter-spacing: 0.08em;
     }
 
@@ -1847,8 +1852,8 @@
     .override-body p {
       margin: 0;
       color: rgba(241, 222, 194, 0.72);
-      font-size: 13px;
-      line-height: 1.85;
+      font-size: var(--fs-caption);
+      line-height: 1.7;
     }
 
     .override-actions {
@@ -2088,7 +2093,7 @@
         rgba(0, 0, 0, 0.56);
       color: rgba(255, 226, 160, 0.84);
       font-family: var(--font-tw);
-      font-size: 15px;
+      font-size: var(--fs-body);
       font-weight: 700;
       letter-spacing: 0;
       cursor: pointer;
@@ -2136,7 +2141,7 @@
         radial-gradient(circle at 34% 28%, rgba(255, 246, 203, 0.42), rgba(255, 226, 160, 0.12) 46%, transparent 68%),
         linear-gradient(145deg, rgba(78, 39, 10, 0.82), rgba(7, 3, 1, 0.92));
       color: rgba(255, 226, 160, 0.92);
-      font-size: 16px;
+      font-size: var(--fs-body);
       font-weight: 900;
       line-height: 1;
       box-shadow: 0 0 18px rgba(214, 166, 77, 0.12);
@@ -2350,7 +2355,7 @@
       clip-path: var(--edge-sm);
       cursor: pointer;
       font-family: var(--font-tw);
-      font-size: 15px;
+      font-size: var(--fs-body);
       font-weight: 700;
       color: rgba(255, 190, 144, 0.86);
       background: rgba(74, 18, 10, 0.24);
@@ -2431,7 +2436,7 @@
       color: rgba(241, 222, 194, 0.52);
       cursor: pointer;
       font-family: var(--font-tw);
-      font-size: 13px;
+      font-size: var(--fs-caption);
       letter-spacing: 0.06em;
     }
 
@@ -2443,7 +2448,7 @@
     .history-empty {
       margin: 0;
       color: rgba(241, 222, 194, 0.5);
-      font-size: 12px;
+      font-size: var(--fs-caption);
       line-height: 1.7;
       text-align: left;
     }
@@ -2551,7 +2556,7 @@
       background: rgba(74, 18, 10, 0.22);
       color: rgba(255, 190, 144, 0.74);
       cursor: pointer;
-      font: 11px/1 var(--font-tw);
+      font: var(--fs-nano)/1 var(--font-tw);
       letter-spacing: 0;
       clip-path: var(--edge-sm);
     }
@@ -2568,7 +2573,7 @@
       grid-column: 2;
       color: rgba(255, 226, 160, 0.58);
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: var(--fs-caption);
       letter-spacing: 0.08em;
     }
 
@@ -2577,7 +2582,7 @@
       width: 28px;
       height: 28px;
       align-self: center;
-      font-size: 11px;
+      font-size: var(--fs-nano);
     }
 
     .history-preview {
@@ -2731,8 +2736,8 @@
     .tool-module p {
       margin: 0;
       color: rgba(241, 222, 194, 0.58);
-      font-size: 12px;
-      line-height: 1.8;
+      font-size: var(--fs-caption);
+      line-height: 1.7;
       letter-spacing: 0;
       text-wrap: pretty;
     }
@@ -2773,7 +2778,7 @@
       border-top: 1px solid rgba(214, 166, 77, 0.16);
       background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.34));
       color: rgba(241, 222, 194, 0.62);
-      font: 11px/1.6 var(--font-mono);
+      font: var(--fs-nano)/1.6 var(--font-mono);
       letter-spacing: 0.12em;
       pointer-events: none;
     }
@@ -2800,7 +2805,7 @@
       flex-wrap: wrap;
       gap: 6px;
       color: rgba(241, 222, 194, 0.58);
-      font-size: 11px;
+      font-size: var(--fs-nano);
       line-height: 1.5;
     }
 
@@ -2817,7 +2822,7 @@
       border: 1px solid rgba(255, 156, 100, 0.62);
       background: linear-gradient(180deg, rgba(110, 35, 15, 0.48), rgba(46, 14, 4, 0.62));
       color: rgba(255, 226, 160, 0.94);
-      font-size: 11px;
+      font-size: var(--fs-nano);
       letter-spacing: 0.04em;
       clip-path: var(--edge-sm);
       opacity: 0;
@@ -2935,8 +2940,8 @@
       border: 1px solid rgba(214, 166, 77, 0.16);
       background: rgba(0, 0, 0, 0.28);
       color: rgba(241, 222, 194, 0.84);
-      font-size: clamp(1.125rem, 0.96rem + 0.42vw, 1.375rem);
-      line-height: 2;
+      font-size: var(--fs-body);
+      line-height: 1.7;
       white-space: normal;
     }
 
@@ -2962,13 +2967,13 @@
       gap: 6px;
       min-height: 44px;
       padding: 6px 10px;
-      font: 12px/1 var(--font-tw);
+      font: var(--fs-caption)/1 var(--font-tw);
       letter-spacing: 0;
     }
 
     .analysis-dossier-head span {
       color: rgba(255, 226, 160, 0.78);
-      font: 13px/1.4 var(--font-mono);
+      font: var(--fs-caption)/1.4 var(--font-mono);
       letter-spacing: 0.12em;
     }
 
@@ -2982,7 +2987,7 @@
       color: rgba(255, 226, 160, 0.78);
       min-height: 44px;
       padding: 6px 12px;
-      font: 13px/1 var(--font-tw);
+      font: var(--fs-caption)/1 var(--font-tw);
       letter-spacing: 0;
       cursor: pointer;
       clip-path: var(--edge-sm);
@@ -3046,7 +3051,7 @@
       border: 1px solid rgba(214, 166, 77, 0.22);
       background: rgba(0, 0, 0, 0.32);
       color: rgba(255, 226, 160, 0.78);
-      font: 12px/1 var(--font-tw);
+      font: var(--fs-caption)/1 var(--font-tw);
       cursor: pointer;
       clip-path: var(--edge-sm);
     }
@@ -3159,7 +3164,7 @@
 
     .analysis-progress-row span {
       color: rgba(255, 226, 160, 0.62);
-      font-size: 13px;
+      font-size: var(--fs-caption);
       font-weight: 700;
       white-space: nowrap;
     }
@@ -3222,7 +3227,7 @@
       gap: 10px;
       align-items: center;
       color: rgba(255, 226, 160, 0.72);
-      font: 12px/1.4 var(--font-mono);
+      font: var(--fs-caption)/1.4 var(--font-mono);
       letter-spacing: 0.08em;
     }
 
@@ -4921,7 +4926,7 @@
 
       .workbench-nav-actions > button {
         min-height: 52px;
-        font-size: 16px;
+        font-size: var(--fs-body);
         padding-inline: 10px;
       }
 
@@ -5017,7 +5022,7 @@
       }
 
       .draft-field-title {
-        font-size: 14px;
+        font-size: var(--fs-caption);
         letter-spacing: 0.12em;
       }
 
@@ -5027,7 +5032,7 @@
         bottom: 9px;
         grid-template-columns: max-content minmax(0, 1fr);
         gap: 8px;
-        font-size: 12px;
+        font-size: var(--fs-nano);
         letter-spacing: 0.08em;
       }
 
@@ -5040,11 +5045,11 @@
       .analyze-ritual-btn {
         min-height: 54px;
         gap: 8px;
-        font-size: 16px;
+        font-size: var(--fs-body);
       }
 
       .analyze-ritual-btn .btn-label {
-        font-size: 16px;
+        font-size: var(--fs-body);
         white-space: nowrap;
       }
 
@@ -5052,8 +5057,8 @@
         min-height: 240px;
         max-height: none;
         padding: 14px;
-        font-size: clamp(1rem, 0.98rem + 0.18vw, 1.125rem);
-        line-height: 1.82;
+        font-size: var(--fs-body);
+        line-height: 1.7;
       }
 
       .analysis-result {
@@ -5083,7 +5088,7 @@
         width: 100%;
         min-height: 46px;
         padding-inline: 12px;
-        font-size: 14px;
+        font-size: var(--fs-caption);
       }
 
       .result-section-head {
@@ -5097,23 +5102,23 @@
         justify-self: stretch;
         width: 100%;
         min-height: 46px;
-        font-size: 14px;
+        font-size: var(--fs-caption);
       }
 
       .result-section-body {
         padding: 12px;
-        font-size: clamp(1rem, 0.94rem + 0.18vw, 1.125rem);
-        line-height: 1.86;
+        font-size: var(--fs-body);
+        line-height: 1.7;
       }
 
       .result-section-head h3 {
-        font-size: clamp(1rem, 0.94rem + 0.18vw, 1.125rem);
+        font-size: var(--fs-body);
       }
 
       .ritual-status {
         min-height: 24px;
         padding: 5px 8px;
-        font-size: 14px;
+        font-size: var(--fs-caption);
       }
 
       .analysis-progress-row {
@@ -6227,8 +6232,8 @@
       .analysis-empty,
       .result-section-body,
       .analysis-result {
-        font-size: clamp(1rem, 0.94rem + 0.42vw, 1.12rem);
-        line-height: 1.78;
+        font-size: var(--fs-body);
+        line-height: 1.7;
       }
 
       .sao-system-menu {

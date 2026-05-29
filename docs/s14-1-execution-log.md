@@ -1,10 +1,10 @@
 # S14-1 Execution Log - 行動版彈窗修復與字級系統
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；Part B 變更與本 log 更新尚未 commit）
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級
 - 進行中：無
-- 下一步：Step 4 修改 Part B 字級 token 與 L1 功能層固定 px
+- 下一步：Step 5 執行本單收尾驗證：sync、check、test、test:visual、headless after 截圖整理
 - 未決 / 待我確認：無
 - 待裝置驗收：字級手感需使用者在 POCO F6 Pro 或實機確認
 
@@ -69,4 +69,26 @@
   - `422`, `429`, `702`, `1036`, `1181`, `1827`, `2726`, `2776`, `2971`, `3225`, `4752`：偏裝飾 HUD / mono 角標或非主要閱讀文字，避免本單過度改動視覺語彙
   - `717`, `723`, `1850`, `2734`, `2803`, `2820`：需再看上下文，若屬功能文案再納入
 - 備註：執行單給的 `rg -nE` 在此環境會被 ripgrep 視為 encoding 旗標而失敗，改用 ripgrep 原生 regex
+- Commit：`ac3b0c2`
+
+### Step 4 - Part B 字級 token 與 L1 功能層替換
+- 狀態：完成
+- 修改：
+  - `public/index.html:68-83`：新增 `--fs-nano`、`--fs-caption`、`--fs-body`、`--fs-title`、`--fs-display`，並讓既有功能文字 token 指向新階梯
+  - L1 功能文字改用 token：連線視窗、override 內文、工作台 nav/action、帳號/歷史操作、手稿 meta、禁詞 chip、結果卷宗、複製按鈕、進度/狀態列、手機版結果/按鈕覆寫
+  - `public/worldforge-login.html`：已執行 `npm run sync:login-mother` 同步
+- 固定 px 殘留：
+  - `427`, `434` boot status
+  - `1041` auth seal strip
+  - `1832` override header
+  - `2731` tool-module mono heading
+  - `4757` mobile brand caption
+  - 結論：上述為裝飾 / mono 角標或登入品牌 caption，非主要 L1 閱讀與操作文字，本單先保留
+- 驗證：
+  - `output/s14-1/part-b/metrics.json`
+  - 手機 375x812：`draft`、`dossier`、`resultBody` computed font-size 約 `16.06px`，line-height 約 `27.3px`
+  - 手機 375x812：`resultCopy` / `historyEmpty` 約 `12.45px`，`draftMeta` / `spellList` 約 `10.37px`
+  - 桌面 1280：無水平溢出；手機 scrollWidth = viewport width `375`
+  - `git diff --check` 通過
+- 風險：視覺快照預期會有字級 diff；字級手感仍需使用者裝置確認
 - Commit：待建立
