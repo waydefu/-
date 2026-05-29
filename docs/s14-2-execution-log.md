@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash；`6a5eab8` - 標記 Part B 第二輪 log 已落地；`988a93e` - 收斂 glass/backdrop-filter token；`f55ce5c` - 回寫 Part C hash 與驗證
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地；`5645052` - 移除未引用與 idle loop keyframes；`02756b0` - 回寫 Part B 第一輪 hash；`013c5b7` - 標記 Part B 第一輪 log 已落地；`cd14a8b` - 合併入口/回饋 keyframes 到 26 個；`1fdb38e` - 回寫 Part B 第二輪 hash；`6a5eab8` - 標記 Part B 第二輪 log 已落地；`988a93e` - 收斂 glass/backdrop-filter token；`f55ce5c` - 回寫 Part C hash 與驗證；`874c937` - 標記 Part C log 已落地
 - 進行中：無
-- 下一步：S14-2 收尾狀態確認
+- 下一步：依序讀 S14-3 執行單並開工（先讀本 log 恢復區塊 + `00-總綱` + S14-3 指定單）
 - 未決 / 待我確認：無
 - 待裝置驗收：本單會移除 DOM 動效與收斂 keyframes，動效手感與 60fps 需使用者裝置驗收
 
@@ -125,3 +125,17 @@
 - 截圖限制：為避免 headless Chromium 卡在外部 CDN module/font pipeline，截圖時攔截非 localhost 請求；本項驗證 DOM/CSS glass 與可讀性，不驗 WebGL 或動畫流暢度。
 - 待裝置驗收：本單整體移除 DOM 動效與收斂 keyframes；test:visual 與上述截圖仍無法驗 POCO F6 Pro 實機 60fps 與動效手感。
 - Commit：`988a93e`
+
+### Step 6 - S14-2 收尾狀態確認
+- 狀態：完成
+- 工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- keyframes 最終數：26（Step 1 基準 93）
+- Part A 殘留檢查：`sao-btn-glitch|sao-btn-rgb|is-glitching|saoGlitchLabel|dataset\.saoGlitch|__saoGlitchTimer` 無結果。
+- Part C token 檢查：兩份 HTML 的 `backdrop-filter` / `-webkit-backdrop-filter` 均使用 `var(--glass-filter-*)`。
+- 本單收尾驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待裝置驗收：DOM 動效移除與 keyframes 收斂後的實機 60fps / 手感仍需使用者裝置驗收；headless 截圖與 visual test 不驗 WebGL/動畫。
