@@ -1,8 +1,8 @@
 # S14-1 Execution Log - 行動版彈窗修復與字級系統
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；Part B 變更與本 log 更新尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級；`7d7fd67` - 統一功能文字字級 token
 - 進行中：無
 - 下一步：Step 5 執行本單收尾驗證：sync、check、test、test:visual、headless after 截圖整理
 - 未決 / 待我確認：無
@@ -91,4 +91,4 @@
   - 桌面 1280：無水平溢出；手機 scrollWidth = viewport width `375`
   - `git diff --check` 通過
 - 風險：視覺快照預期會有字級 diff；字級手感仍需使用者裝置確認
-- Commit：待建立
+- Commit：`7d7fd67`
