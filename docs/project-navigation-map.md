@@ -474,6 +474,17 @@ Validation:
 - `npm run test:a11y`: passed, 3/3, no critical / serious axe findings.
 - `npm run build`: passed.
 - `git diff --check`: passed, LF-to-CRLF warnings only.
+- Commit: `8788e1e fix(s13.5): intensify visible UI animations`.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check passed:
+  - `loginPanel: 5.2` present;
+  - `authHandoff: 5.8` present;
+  - `workbenchReveal: 5.8` present;
+  - `saoButtonPanelGlitch 1.08s` present;
+  - tap `.is-glitching` `2400ms` present;
+  - host `overflow: hidden` present;
+  - `saoSystemMenuClipResolve 5.6s` present.
 
 Risk:
 
