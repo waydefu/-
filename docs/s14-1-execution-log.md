@@ -1,10 +1,10 @@
 # S14-1 Execution Log - 行動版彈窗修復與字級系統
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；本 log 更新尚未 commit）
-- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級；`7d7fd67` - 統一功能文字字級 token
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（既有未追蹤 `.claude/`、`output/`；驗證結果 log 尚未 commit）
+- 已完成：`44aa217` - 初始化 S14-1 執行 log；`a9974fb` - 記錄 Step 0 commit hash；`d6e1759` - 記錄修改前彈窗基準截圖；`ec9fa99` - 記錄修改前基準 commit hash；`1e635b6` - 修復行動版 override/logout 彈窗置中；`ea359cd` - 記錄 Part A commit hash；`ac3b0c2` - 盤點固定 px 字級；`7d7fd67` - 統一功能文字字級 token；`84c68fa` - 記錄 Part B commit hash
 - 進行中：無
-- 下一步：Step 5 執行本單收尾驗證：sync、check、test、test:visual、headless after 截圖整理
+- 下一步：Step 6 本單結案，整理最終工作樹與待裝置驗收項
 - 未決 / 待我確認：無
 - 待裝置驗收：字級手感需使用者在 POCO F6 Pro 或實機確認
 
@@ -92,3 +92,22 @@
   - `git diff --check` 通過
 - 風險：視覺快照預期會有字級 diff；字級手感仍需使用者裝置確認
 - Commit：`7d7fd67`
+
+### Step 5 - 收尾驗證
+- 狀態：完成
+- `npm run sync:login-mother`：通過；執行後無 tracked diff
+- `npm run check`：通過
+  - `check:frontend` 通過
+  - `check:functions` 通過
+- `npm test`：通過，23/23
+- `npm run test:visual`：未通過，符合本單字級與彈窗版面改動預期
+  - 通過：7 tests（dialog / zoom / CLS）
+  - 失敗：7 個 `worldforge.spec.ts` snapshot（登入頁 1366、登入頁手機 390、工作區 1366、工作區手機 390、歷史抽屜 1366、帳號選單 1366、登出確認彈窗 1366）
+  - 失敗原因：snapshot pixel diff，比例約 0.02 到 0.06；已人工檢視代表性 actual/diff，差異集中於字級、換行與彈窗置中位置，未見水平溢出或彈窗跑出 viewport
+  - 未執行 `npm run test:visual:update`，需使用者確認是否接受新 baseline
+- Headless 產物：
+  - `output/s14-1/before/`
+  - `output/s14-1/part-a/`
+  - `output/s14-1/part-b/`
+- 工作樹：tracked clean；仍有既有未追蹤 `.claude/` 與本輪截圖 `output/`
+- Commit：待建立
