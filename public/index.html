@@ -9142,10 +9142,9 @@
         }
       }
 
-      window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(async () => {
         try {
-          login.setStatus?.("已偵測到 Google 登入，正在進入工作區");
-          login.enterOperationalMode();
+          await login.beginAuthentication?.("已偵測到 Google 登入，正在進入工作區", { skipAuth: true });
         } catch (error) {
           console.warn("Worldforge signed-in handoff failed:", error);
           login._handoffArmed = false;
