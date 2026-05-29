@@ -1,9 +1,9 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 S14-3 Step 1 log；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash
-- 進行中：Step 1 盤點已完成；動態 handoff 基準受阻，尚未改產品碼
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker
+- 進行中：無；S14-3 暫停於基準確認
 - 下一步：等待使用者確認是否接受「靜態/狀態取樣基準」後再拆 GSAP，或改由使用者裝置錄製 baseline
 - 未決 / 待我確認：headless / in-app browser 均無法取得可靠改前 handoff 基準；S14-3 風險中高，未取得基準前不動產品碼
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
