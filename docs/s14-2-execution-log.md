@@ -1,8 +1,8 @@
 # S14-2 Execution Log - 拆除 DOM 假特效層
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（本 log 回寫 Part A hash；既有未追蹤 `.claude/`、`output/`）
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash
 - 進行中：無
 - 下一步：Step 3 Part B 盤點並收斂剩餘 keyframes，優先移除未引用與 L1 paint-heavy 動效
 - 未決 / 待我確認：無
