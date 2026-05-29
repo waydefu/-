@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證
-- 進行中：無
-- 下一步：請使用者用 `http://localhost:5599/?flgMotion=full` 重測完整 Link Start，之後可用 `?flgMotion=system` 還原系統 motion 設定
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證；`b9d1a76` - 標記 Step 9 log 完成；`8fb7c88` - 解除 dialog top-layer 遮擋並強化 Link Start 切場
+- 進行中：Step 10 log 回寫
+- 下一步：提交 Step 10 log；請使用者用 `http://localhost:5599/?flgMotion=full` 重測完整 Link Start 過場辨識度
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -247,3 +247,26 @@
   - 若用 LAN IP 或 Auth 失敗，仍不會播放成功 handoff。
 - Commit：`1e21911`
 - Log Commit：`6583f56`
+
+### Step 10 - 強化過場辨識度並解除 dialog top-layer 遮擋
+- 狀態：產品變更完成；本 log 回寫中。
+- 觸發：使用者回報「有動效了，過場好像不明顯」。
+- 診斷：
+  - 修改前 `output/s14-4/step10-before/handoff-0520ms.png` 顯示舊登入/工作區畫面仍大量透出；Link Start 只是疊光。
+  - `document.elementFromPoint()` 顯示中心命中 `#authForm` / `#ritualStack`，原因是 native `<dialog>` 進入 browser top layer，會壓過 `z-index: 128` 的 Link Start canvas。
+- 修改：
+  - `public/index.html:282-299`：`.link-start-fx` 改成 normal blend 的全螢幕切場層，加黑金 radial/linear 背景，active opacity 提到 `0.98`。
+  - `public/index.html:6606-6626`：Link Start shader 加粗金色同心圓與符文 spokes，提高金色主體與中央光核 alpha；青藍外環降為輔助，避免往 cyber 偏。
+  - `public/index.html:7687-7692`：WebGL Link Start 成功啟動時立即 `close()` 並隱藏 `#ritualStack`，解除 native dialog top-layer 遮擋；若 Link Start 沒啟動，仍走 2D disintegration fallback。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - Runtime stub submit：`output/s14-4/step10-final/handoff-0520ms.png`，中心命中 canvas，`#ritualStack.open === false`，`linkStartActive === true`，無 pageerror。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待使用者重測：
+  - `http://localhost:5599/?flgMotion=full`。
+  - 此版已確認過場站到前景；仍需使用者裝置驗收亮度、青藍比例與 60fps 手感。
+- Commit：`8fb7c88`
