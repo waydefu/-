@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（Step 2 hash 回寫待提交）；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準
-- 進行中：Step 2 hash 回寫
-- 下一步：提交 Step 2 hash；接著進入第一個產品小步，優先處理既有 post pipeline 的 mobile/lowPower/reduced gating 與 fallback
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline
+- 進行中：Step 3 post pipeline gating 記錄
+- 下一步：提交 Step 3 log；接著進入 Link Start shader 的金色符文隧道視覺小步
 - 未決 / 待我確認：無；本單視覺成果需小步提交並等待使用者裝置驗收
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -84,3 +84,30 @@
 - 修改：僅更新本 log；baseline 產物保留在未追蹤 `output/`。
 - 風險：文件-only，無產品行為風險。
 - Commit：`fc26e96`
+- Log Commit：`bced2e2`
+
+### Step 3 - 既有 post pipeline 加上 profile gating 與 renderer fallback
+- 狀態：產品變更完成；本 log 回寫中。
+- 目的：04 單現況盤點發現已存在 heavy post pipeline；本步先降低 S14-4 後續視覺迭代風險，讓 reduced-motion / mobile / lowPower 不強制跑 UnrealBloomPass + SAOPass，並確保 composer 初始化失敗時仍直接 renderer render，不黑屏不報錯。
+- 修改：
+  - `public/index.html:6326-6502`：`PostProcessingPipeline` 新增 `ready`、`enabled`、`lowPower`、`useSelectiveBloom`、`fallbackReason`。
+  - `public/index.html:6326-6502`：`prefers-reduced-motion` 直接跳過 composer，`update()` 走 `renderer.render(scene,camera)`。
+  - `public/index.html:6326-6502`：mobile/lowPower 不建立 `UnrealBloomPass` / `SAOPass` / bloom composer，只保留 RenderPass + cinematic + chromatic + OutputPass 輕量鏈。
+  - `public/index.html:6326-6502`：composer 建立包入 `try/catch`；失敗時 `console.warn("[FLG] Post pipeline fallback:", ...)` 並轉 renderer fallback。
+  - `public/index.html:9232-9260`：metrics/dataset 改為反映 `postPipeline`、`postFallbackReason`、實際 `selectiveBloom` 與 optional `composerPasses`。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+  - Runtime profile：`output/s14-4/step3/post-pipeline-profile-report.json`。
+- Runtime profile 結果：
+  - desktop headless：無 pageerror；因 headless 被 lowPower 偵測，走 `postPipeline: "lightweight"`，`composerPasses: 4`。
+  - mobile-start：無 pageerror；`postPipeline: "lightweight"`，`composerPasses: 4`，`mobile: true`。
+  - desktop-reduced-motion：無 pageerror；`postPipeline: "renderer"`，`composerPasses: 0`，`postFallbackReason: "reduced-motion"`。
+- 限制 / 待裝置驗收：
+  - 本步是效能與 fallback 地基，不是最終視覺成果。
+  - Headless lowPower 偵測會讓 desktop 場景走 lightweight；實機桌面/POCO 仍需確認亮度與性能。
+- Commit：`ed9cd3a`
