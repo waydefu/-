@@ -1,10 +1,10 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween；`637f228` - 回寫 Step 4 驗證
-- 進行中：無
-- 下一步：Step 5 將主 auth handoff timeline 改為原生 rAF phase clock
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 Step 5 log；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween；`637f228` - 回寫 Step 4 驗證；`91e1036` - 標記 Step 4 log 已落地；`1b313f8` - 主 auth handoff 改為 rAF phase clock
+- 進行中：Step 5 log 回寫
+- 下一步：Step 6 移除 GSAP script 與 `const gsap`
 - 未決 / 待我確認：無；使用者已接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
 
@@ -97,3 +97,23 @@
   - `git diff --check`：通過（僅 CRLF 提示）。
 - 待裝置驗收：boot/handoff/workbench 進場手感仍需實機確認；visual test 不驗動畫/WebGL。
 - Commit：`8b747b1`
+
+### Step 5 - 主 auth handoff 改為 rAF phase clock
+- 狀態：完成，待 log commit
+- 目的：移除主 `gsap.timeline()`，用原生相位時鐘維持登入授權後的 collapse、energy driver、shockwave、boot veil 與最後進工作區流程。
+- 修改：
+  - `public/index.html`：`beginAuthentication()` 改為 `runPhaseClock(Math.round(uiMotion.authHandoff * 1000), ...)`。
+  - DOM collapse：`ritualStack` / `overrideWindow` / `connectionWindow` 以 opacity、transform、filter 原生插值，結束後隱藏並清除 filter。
+  - WebGL driver：以 `phaseProgress` / `ease.inExpo` / `ease.outPow2` 更新 `shock`、`spiral`、`op`、`intensity`，每幀呼叫 `applyAuthenticationEnergy(driver)`。
+  - shockwave 與 boot veil：改由相位時鐘更新 opacity/transform/backgroundColor。
+  - `prefers-reduced-motion`：直接清掉訊息 timer 並呼叫 `enterOperationalMode()`。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步母檔。
+- 剩餘 GSAP：兩份 HTML 只剩 GSAP CDN script 與 `const gsap = window.gsap`，待 Step 6 移除。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `rg "gsap\\.(to|set|from|fromTo|timeline)\\(|\\bgsap\\b" public/index.html public/worldforge-login.html`：僅剩 script 與 `const gsap`。
+  - `npm run check`：通過。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待裝置驗收：auth handoff 節奏、白光、WebGL 能量感與實機 60fps。
+- Commit：`1b313f8`
