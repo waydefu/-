@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader
-- 進行中：Step 4 Link Start 視覺里程碑記錄
-- 下一步：提交 Step 4 log；等待使用者裝置驗收 Link Start 視覺後，再繼續下一輪強度/節奏打磨或 Part C lifecycle
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑
+- 進行中：無
+- 下一步：等待使用者裝置驗收 Link Start 視覺後，再繼續下一輪強度/節奏打磨或 Part C lifecycle
 - 未決 / 待我確認：無；本單視覺成果需小步提交並等待使用者裝置驗收
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -114,7 +114,7 @@
 - Log Commit：`b611ed5`
 
 ### Step 4 - Link Start 金色符文隧道 shader
-- 狀態：產品變更完成；本 log 回寫中。
+- 狀態：完成；等待使用者裝置驗收。
 - 目的：把 Link Start 從彩虹 `spectral()` 隧道改向 04 單目標：金色符文同心圓隧道、青藍外環、中央光爆，並移除 WebGL 可用時的 2D panel disintegration 矩形遮擋。
 - 修改：
   - `public/index.html:6527-6568`：`LinkStartFX` fragment shader 改為金/青 palette、極座標 depth、ring bands、rune spokes、outer circuit 與收斂後的中央光爆。
@@ -140,3 +140,4 @@
   - headless 只能確認非黑屏與大致構圖；節奏、光爆舒適度與 60fps 必須實機看過。
 - 待裝置驗收：請使用者在 POCO F6 Pro 看 Link Start 過場後，再決定是否加強符文密度、降低青藍外環、調整中心光爆或進入 Part C lifecycle。
 - Commit：`592f59a`
+- Log Commit：`707624b`
