@@ -1,10 +1,10 @@
 # S14-3 Execution Log - 移除 GSAP
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween；`637f228` - 回寫 Step 4 驗證；`91e1036` - 標記 Step 4 log 已落地；`1b313f8` - 主 auth handoff 改為 rAF phase clock；`0fe59d3` - 回寫 Step 5 驗證
-- 進行中：無
-- 下一步：Step 6 移除 GSAP script 與 `const gsap`
+- 分支：codex/arcane-sage-core-20260522　工作樹：tracked dirty（本 log 待提交）；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；`d47fcce` - 初始化 S14-3 執行 log；`fb9a60e` - 回寫 Step 0 hash；`541f40a` - 記錄 GSAP 盤點與 baseline blocker；`9e749ce` - 標記 blocker 已落地；`a235aab` - 接受替代 baseline 策略；`e60840f` - 回寫策略 hash；`28c3fd7` - 記錄替代 baseline 產物；`7acb563` - 回寫 baseline hash；`8b747b1` - 替換非 handoff GSAP tween；`637f228` - 回寫 Step 4 驗證；`91e1036` - 標記 Step 4 log 已落地；`1b313f8` - 主 auth handoff 改為 rAF phase clock；`0fe59d3` - 回寫 Step 5 驗證；`44051db` - 移除 GSAP script 與全域引用
+- 進行中：Step 6 log 回寫與 hash commit
+- 下一步：提交本 log，回寫 log commit hash，確認工作樹
 - 未決 / 待我確認：無；使用者已接受「靜態截圖 + DOM 狀態取樣 + 全套測試 + 實機待驗收」
 - 待裝置驗收：S14-3 會移除 GSAP 與替換 handoff 動畫；過場節奏、白光、能量感與實機 60fps 需使用者裝置驗收
 
@@ -117,3 +117,37 @@
   - `git diff --check`：通過（僅 CRLF 提示）。
 - 待裝置驗收：auth handoff 節奏、白光、WebGL 能量感與實機 60fps。
 - Commit：`1b313f8`
+
+### Step 6 - 移除 GSAP script 與全域引用
+- 狀態：產品變更完成；本 log 回寫中。
+- 目的：在所有 tween/timeline 已遷到原生路徑後，移除最後的 GSAP CDN 依賴與 `window.gsap` 取用，降低 CSP 表面與外部 script 失敗點。
+- 修改：
+  - `public/index.html:28`：刪除 `gsap@3.12.5` CDN script。
+  - `public/index.html:5218`：刪除 `const gsap = window.gsap;`。
+  - `public/worldforge-login.html:28,5218`：由 `npm run sync:login-mother` 同步相同刪除。
+- 殘留確認：
+  - `rg -n "\\bgsap\\b|GSAP" public/index.html public/worldforge-login.html firebase.json`：無輸出；exit 1 代表沒有命中。
+  - `firebase.json` CSP 未移除 `https://cdn.jsdelivr.net`，因 Three.js importmap 仍使用 jsdelivr。
+- After 取樣產物：
+  - `output/s14-3/after/static-login-1366.png`
+  - `output/s14-3/after/static-workbench-1366.png`
+  - `output/s14-3/after/static-history-1366.png`
+  - `output/s14-3/after/static-logout-confirm-1366.png`
+  - `output/s14-3/after/static-mobile-history-390.png`
+  - `output/s14-3/after/static-dom-after.json`
+  - `output/s14-3/after/handoff-runtime-report.json`
+  - `output/s14-3/after/handoff-runtime-debug.json`
+  - `output/s14-3/after/after-artifacts-summary.json`
+- Runtime 取樣：
+  - Playwright 真頁載入後取得 `__FLG_LOGIN_CONTROLLER__` / `__FLG_TIMELINE__`。
+  - 呼叫 `beginAuthentication("Headless 授權流程取樣", { skipAuth: true })` 後進入 `body.operational`。
+  - `window.gsap` 為 `undefined`；沒有 pageerror；console 僅有 headless WebGL `GPU stall due to ReadPixels` warning。
+  - `#operationalDeck` 為 `aria-hidden="false"` 且無 `inert`，`#ritualStack` 已關閉並隱藏。
+- 驗證：
+  - `npm run sync:login-mother`：通過。
+  - `npm run check`：通過。
+  - `npm test`：23 passed。
+  - `npm run test:visual`：14 passed。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待裝置驗收：handoff 節奏、白光、WebGL 能量感與實機 60fps；`test:visual` 與靜態 after 截圖不驗動畫。
+- Commit：`44051db`
