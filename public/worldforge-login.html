@@ -314,7 +314,6 @@
         repeating-linear-gradient(90deg, transparent 0 46px, rgba(214, 166, 77, 0.022) 47px, transparent 48px);
       mix-blend-mode: screen;
       opacity: 0.36;
-      animation: scanDrift 8s linear infinite;
     }
 
     .atmosphere::after {
@@ -329,7 +328,6 @@
         radial-gradient(ellipse at 84% 75%, rgba(161, 78, 10, 0.18), transparent 38%);
       filter: blur(12px);
       opacity: 0.56;
-      animation: fogBreath 11s ease-in-out infinite alternate;
     }
 
     .boot-veil {
@@ -484,7 +482,6 @@
       writing-mode: vertical-rl;
       text-orientation: mixed;
       white-space: pre-wrap;
-      animation: leylineFall 18s linear infinite;
       text-shadow: 0 0 12px rgba(214, 166, 77, 0.16);
     }
 
@@ -494,8 +491,6 @@
 
     .leyline-rain::after {
       right: 3%;
-      animation-duration: 24s;
-      animation-direction: reverse;
       opacity: 0.72;
     }
 
@@ -533,7 +528,6 @@
         radial-gradient(circle, transparent 0 47%, rgba(214, 166, 77, 0.14) 47.4% 47.9%, transparent 48.4% 58%),
         radial-gradient(circle, transparent 0 68%, rgba(255, 170, 58, 0.12) 68.4% 68.8%, transparent 69.4%);
       opacity: 0.86;
-      animation: lensBreathe 7.2s ease-in-out infinite;
     }
 
     .arcane-lens::after {
@@ -541,7 +535,6 @@
         conic-gradient(from 4deg, transparent 0 3deg, rgba(255, 226, 160, 0.28) 4deg 5deg, transparent 6deg 12deg),
         conic-gradient(from 28deg, transparent 0 10deg, rgba(33, 112, 100, 0.16) 10.6deg 11.4deg, transparent 12deg 24deg);
       mask-image: radial-gradient(circle, transparent 0 43%, #000 45% 73%, transparent 75%);
-      animation: lensRotate 34s linear infinite;
       opacity: 0.82;
     }
 
@@ -551,7 +544,6 @@
         repeating-conic-gradient(from 0deg, rgba(255, 226, 160, 0.18) 0deg 1.2deg, transparent 1.4deg 4.8deg),
         radial-gradient(circle, transparent 0 52%, rgba(214, 166, 77, 0.16) 53% 53.5%, transparent 54%);
       mask-image: radial-gradient(circle, transparent 0 49%, #000 51% 57%, transparent 59%);
-      animation: lensCounterRotate 48s linear infinite;
     }
 
     .arcane-lens .lens-glyphs {
@@ -561,7 +553,6 @@
         repeating-conic-gradient(from 15deg, transparent 0deg 6deg, rgba(255, 226, 160, 0.28) 6.2deg 6.8deg, transparent 7deg 15deg),
         conic-gradient(from 0deg, rgba(33, 112, 100, 0.18), transparent 42deg, rgba(185, 75, 25, 0.16), transparent 92deg, rgba(214, 166, 77, 0.16));
       mask-image: radial-gradient(circle, transparent 0 58%, #000 60% 62%, transparent 64%);
-      animation: lensRotate 64s linear infinite reverse;
       opacity: 0.72;
     }
 
@@ -573,7 +564,6 @@
         radial-gradient(circle at 84% 70%, rgba(255, 226, 160, 0.34) 0 1.4%, transparent 2.4%),
         radial-gradient(circle at 13% 78%, rgba(33, 112, 100, 0.3) 0 1.2%, transparent 2.2%);
       filter: blur(1px);
-      animation: lensBokeh 9s ease-in-out infinite alternate;
       opacity: 0.74;
     }
 
@@ -582,7 +572,6 @@
       opacity: 0.62;
       filter: blur(0.8px);
       mix-blend-mode: screen;
-      animation: lensBokeh 12s ease-in-out infinite alternate;
     }
 
     .arcane-lens .lens-side.left {
@@ -622,7 +611,6 @@
       width: min(31vw, 520px);
       filter: blur(0.6px);
       opacity: 0.86;
-      animation: sideFillBreathe 13s ease-in-out infinite alternate;
     }
 
     .reference-side-fill::before {
@@ -645,7 +633,6 @@
         radial-gradient(circle at 56% 77%, rgba(255, 210, 122, 0.24) 0 8px, transparent 24px),
         conic-gradient(from 48deg at 0% 50%, transparent 0 76deg, rgba(255, 184, 77, 0.16) 88deg 114deg, transparent 128deg 360deg);
       mask-image: linear-gradient(270deg, #000 0 68%, transparent 100%);
-      animation-delay: -3.5s;
     }
 
     .connection-window {
@@ -680,7 +667,6 @@
       inset: 0;
       background: linear-gradient(105deg, transparent 0 32%, rgba(255, 226, 160, 0.16), transparent 68%);
       transform: translateX(-120%);
-      animation: sweep 2.4s ease-in-out infinite;
     }
 
     .connection-window[aria-hidden="false"] {
@@ -826,7 +812,6 @@
       width: 46px;
       background: linear-gradient(90deg, var(--gold-hot), transparent);
       opacity: 0.5;
-      animation: lineProbe 3.4s ease-in-out infinite;
     }
 
     .hud-code::before {
@@ -838,7 +823,6 @@
       right: 0;
       bottom: 0;
       transform: rotate(180deg);
-      animation-delay: -1.7s;
     }
 
     .ritual-stack,
@@ -872,7 +856,6 @@
       background: linear-gradient(105deg, transparent 0 34%, rgba(214, 166, 77, 0.18), rgba(255, 243, 176, 0.06), transparent 64% 100%);
       transform: translateX(-120%);
       opacity: 0.78;
-      animation: sweep 6.6s ease-in-out infinite;
       pointer-events: none;
     }
 
@@ -988,7 +971,7 @@
       transform-style: preserve-3d;
       backface-visibility: hidden;
       contain: layout paint;
-      will-change: transform, opacity, filter;
+      will-change: transform, opacity;
       border-radius: 8px;
       background:
         linear-gradient(180deg, rgba(8, 8, 8, 0.88), rgba(24, 12, 3, 0.78)),
@@ -1016,9 +999,9 @@
       -webkit-mask-composite: xor;
       mask: linear-gradient(#000, #000) content-box, linear-gradient(#000, #000);
       mask-composite: exclude;
+      display: none;
       opacity: 0;
       filter: drop-shadow(0 0 10px rgba(255, 226, 160, 0.18));
-      animation: frameSweep 3.8s linear infinite, frameSweepFade 1.2s 0.2s ease-out forwards;
     }
 
     .auth-panel::after {
@@ -1052,7 +1035,6 @@
     .auth-panel .seal-strip span {
       display: inline-block;
       min-width: 100%;
-      animation: crawl 22s linear infinite;
     }
 
     .auth-panel .corner-seal {
@@ -1189,7 +1171,6 @@
 
     .sync-row b {
       color: rgba(110, 231, 255, 0.9);
-      animation: statusBlink 1.8s ease-in-out infinite;
     }
 
     .auth-actions {
@@ -1562,7 +1543,6 @@
     .sao-btn:focus-visible {
       outline: none;
       box-shadow: var(--sao-glow-focus);
-      animation: saoFocusPulse 2s ease-in-out infinite;
     }
 
     .sao-btn:disabled {
@@ -1671,33 +1651,16 @@
         0 0 18px rgba(214, 166, 77, 0.18);
     }
 
-    body.boot-complete .sao-btn[data-bloom-target="hero-cta"]::after,
-    body.operational .analyze-ritual-btn:not(:disabled)::after {
-      animation: saoHeroPlateBreath 4.8s ease-in-out infinite;
-    }
-
     .sao-btn[data-bloom-target="hero-cta"]:hover:not(:disabled),
     .sao-btn[data-bloom-target="hero-cta"]:focus-visible {
       filter: saturate(1.04) drop-shadow(0 0 10px rgba(214, 166, 77, 0.24));
     }
 
     @media (prefers-reduced-motion: no-preference) {
-      body.boot-complete .sao-btn:not(:disabled)::after {
-        animation: saoHeroPlateBreath 5.2s ease-in-out infinite;
-      }
-
-      body.boot-complete .sao-btn:not(:disabled)::before {
-        animation: saoUnderplatePulse 6.4s ease-in-out infinite;
-      }
-
       body.boot-complete .sao-btn:hover:not(:disabled)::after,
       body.boot-complete .sao-btn:focus-visible::after,
       body.boot-complete .analyze-ritual-btn.is-loading::after {
         animation: saoButtonStrike 0.48s steps(2, end) both;
-      }
-
-      body.boot-complete .analyze-ritual-btn.is-loading::after {
-        animation: saoHeroLoadingPlate 1.35s ease-in-out infinite;
       }
     }
 
@@ -1755,7 +1718,6 @@
         rgba(185, 75, 25, 0.78) 88deg 92deg,
         transparent 100deg 360deg
       );
-      animation: frameSweep 4.6s linear infinite, frameSweepFade 1.1s 0.35s ease-out forwards;
     }
 
     .override-window[aria-hidden="false"] .override-header {
@@ -1958,7 +1920,6 @@
       background: linear-gradient(90deg, transparent, rgba(214, 166, 77, 0.42), rgba(255, 226, 160, 0.42), transparent);
       opacity: 0.72;
       transform: translateX(-18%);
-      animation: operationalFrameSweep 5.6s var(--sao-easing-out) infinite;
     }
 
     body.operational .sao-window {
@@ -2674,7 +2635,6 @@
     }
 
     .tool-module.deploy-sweep::before {
-      animation: sweep 1.1s ease-out 1;
     }
 
     .tool-module h3 {
@@ -2790,7 +2750,6 @@
       background: linear-gradient(100deg, transparent 0 22%, rgba(255, 226, 160, 0.36), transparent 62% 100%);
       opacity: 0;
       transform: translateX(-120%);
-      animation: spellChipScan 0.78s var(--sao-easing-out) calc(var(--spell-delay, 0s) + 0.08s) both;
     }
 
     .spell-list span:nth-child(1) { --spell-delay: 0s; animation-delay: var(--spell-delay); }
@@ -2869,7 +2828,6 @@
 
     .analyze-ritual-btn.is-loading::after {
       background: var(--sao-cyber-primary-hover);
-      animation: saoHeroLoadingPlate 1.35s ease-in-out infinite;
     }
 
     .analyze-ritual-btn .btn-loading::after {
@@ -2881,7 +2839,6 @@
       height: 2px;
       background: linear-gradient(90deg, transparent, rgba(255, 246, 203, 0.9), rgba(214, 166, 77, 0.72), transparent);
       box-shadow: 0 0 14px rgba(214, 166, 77, 0.48);
-      animation: buttonScanLine 1.05s ease-in-out infinite;
     }
 
     .analysis-dossier {
@@ -3142,7 +3099,6 @@
         repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.055) 0 1px, transparent 1px 14px);
       opacity: 0.7;
       transform: translateX(-74%);
-      animation: saoRailScan 1.55s linear infinite;
       mix-blend-mode: screen;
     }
 
@@ -3158,7 +3114,6 @@
       transform: translate(-50%, -50%);
       box-shadow: 0 0 18px rgba(214, 166, 77, 0.9);
       transition: left 0.85s linear;
-      animation: saoLeadingPulse 1.8s ease-in-out infinite;
     }
 
     .analysis-progress-bar i {
@@ -3245,7 +3200,6 @@
         linear-gradient(transparent, transparent) padding-box,
         linear-gradient(90deg, transparent, rgba(214, 166, 77, 0.92), transparent) border-box;
       background-size: 200% 100%;
-      animation: noticeScan 2.4s linear infinite;
     }
 
     .notice::after {
@@ -3263,11 +3217,10 @@
     }
 
     .notice.is-entering {
-      animation: noticeIn 0.72s var(--sao-easing-back) both, noticePulse 1.4s ease-out 0.18s both;
+      animation: noticeIn 0.72s var(--sao-easing-back) both;
     }
 
     .notice.is-entering::after {
-      animation: noticeLine 0.82s var(--sao-easing-out) 0.08s both;
     }
 
     .notice.is-leaving {
@@ -3684,10 +3637,6 @@
       pointer-events: none;
     }
 
-    @keyframes scanDrift {
-      to { transform: translateY(18px); }
-    }
-
     @keyframes bootScan {
       from { transform: translateY(-12px); }
       to { transform: translateY(12px); }
@@ -3913,11 +3862,6 @@
       }
     }
 
-    @keyframes saoFocusPulse {
-      0%, 100% { box-shadow: var(--sao-glow-focus); }
-      50% { box-shadow: 0 0 0 2px rgba(255, 226, 160, 1), 0 0 38px rgba(214, 166, 77, 0.92); }
-    }
-
     @keyframes saoSpinAngle {
       to { --sao-spin-angle: 360deg; }
     }
@@ -3981,58 +3925,6 @@
       }
     }
 
-    @keyframes saoDrawerOpen {
-      0% {
-        opacity: 0;
-        transform: scaleX(0.02) scaleY(0.02) translateY(-10px);
-        filter: blur(8px) brightness(1.8);
-      }
-
-      35% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(0.03) translateY(-4px);
-        filter: blur(4px) brightness(1.5);
-      }
-
-      72% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(1.05) translateY(2px);
-        filter: blur(1px) brightness(1.12);
-      }
-
-      100% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(1) translateY(0);
-        filter: blur(0) brightness(1);
-      }
-    }
-
-    @keyframes saoMenuOpen {
-      0% {
-        opacity: 0;
-        transform: scaleX(0.02) scaleY(0.02) translateY(-6px);
-        filter: blur(7px) brightness(1.7);
-      }
-
-      38% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(0.05) translateY(-3px);
-        filter: blur(3px) brightness(1.42);
-      }
-
-      72% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(1.07) translateY(2px);
-        filter: blur(1px) brightness(1.12);
-      }
-
-      100% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(1) translateY(0);
-        filter: blur(0) brightness(1);
-      }
-    }
-
     @keyframes saoMenuSweep {
       0% {
         opacity: 0;
@@ -4046,12 +3938,6 @@
       100% {
         opacity: 0;
         transform: translateX(120%);
-      }
-    }
-
-    @keyframes noticeScan {
-      to {
-        background-position: 200% 0;
       }
     }
 
@@ -4080,55 +3966,11 @@
       }
     }
 
-    @keyframes noticeLine {
-      0% {
-        opacity: 0;
-        transform: scaleX(0);
-      }
-
-      36% {
-        opacity: 0.92;
-      }
-
-      100% {
-        opacity: 0;
-        transform: scaleX(1);
-      }
-    }
-
-    @keyframes noticePulse {
-      0%, 100% {
-        box-shadow: 0 18px 52px rgba(0, 0, 0, 0.58), inset 0 0 26px rgba(214, 166, 77, 0.05);
-      }
-
-      42% {
-        box-shadow: 0 18px 56px rgba(0, 0, 0, 0.64), 0 0 34px rgba(214, 166, 77, 0.28), inset 0 0 34px rgba(255, 226, 160, 0.08);
-      }
-    }
-
     @keyframes noticeOut {
       to {
         opacity: 0;
         transform: translateY(-16px) scaleX(0.22) scaleY(0.06);
         filter: blur(4px) brightness(1.4);
-      }
-    }
-
-    @keyframes saoLeadingPulse {
-      0%, 100% {
-        transform: translate(-50%, -50%) scale(1);
-        opacity: 0.88;
-      }
-
-      50% {
-        transform: translate(-50%, -50%) scale(1.4);
-        opacity: 1;
-      }
-    }
-
-    @keyframes saoSpinnerRotate {
-      to {
-        transform: rotate(360deg);
       }
     }
 
@@ -4279,55 +4121,10 @@
       }
     }
 
-    @keyframes spellChipScan {
-      0% {
-        opacity: 0;
-        transform: translateX(-120%);
-      }
-
-      32% {
-        opacity: 0.82;
-      }
-
-      100% {
-        opacity: 0;
-        transform: translateX(120%);
-      }
-    }
-
-    @keyframes frameSweep {
-      to { --sweep-angle: 360deg; }
-    }
-
-    @keyframes frameSweepFade {
-      0% { opacity: 0; filter: drop-shadow(0 0 0 rgba(255, 226, 160, 0)); }
-      42% { opacity: 1; filter: drop-shadow(0 0 18px rgba(255, 226, 160, 0.28)); }
-      100% { opacity: 0.84; filter: drop-shadow(0 0 10px rgba(255, 226, 160, 0.18)); }
-    }
-
-    @keyframes operationalFrameSweep {
-      0%, 62%, 100% {
-        opacity: 0.42;
-        transform: translateX(-18%) scaleX(0.72);
-      }
-
-      34% {
-        opacity: 0.9;
-        transform: translateX(18%) scaleX(1.12);
-      }
-    }
-
     @keyframes mobileRitualStackConjure {
       0% { clip-path: polygon(48% 47%, 52% 47%, 52% 53%, 48% 53%); transform: translateY(18px) scaleX(0.16) scaleY(0.04); opacity: 0.16; filter: blur(12px) brightness(1.9); }
       30% { clip-path: polygon(0 40%, 100% 40%, 100% 60%, 0 60%); transform: translateY(4px) scaleX(1) scaleY(0.22); opacity: 0.94; filter: blur(5px) brightness(1.45); }
       100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); transform: translateY(0) scale(1); opacity: 1; filter: blur(0) brightness(1); }
-    }
-
-    @keyframes mobileAuthPanelWake {
-      0% { transform: translateY(18px) scale(0.9); opacity: 0; }
-      52% { opacity: 1; }
-      78% { transform: translateY(-3px) scale(1.018); }
-      100% { transform: translateY(0) scale(1); opacity: 1; }
     }
 
     @keyframes mobileAuthEdgePulse {
@@ -4348,38 +4145,8 @@
       100% { clip-path: polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%); transform: scaleX(0.12) scaleY(0.02); opacity: 0; filter: blur(10px) brightness(1.9); }
     }
 
-    @keyframes leylineFall {
-      from { transform: translateY(-12%); }
-      to { transform: translateY(12%); }
-    }
-
-    @keyframes fogBreath {
-      0% { transform: scale(1); opacity: 0.45; }
-      100% { transform: scale(1.08); opacity: 0.8; }
-    }
-
-    @keyframes sweep {
-      0%, 34% { transform: translateX(-120%); opacity: 0; }
-      46% { opacity: 0.7; }
-      72%, 100% { transform: translateX(120%); opacity: 0; }
-    }
-
-    @keyframes lineProbe {
-      0%, 100% { width: 34px; opacity: 0.28; }
-      50% { width: 76px; opacity: 0.8; }
-    }
-
     @keyframes glyphSpin {
       to { transform: rotate(360deg); }
-    }
-
-    @keyframes counterSpin {
-      to { transform: rotate(-315deg); }
-    }
-
-    @keyframes statusBlink {
-      0%, 100% { opacity: 0.42; }
-      50% { opacity: 1; }
     }
 
     @keyframes statusSweep {
@@ -4396,111 +4163,6 @@
       38% {
         box-shadow: inset 0 0 24px rgba(255, 226, 160, 0.12), 0 0 18px rgba(214, 166, 77, 0.18);
       }
-    }
-
-    @keyframes buttonScanLine {
-      0%, 100% { transform: translateX(-80%); opacity: 0.18; }
-      50% { transform: translateX(80%); opacity: 0.92; }
-    }
-
-    @keyframes saoRailScan {
-      0% { transform: translateX(-74%) scaleX(0.72); opacity: 0.22; }
-      42% { opacity: 0.76; }
-      100% { transform: translateX(96%) scaleX(1); opacity: 0.1; }
-    }
-
-    @keyframes saoHeroPlateBreath {
-      0%, 100% {
-        transform: translate3d(0, 0, 0);
-        background-position: -140% 0, 0 0;
-        filter: brightness(0.9) saturate(0.98);
-        box-shadow:
-          inset 0 1px 0 rgba(255, 226, 160, 0.22),
-          inset 0 -18px 28px rgba(12, 5, 1, 0.72),
-          inset 0 0 0 1px rgba(255, 226, 160, 0.16),
-          inset -5px 0 0 rgba(12, 5, 1, 0.5);
-      }
-
-      48% {
-        transform: translate3d(-1px, 0, 0);
-        background-position: 112% 0, 0 0;
-        filter: brightness(1.08) saturate(1.04);
-        box-shadow:
-          inset 0 1px 0 rgba(255, 226, 160, 0.34),
-          inset 0 -18px 28px rgba(12, 5, 1, 0.58),
-          inset 0 0 0 1px rgba(255, 226, 160, 0.26),
-          inset -5px 0 0 rgba(12, 5, 1, 0.42),
-          0 0 18px rgba(214, 166, 77, 0.14);
-      }
-    }
-
-    @keyframes saoUnderplatePulse {
-      0%, 100% {
-        transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
-        filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.72)) brightness(0.94);
-        box-shadow:
-          inset 0 0 0 1px rgba(214, 166, 77, 0.22),
-          inset -10px 0 0 rgba(214, 166, 77, 0.12);
-      }
-
-      48% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 1px));
-        filter: drop-shadow(0 8px 0 rgba(0, 0, 0, 0.82)) brightness(1.06);
-        box-shadow:
-          inset 0 0 0 1px rgba(214, 166, 77, 0.34),
-          inset -10px 0 0 rgba(214, 166, 77, 0.2),
-          0 0 16px rgba(214, 166, 77, 0.12);
-      }
-    }
-
-    @keyframes saoHeroLoadingPlate {
-      0%, 100% {
-        filter: brightness(0.88) saturate(1);
-        transform: translate3d(0, 0, 0);
-      }
-
-      34% {
-        filter: brightness(1.14) saturate(1.08);
-        transform: translate3d(1px, 0, 0);
-      }
-
-      58% {
-        filter: brightness(0.96) saturate(1.02);
-        transform: translate3d(-1px, 0, 0);
-      }
-    }
-
-    @keyframes analysisLoad {
-      0%, 100% { filter: brightness(0.78); transform: scaleX(0.82); }
-      50% { filter: brightness(1.28); transform: scaleX(1); }
-    }
-
-    @keyframes crawl {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    @keyframes lensRotate {
-      to { transform: rotate(360deg); }
-    }
-
-    @keyframes lensCounterRotate {
-      to { transform: rotate(-360deg); }
-    }
-
-    @keyframes lensBreathe {
-      0%, 100% { transform: scale(0.985); opacity: 0.62; }
-      48% { transform: scale(1.025); opacity: 0.94; }
-    }
-
-    @keyframes lensBokeh {
-      from { transform: rotate(-4deg) scale(0.98); opacity: 0.52; }
-      to { transform: rotate(5deg) scale(1.04); opacity: 0.86; }
-    }
-
-    @keyframes sideFillBreathe {
-      from { transform: translate3d(0, -1.2%, 0) scale(0.98); opacity: 0.58; }
-      to { transform: translate3d(0, 1.4%, 0) scale(1.035); opacity: 0.9; }
     }
 
     @keyframes saoWindowSettle {
@@ -5099,68 +4761,6 @@
       display: none;
     }
 
-    @keyframes saoButtonDarkScan {
-      0% {
-        transform: translateX(-130%) skewX(-18deg);
-        opacity: 0;
-      }
-      16% {
-        opacity: 0.48;
-      }
-      48% {
-        opacity: 0.72;
-      }
-      100% {
-        transform: translateX(132%) skewX(-18deg);
-        opacity: 0;
-      }
-    }
-
-    @keyframes saoUnderplateDrift {
-      0%, 100% {
-        transform: translate(var(--sao-cyber-offset-x), var(--sao-cyber-offset-y));
-      }
-      38% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 3px), calc(var(--sao-cyber-offset-y) + 1px));
-      }
-      62% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 5px), calc(var(--sao-cyber-offset-y) + 2px));
-      }
-    }
-
-    @keyframes saoUnderplateJolt {
-      0%, 100% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 6px), calc(var(--sao-cyber-offset-y) + 2px));
-      }
-      18% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 14px), calc(var(--sao-cyber-offset-y) + 5px));
-      }
-      34% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 8px), calc(var(--sao-cyber-offset-y) + 1px));
-      }
-      52% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 16px), calc(var(--sao-cyber-offset-y) + 4px));
-      }
-      74% {
-        transform: translate(calc(var(--sao-cyber-offset-x) + 10px), calc(var(--sao-cyber-offset-y) + 3px));
-      }
-    }
-
-    @keyframes saoMenuRailSweep {
-      0% {
-        transform: translateY(-112%) scaleY(0.12);
-        opacity: 0;
-      }
-      16%,
-      78% {
-        opacity: 0.9;
-      }
-      100% {
-        transform: translateY(112%) scaleY(0.2);
-        opacity: 0;
-      }
-    }
-
     @keyframes saoSystemMenuClipResolve {
       0% {
         opacity: 0;
@@ -5428,11 +5028,6 @@
         0 0 12px rgba(214, 166, 77, 0.26);
     }
 
-    .sao-btn:hover:not(:disabled) .sao-btn-scan::before,
-    .sao-btn:focus-visible .sao-btn-scan::before {
-      animation: saoButtonDarkScan 1.35s cubic-bezier(0.2, 0.86, 0.18, 1) infinite;
-    }
-
     .sao-btn .sao-btn-tag {
       display: none !important;
     }
@@ -5447,10 +5042,6 @@
         animation: none;
       }
 
-      body.boot-complete .sao-btn:not(:disabled) .sao-btn-scan::before {
-        animation: saoButtonDarkScan 5.6s cubic-bezier(0.2, 0.86, 0.18, 1) infinite;
-      }
-
       body.boot-complete .sao-btn:hover:not(:disabled)::after,
       body.boot-complete .sao-btn:focus-visible::after {
         animation: none;
@@ -5460,58 +5051,6 @@
       body.boot-complete .sao-btn:focus-visible::before {
         display: none;
         animation: none;
-      }
-    }
-
-    @keyframes saoButtonOverdrivePlate {
-      0%, 100% {
-        clip-path: var(--sao-cyber-clip);
-        transform: translate3d(0, 0, 0) skewX(0deg);
-        filter: brightness(1.02) saturate(1.08);
-      }
-      12% {
-        clip-path: polygon(0 0, 100% 0, 100% 22%, 0 22%);
-        transform: translate3d(-10px, 0, 0) skewX(-6deg);
-        filter: brightness(1.38) saturate(1.32);
-      }
-      26% {
-        clip-path: polygon(0 66%, 100% 66%, 100% 100%, 8% 100%, 0 76%);
-        transform: translate3d(12px, 0, 0) skewX(5deg);
-      }
-      42% {
-        clip-path: polygon(0 34%, 100% 34%, 100% 54%, 0 54%);
-        transform: translate3d(-16px, 0, 0) skewX(-7deg);
-      }
-      64% {
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 8% 100%, 0 70%);
-        transform: translate3d(4px, 0, 0) skewX(2deg);
-      }
-    }
-
-    @keyframes saoMenuSignalFlicker {
-      0% {
-        opacity: 0;
-        transform: translate3d(-22px, 0, 0);
-      }
-      16% {
-        opacity: 0.88;
-        transform: translate3d(9px, 0, 0);
-      }
-      30% {
-        opacity: 0.28;
-        transform: translate3d(-8px, 0, 0);
-      }
-      48% {
-        opacity: 0.72;
-        transform: translate3d(14px, 0, 0);
-      }
-      70% {
-        opacity: 0.2;
-        transform: translate3d(0, 0, 0);
-      }
-      100% {
-        opacity: 0;
-        transform: translate3d(0, 0, 0);
       }
     }
 
@@ -5614,14 +5153,6 @@
         repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 226, 160, 0.08) 10px 11px, transparent 11px 18px);
       opacity: 0;
       transform: translateX(-18px);
-    }
-
-    .sao-system-menu:not([hidden])::before {
-      animation: saoMenuRailSweep 5.6s cubic-bezier(0.2, 0.86, 0.18, 1) both;
-    }
-
-    .sao-system-menu:not([hidden])::after {
-      animation: saoMenuSignalFlicker 5.6s steps(2, end) both;
     }
 
     .sao-system-menu .sao-btn {

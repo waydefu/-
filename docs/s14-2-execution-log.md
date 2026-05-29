@@ -1,10 +1,10 @@
 # S14-2 Execution Log - 拆除 DOM 假特效層
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash
-- 進行中：無
-- 下一步：Step 3 Part B 盤點並收斂剩餘 keyframes，優先移除未引用與 L1 paint-heavy 動效
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交（Part B 第一輪 keyframes 收斂 + 本 log；既有未追蹤 `.claude/`、`output/`）
+- 已完成：S14-1 完成，最後 commit `0b8db67` - mark ticket complete；`03e5822` - 初始化 S14-2 執行 log；`6931b3c` - 記錄 Step 0 commit hash；`83e6f34` - 記錄 S14-2 修改前 baseline；`41c5c56` - 拔掉按鈕三疊字 DOM 假特效層；`664dfaa` - 回寫 Part A hash；`8f553a5` - 標記 Part A log 已落地
+- 進行中：Step 3 Part B 第一輪已完成驗證，準備 commit `refactor(s14-2/anim): prune idle keyframes`
+- 下一步：commit Part B 第一輪，取得 hash 後繼續第二輪收斂 toward ~30 keyframes
 - 未決 / 待我確認：無
 - 待裝置驗收：本單會移除 DOM 動效與收斂 keyframes，動效手感與 60fps 需使用者裝置驗收
 
@@ -60,3 +60,22 @@
   - `npm run test:visual`：14 passed，無 snapshot 更新。
 - 待裝置驗收：hover/focus 的舊 DOM glitch 手感已移除；test:visual 仍拔 script / 藏 WebGL，實機 60fps 與動效手感待使用者裝置驗收。
 - Commit：`41c5c56`
+
+### Step 3 - Part B 第一輪：移除未引用與 idle loop keyframes
+- 狀態：已完成驗證，待 commit
+- 目的：先拔掉未引用 keyframes 與長時間 idle 的 DOM/CSS 裝飾循環，降低 L1 paint/composite 壓力。
+- 修改：
+  - `public/index.html`：移除背景掃描、lens 旋轉/呼吸、frame sweep、notice scan/pulse、button idle breath/loading plate、system menu rail/signal 等 CSS animation 引用與對應 keyframes；`.frame-sweep` 改為不顯示。
+  - `public/worldforge-login.html`：由 `npm run sync:login-mother` 同步母檔。
+- keyframes 計數：
+  - Step 1 基準：93
+  - Part A 後：89
+  - 本步後：47
+- 驗證：
+  - `rg` 檢查本步移除的 keyframe 名稱與 animation 引用：無殘留壞引用。
+  - `npm run sync:login-mother`：通過，`worldforge-login.html` 已更新。
+  - `npm run check`：通過。
+  - `npm run test:visual`：14 passed，無 snapshot 更新。
+  - `git diff --check`：通過（僅 CRLF 提示）。
+- 待裝置驗收：idle DOM 動效變安靜；test:visual 仍拔 script / 藏 WebGL，實機動效手感與 60fps 待使用者裝置驗收。
+- Commit：待產生
