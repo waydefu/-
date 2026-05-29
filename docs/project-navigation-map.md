@@ -338,6 +338,15 @@ Validation after implementation:
 - `npm run test:visual:update`: 14 passed.
 - `npm run test:a11y`: 3 passed, axe impact counts `{}`.
 - `npm run build`: passed.
+- Commit: `a0be3d3 fix(s13.3): lengthen rituals and reorder system menu`.
+- `firebase deploy --only hosting --project project-7276420283723642146`: passed.
+- `npm run smoke:hosting`: passed.
+- Cache-busted deployed HTML check passed:
+  - runtime menu order contains `[this.historyToggle, this.clearDraftButton, this.reanalyzeButton, this.logoutButton]`;
+  - old runtime menu order with `accountToggle` is absent;
+  - system menu open duration `4.2s` present;
+  - desktop override dialog open duration `3.8s` present;
+  - mobile override dialog open duration `3.8s` present.
 
 ## S13 Effects Visibility Hotfix
 
