@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成
-- 進行中：Step 6 Part F 登出確認彈窗動效已改完，等待 commit
-- 下一步：提交 Step 6，然後進 Part G 掃描與 Part A 診斷/待 preview
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效
+- 進行中：無
+- 下一步：進 Part G 掃描與 Part A 診斷/待 preview
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -77,9 +77,10 @@
 - Commit：`8fc791f`
 
 ### Step 6 - Part F 登出確認彈窗動效
-- 狀態：完成；等待本步 commit。
+- 狀態：完成。
 - 修改：`public/index.html` / 同步後 `public/worldforge-login.html`。新增 `.sao-confirm-window[aria-hidden="false"]` 專屬 0.72s `overrideMaterialize`，手機套 0.72s `overrideMaterializeMobile`；confirm 內文/header/actions 改短 delay；`SaoWindowController.open()` 開窗前 cancel 舊 animation，confirm focus delay 由 override window 的 4500ms 改 820ms。
 - 同步：已跑 `npm run sync:login-mother`。
 - 驗證：已跑 `npm run check` 通過；`git diff --check -- public/index.html public/worldforge-login.html` 通過（僅 CRLF 提示）；小窗確認 confirm selector、mobile selector、`target.getAnimations().forEach(...cancel...)` 與 820ms focus 分支存在。
 - Headless 限制：full-motion Playwright 對本頁 WebGL 仍不穩，未宣稱已視覺驗到登出彈窗動效；登出彈窗手感列待裝置/真瀏覽器驗收。
 - 風險：登出確認進場和 focus timing 變快；一般 override window 仍保留原本 5.2s 節奏。
+- Commit：`f00461b`
