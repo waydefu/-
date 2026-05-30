@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間
-- 進行中：無
-- 下一步：進 Part E 歷史抽屜收回殘影修復
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成
+- 進行中：Step 5 Part E 歷史抽屜 animation-driven close 已改完，等待 commit
+- 下一步：提交 Step 5，然後進 Part F 登出確認彈窗動效修復
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -65,3 +65,12 @@
 - Headless 限制：full-motion Playwright 對本頁 WebGL 仍不穩，未宣稱已驗到實際彈出手感；工作區進場手感列待裝置驗收。
 - 風險：工作區進場節奏變短；實機需確認按鈕不被裁切且系統選單可點。
 - Commit：`3352ef2`
+
+### Step 5 - Part E 歷史抽屜 animation-driven close
+- 狀態：完成；等待本步 commit。
+- 修改：`public/index.html` / 同步後 `public/worldforge-login.html`。新增 `cancelPanelClose(panel)`，open 時遞增 close token 並清掉舊 closing；`closePanel()` 由固定 `setTimeout(2200)` 改為 close token + `animation.finished` / `Promise.allSettled()` 收尾，並保留 `duration + 160ms` fallback。
+- 影響範圍：同型 panel（system menu、account menu、history drawer）共用 close 收尾；history 開啟/關閉時舊 close promise 不會在重新開啟後把 panel 隱藏。
+- 同步：已跑 `npm run sync:login-mother`。
+- 驗證：已跑 `npm run check` 通過；`git diff --check -- public/index.html public/worldforge-login.html` 通過（僅 CRLF 提示）；grep 確認 `__saoCloseToken`、`Promise.allSettled(animation.finished)` 與 fallback timer 均存在。
+- Headless 限制：full-motion Playwright 對本頁 WebGL 仍不穩，未宣稱已視覺驗到殘影消失；歷史抽屜退場視覺列待裝置/真瀏覽器驗收。
+- 風險：三種 panel close timing 改為 animation-driven；fallback 保留避免 animation event 遺失。

@@ -8715,20 +8715,40 @@
         hydrateAllSaoButtons(panel);
       }
 
+      cancelPanelClose(panel) {
+        if (!(panel instanceof HTMLElement)) return;
+        window.clearTimeout(panel.__saoCloseTimer);
+        panel.__saoCloseToken = (panel.__saoCloseToken || 0) + 1;
+        panel.classList.remove("is-closing");
+      }
+
       closePanel(panel, duration = 2200) {
         if (!(panel instanceof HTMLElement) || panel.hidden) return;
-        window.clearTimeout(panel.__saoCloseTimer);
+        this.cancelPanelClose(panel);
         panel.getAnimations().forEach((animation) => animation.cancel());
-        if (prefersReducedMotion) {
+        const closeToken = (panel.__saoCloseToken || 0) + 1;
+        panel.__saoCloseToken = closeToken;
+        const finishClose = () => {
+          if (panel.__saoCloseToken !== closeToken) return;
+          window.clearTimeout(panel.__saoCloseTimer);
           panel.hidden = true;
           panel.classList.remove("is-closing");
+        };
+        if (prefersReducedMotion) {
+          finishClose();
           return;
         }
         panel.classList.add("is-closing");
-        panel.__saoCloseTimer = window.setTimeout(() => {
-          panel.hidden = true;
-          panel.classList.remove("is-closing");
-        }, duration);
+        requestAnimationFrame(() => {
+          if (panel.__saoCloseToken !== closeToken) return;
+          const animations = panel.getAnimations().filter((animation) => animation.playState !== "finished");
+          if (animations.length) {
+            Promise.allSettled(animations.map((animation) => animation.finished)).then(finishClose);
+          } else {
+            finishClose();
+          }
+        });
+        panel.__saoCloseTimer = window.setTimeout(finishClose, duration + 160);
       }
 
       bindControls() {
@@ -8786,8 +8806,7 @@
         const shouldOpen = typeof force === "boolean" ? force : this.systemMenuPanel.hidden;
         this.systemMenuToggle?.setAttribute("aria-expanded", String(shouldOpen));
         if (shouldOpen) {
-          window.clearTimeout(this.systemMenuPanel.__saoCloseTimer);
-          this.systemMenuPanel.classList.remove("is-closing");
+          this.cancelPanelClose(this.systemMenuPanel);
           this.systemMenuPanel.hidden = false;
           this.playPanelOpen(this.systemMenuPanel, "system");
         } else {
@@ -8801,8 +8820,7 @@
         this.accountToggle?.setAttribute("aria-expanded", String(shouldOpen));
         this.accountToggle?.setAttribute("aria-label", shouldOpen ? "關閉帳號中樞" : "開啟帳號中樞");
         if (shouldOpen) {
-          window.clearTimeout(this.accountMenu.__saoCloseTimer);
-          this.accountMenu.classList.remove("is-closing");
+          this.cancelPanelClose(this.accountMenu);
           this.accountMenu.hidden = false;
           this.playPanelOpen(this.accountMenu, "menu");
         } else {
@@ -9077,8 +9095,7 @@
         this.historyToggle?.setAttribute("aria-expanded", String(shouldOpen));
         this.historyToggle?.setAttribute("aria-label", shouldOpen ? "關閉鑑定紀錄" : "開啟鑑定紀錄");
         if (shouldOpen) {
-          window.clearTimeout(this.historyDrawer.__saoCloseTimer);
-          this.historyDrawer.classList.remove("is-closing");
+          this.cancelPanelClose(this.historyDrawer);
           this.historyDrawer.hidden = false;
           this.playPanelOpen(this.historyDrawer, "drawer");
           this.refreshHistory(true);
