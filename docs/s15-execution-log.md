@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成
-- 進行中：Step 2 Part B Link Start 預熱/首幀/時鐘對齊已改完，等待 commit
-- 下一步：提交 Step 2，然後進 Part C 登入內文 stagger 定位與修正
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊
+- 進行中：無
+- 下一步：進 Part C 登入內文 stagger 定位與修正
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -39,10 +39,11 @@
 - Commit：`5dabba2`
 
 ### Step 2 - Part B Link Start 預熱、首幀可見與時鐘對齊
-- 狀態：完成；等待本步 commit。
+- 狀態：完成。
 - 修改：`public/index.html` / 同步後 `public/worldforge-login.html`。`runPhaseClock()` 新增共用起點；`LinkStartFX.start()` 接受同一 `performance.now()`；`triggerLinkStartHandoff()` 將 Link Start 與 handoff phase clock 對齊；shader 首段改為一開始就有 presence、tunnel phase 與 ignition core，避免前段近黑；初始化由 `deferToIdle(ensureLinkStartFX,{timeout:2400})` 改為 900ms `prewarmLinkStartFX()`。
 - 保護：`prewarmLinkStartFX()` 在 reduced motion、主 WebGL disposed/context-lost 時跳過；Playwright `navigator.webdriver` 環境標記 `data-link-start-prewarm="automation-skipped"`，避免 headless desktop 建第二個 WebGL context 後主執行緒卡死。實機與一般瀏覽器仍走完整預熱。
 - 同步：已跑 `npm run sync:login-mother`，`public/worldforge-login.html` 已由 source truth 更新。
 - 驗證：已跑 `npm run check` 通過；`git diff --check -- public/index.html public/worldforge-login.html` 通過（僅 CRLF 提示）。
 - Headless 限制：full-motion Playwright 在登入 WebGL boot 後無法穩定執行 `page.evaluate`，因此未宣稱已驗到 Link Start 動效；相關 debug / screenshot 留在 `output/s15/part-b/`，不納入 commit。
 - 風險：動效時序與 shader 可見度調整；headless 自動化不能代表 POCO F6 Pro/真 Chrome 動效手感，列待裝置驗收。
+- Commit：`3924b81`
