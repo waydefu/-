@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`94f87c7`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移] ✅ [I 依賴與建置]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`e39da5f`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移] ✅ [I 依賴與建置] ✅ [J 邊界/錯誤路徑]
 - 進行中：無
-- 下一個面向：J 邊界/錯誤路徑
-- 已記錄問題數：P0=0 P1=3 P2=5 P3=3
+- 下一個面向：全面向完成，等待下一張修復執行單
+- 已記錄問題數：P0=0 P1=3 P2=7 P3=3
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -183,5 +183,35 @@
 | P3 | I | `package.json`、`functions/package.json` | 依賴有小幅漂移：root `firebase` patch update、functions `groq-sdk` patch update；TypeScript 6 是 major，不宜自動升。 | 目前 audit 為 0 漏洞且測試通過，屬維護排程，不是即時風險。 | 下一張維護單分開升 patch 依賴並重跑完整測試；TypeScript 6 另開相容性評估。 | 高 |
 | P3 | I | `.gitignore`、`output/` | `output/` 目前未追蹤但未列入 `.gitignore`。 | Playwright/人工驗證產物容易長期污染工作樹，影響稽核與 commit 範圍判斷。 | 將 `output/` 納入 ignore，或定義其為有意保留的人工驗證輸出並建立清理規則。 | 高 |
 
+## J. 邊界/錯誤路徑
+
+### 掃描摘要
+- 後端 token/未登入：`401 unauthorized` 與 `403 invalid-token` 有繁中使用者訊息，不碰 Groq。
+- 後端 quota：匿名 5 / 登入 30 達上限時回 `429 quota-exceeded` 與可讀訊息。
+- 後端 Groq 建連失敗：在 SSE headers 前 catch、`refundQuota()`、回 `503 ai-unavailable`；但未依 Groq status/code 細分。
+- SSE 中途錯誤：後端送 `stream-interrupted` SSE error，前端 `parseSsePayload()` 會轉成 `AI 分析中斷：...`；B 面向已列不退 quota 風險。
+- 前端 timeout：`AbortController` 180 秒 abort，AbortError 會顯示 `MSG.TIMEOUT`。
+- Google popup 取消：`auth/popup-closed-by-user` 只顯示取消訊息、不播放 handoff，符合 README。
+- WebGL：init/context-lost/restored/fallback/dispose 路徑存在；CSS 有 `html[data-webgl-fallback="context-lost"]` fallback。
+
+### J 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P2 | J | `functions/src/index.ts:259`、`functions/src/index.ts:262` | Groq API 建連錯誤一律回 `503 ai-unavailable` 並拼入原始 `apiErr.message`，未區分 429 rate limit、413/token budget、上游 503。 | 使用者與前端無法判斷是暫時服務不可用、限流、還是 prompt/token 過大；也可能暴露過多供應商錯誤文字。 | 依 `apiErr.status` / `apiErr.code` 正規化為固定 `{code,message}`，例如 `ai-rate-limited`、`ai-token-budget`、`ai-unavailable`。 | 中 |
+| P2 | J | `public/index.html:8343`、`public/js/core/config.js:80` | 前端非 API error 會優先顯示 `error.message`；離線或 CORS/network fail 可能顯示瀏覽器英文 `Failed to fetch`，而不是既有繁中 `MSG.FETCH_FAIL`。 | 離線/網路中斷時使用者訊息不穩定，也不利客服或截圖回報。 | 只對 `isApiError` 使用 `userMessage`；一般 `TypeError` / network fail 統一顯示 `MSG.FETCH_FAIL`，必要時把 raw message 送 console。 | 中 |
+
 ## 優先修復順序（收尾彙整）
-- 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
+### P0
+- 無。
+
+### P1
+| 優先 | 面向 | 位置 | 建議執行 |
+|---:|---|---|---|
+| 1 | H | `README.md:89`、`README.md:278`、`public/index.html:5126` | 先決策正式登入範圍：若架構真相是 Google+匿名，補匿名 Auth 路徑與驗收；若只保留 Google，立即清掉 README/rules/測試中的 Email/訪客承諾。 |
+| 2 | B | `functions/src/index.ts:14`、`functions/src/index.ts:15` | App Check 先開 missing log，再以正式流量驗證後分階段 enforce，避免匿名/公開端點濫用。 |
+| 3 | G | `firebase.json:50`、`firebase.json:51`、`public/index.html:24` | 收斂 CSP：移除 script `unsafe-inline`、補 hash/nonce/SRI 或本機 pin 資產，再由 Report-Only 切 enforce。 |
+
+### 最該先做的 3 件事
+1. 釐清並落地 Auth 產品契約（Google-only vs Google+匿名），因為它同時牽動 UI、quota、App Check 驗收與文件。
+2. 開啟 App Check missing log，拿到正式流量證據後再 enforce，先把濫用觀測補起來。
+3. 修 CSP/SRI：目前前端安全邊界是最大橫向風險，且 rules/README 已誤稱完成，容易被忽略。
