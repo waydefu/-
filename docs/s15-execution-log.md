@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項
-- 進行中：root dev-tool audit 已修，下一步修 functions Firebase/Google SDK transitive audit
-- 下一步：修 functions `uuid`/`qs` moderate audit 與 invalid dependency tree；再做 Part A 真 Google popup 量測
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項；`68a0da4` - 清除 root dev-tool high audit
+- 進行中：functions transitive audit 已修，下一步做 Part A 真 Google popup 量測
+- 下一步：使用 preview/live 真 Google popup 量測 click 到 `signInWithPopup` 呼叫與 popup 繪製；有證據才改 popup 鏈路
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -145,3 +145,11 @@
 - 原因：root `npm audit` 的 high 風險來自開發工具鏈 `@axe-core/cli -> selenium-webdriver -> tmp@0.2.5`，`tmp <0.2.6` 有 path traversal advisory。
 - 驗證：`npm audit --audit-level=moderate` 回 `found 0 vulnerabilities`；`npm ls tmp --all` 顯示 `@axe-core/cli -> selenium-webdriver -> tmp@0.2.7`；`git diff --check -- package-lock.json package.json` 通過。
 - 風險：僅 dev/a11y tooling transitive lock 更新，無 runtime 產品行為風險。
+- Commit：`68a0da4`
+
+### Step 14 - Functions transitive audit 修補
+- 狀態：完成。
+- 修改：`functions/package.json` 新增 npm `overrides`，固定 `qs@6.15.2` 與 `uuid@11.1.1`；`functions/package-lock.json` 移除 nested vulnerable `uuid@8.3.2` / `uuid@9.0.1` copies，改由 hoisted `uuid@11.1.1` 覆蓋，並將 `qs` 從 `6.15.1` 升到 `6.15.2`。
+- 原因：Firebase Admin 13.10.0 目前仍透過 optional Google SDK 拉到舊 semver range；不降級 `firebase-admin` / `firebase-functions`，改用 npm overrides 收斂已知 vulnerable transitive versions。
+- 驗證：`npm --prefix functions audit --audit-level=moderate` 回 `found 0 vulnerabilities`；`npm --prefix functions ls qs uuid --all` exit 0，顯示 `uuid@11.1.1` / `qs@6.15.2` 為 overridden 而非 invalid；`npm run check:functions` 通過；`git diff --check -- functions/package.json functions/package-lock.json` 通過。
+- 風險：Functions runtime transitive dependency resolution 變更；未修改 Functions TypeScript 行為，仍需全套測試與部署前 smoke。
