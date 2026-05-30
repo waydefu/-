@@ -1,10 +1,10 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`6f8741f`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`18f97af`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能]
 - 進行中：無
-- 下一個面向：F 效能
+- 下一個面向：G 前端安全
 - 已記錄問題數：P0=0 P1=1 P2=3 P3=0
 
 ## 稽核原則
@@ -121,6 +121,21 @@
 | 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
 |---|---|---|---|---|---|---|
 | P2 | E | `public/index.html:1958`、`public/index.html:3736`、`public/index.html:5218`、`public/index.html:5220` | ❓待確認：結果區 `#copyAllButton` / `#clearDraftButton` 宣告 `min-height:44px`，但 headless rendered rect 量到桌機約 40.6px、手機約 42.4px，疑似受祖先 `contentSlideUp` transform/fill 影響。 | 可能低於 44×44 target size 基準，對觸控與精細動作使用者較不友善。 | 用真實 runtime final state 再確認；若成立，調整按鈕實際渲染高度或避免長駐 transform 壓縮可點擊面積。 | 中 |
+
+## F. 效能
+
+### 掃描摘要
+- `public/index.html` 計數：`@keyframes=26`、`filter:` 77、`backdrop-filter:` 18、`box-shadow:` 68、`animation ... infinite` 8。
+- 常駐/循環動畫命中：boot scan/progress/sigil、button spinner、glyph spin、`corePulse 4.4s infinite`；`body.operational .core-pulse i` 會調為 3.4s。這些多屬 VFX 語言，且 reduced-motion 分支會關閉/縮短。
+- WebGL lifecycle：`SceneManager` 與 `LinkStartFX` 皆有 `webglcontextlost` / `webglcontextrestored` listener；`SceneManager.cleanup()` 呼叫 `disposeObjectTree(this.scene)`；主 runtime 有 `visibilitychange` pause/resume 與 `cancelAnimationFrame`。
+- CLS：A 面向 `npm run test:visual` 14 項通過，包含 `tests/visual/cls.spec.ts`，且 static boot-complete layout CLS < 0.1。
+- 首屏載入：head 內已有 fonts / Firebase / jsDelivr / Functions preconnect，並有 core/services/utils/webgl modulepreload。
+- 外部 Firebase compat scripts 皆 `defer crossorigin="anonymous"`；Three 由 importmap 指向 jsDelivr。SRI/CSP 風險留到 G 面向記錄。
+
+### F 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| - | F | - | 未記錄 P0-P3 問題。 | 效能掃描未見新的阻塞性退化；高 VFX 成本目前由 reduced-motion、visibility pause、dispose 與 visual/CLS tests 承接。 | 後續若新增 VFX，持續追蹤 filter/backdrop/filter/box-shadow 與 infinite baseline 是否膨脹。 | 中 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
