@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`5259365`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`6f8741f`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y]
 - 進行中：無
-- 下一個面向：E 無障礙 a11y
-- 已記錄問題數：P0=0 P1=1 P2=2 P3=0
+- 下一個面向：F 效能
+- 已記錄問題數：P0=0 P1=1 P2=3 P3=0
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -104,6 +104,23 @@
 | 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
 |---|---|---|---|---|---|---|
 | P2 | D | `public/index.html:665`、`public/index.html:699`、`public/index.html:3460` | `prefers-reduced-motion` 會關閉 `.connection-window[aria-hidden="false"]` 動畫，但未像 `.override-window` 補 final opacity/transform；headless reduced-motion 量到 connection popup 仍為 opacity 0 / scale 0。 | 偏好減少動態的使用者可能看不到「連線確認」狀態視窗，登入/同步回饋變弱。 | 在 reduced-motion 分支補 `.connection-window[aria-hidden="false"]` 的 opacity 1、`translate(-50%, -50%) scale(1)` 與 filter final state。 | 高 |
+
+## E. 無障礙 a11y
+
+### 掃描摘要
+- `npm run test:a11y` 已在 A 面向執行：登入頁、工作區、歷史抽屜 3 項通過，axe impact counts `{}`，critical/serious 違規 0。
+- viewport meta 為 `width=device-width, initial-scale=1.0, viewport-fit=cover`，未見 `maximum-scale`。
+- skip-link 存在：`public/index.html:5053` 指向 `#draftField`；CSS 有 `.skip-link:focus` 與全域 `:focus-visible`。
+- dialog / modal ARIA：`#overrideWindow` 與 `#logoutConfirmWindow` 有 `role="alertdialog"`、`aria-modal="true"`、`aria-labelledby`、`aria-describedby`；登入 `<dialog id="ritualStack">` 有 `aria-labelledby` / `aria-describedby`。
+- live region：`#connectionWindow`、`#ritualStatus`、`#operationalStatus`、`#spellList`、`#analysisDossier`、`.notification-stack`、`#announcer` 均有 `aria-live` 或 `role=status` 路徑。
+- textarea：`#draftField` 有 `<label for="draftField">`，並以 `aria-labelledby="draftFieldLabel"`、`aria-describedby="draftFieldHelp charCount spellWarn"` 關聯輔助文字。
+- `prefers-reduced-motion` 分支存在並覆蓋全域動畫/transition、主要背景/視窗/按鈕動畫；D 面向已另列 connection popup reduced-motion final state 缺口。
+- WCAG AA 對比：README 既有 baseline 記錄主文字、placeholder、狀態、按鈕等估算皆通過；本輪未另跑色彩工具，信心標中。
+
+### E 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P2 | E | `public/index.html:1958`、`public/index.html:3736`、`public/index.html:5218`、`public/index.html:5220` | ❓待確認：結果區 `#copyAllButton` / `#clearDraftButton` 宣告 `min-height:44px`，但 headless rendered rect 量到桌機約 40.6px、手機約 42.4px，疑似受祖先 `contentSlideUp` transform/fill 影響。 | 可能低於 44×44 target size 基準，對觸控與精細動作使用者較不友善。 | 用真實 runtime final state 再確認；若成立，調整按鈕實際渲染高度或避免長駐 transform 壓縮可點擊面積。 | 中 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
