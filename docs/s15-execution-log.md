@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核
-- 進行中：無
-- 下一步：Part A 需 preview/真 Google popup 診斷；dependency audit 需另排修補；部署/推送需明確同意
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成
+- 進行中：Step 11 全量部署已完成且 live smoke 通過，待 commit 回填 hash
+- 下一步：commit Step 11 部署紀錄；Part A 需 preview/真 Google popup 診斷；dependency audit 需另排修補；推送需明確同意
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；dependency audit 風險需另排修補；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -121,3 +121,12 @@
 - Headless 限制：自訂 full-motion/static `node + chromium.launch()` 稽核腳本在本機 timeout；既有 Playwright test runner 穩定通過。未宣稱 headless 已驗到真動效或 Google popup latency。
 - 結論：未發現新的產品碼阻斷問題；待處理項為 dependency audit 修補、Part A 真 preview/Google popup 量測、實機動效驗收。
 - Commit：`63a7a05`
+
+### Step 11 - Firebase 全量部署
+- 狀態：完成，待 commit 回填。
+- 指令：先跑 `firebase deploy --non-interactive`；第一次失敗於 Functions discovery 預設 10s timeout，錯誤為 `User code failed to load. Cannot determine backend specification. Timeout after 10000`。
+- 修正重跑：設定 `$env:FUNCTIONS_DISCOVERY_TIMEOUT="120"` 後重跑 `firebase deploy --non-interactive --debug`，完整輸出存於 `output/s15-deploy/firebase-deploy-debug-120.log`。
+- 部署結果：部署到 `project-7276420283723642146`；Firestore rules 編譯並 release 成功；Hosting 上傳、finalize、release 成功，live release 為 `projects/65341047777/sites/project-7276420283723642146/channels/live/releases/1780133475973000`，Hosting URL `https://project-7276420283723642146.web.app`；Functions discovery 成功，但 `analyzeV2`、`cspReport`、`quotaPeek` 皆為 `Skipped (No changes detected)`。
+- 部署後驗證：已跑 `npm run smoke:hosting` 通過，確認 live Hosting shell / App Check SDK / config module / result parser / HUD state module / unauth `analyzeV2` / unauth `quotaPeek` 均符合預期。
+- 未做：未推送 git；未修改產品碼；未修 dependency audit；未進行真 Google popup / 實機動效驗收。
+- Commit：待回填
