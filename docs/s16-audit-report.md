@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`8018927`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`5259365`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為]
 - 進行中：無
-- 下一個面向：D UI/UX 行為
-- 已記錄問題數：P0=0 P1=1 P2=1 P3=0
+- 下一個面向：E 無障礙 a11y
+- 已記錄問題數：P0=0 P1=1 P2=2 P3=0
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -86,6 +86,24 @@
 | 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
 |---|---|---|---|---|---|---|
 | - | C | - | 未記錄 P0-P3 問題。 | 前端死碼與架構抽查未見阻塞風險。 | H 面向再處理 README/文件漂移。 | 中 |
+
+## D. UI/UX 行為
+
+### 驗證方式與摘要
+- 依執行單要求避免 screenshot 依賴，使用 Playwright headless + DOM rect/computed style eval。
+- 嘗試啟 `5601` server 時 PowerShell/Start-Process 卡住；本機已有 `python -m http.server 5599` 服務同一份 public 首頁，故以 `http://127.0.0.1:5599/` 完成 DOM 驗證。
+- 真實頁載入抽查：console error 0、request failed 0、HTTP 404 0。
+- 桌機 `1280x800`：`#ritualStack` 560×304.5，置中且完整在 viewport 內；`#connectionWindow` 420×148.1、`#overrideWindow` 490.2×254.7、`#logoutConfirmWindow` 520×254.5，三者皆置中且完整在 viewport 內。
+- 手機 `375x844`：`#ritualStack` 335.8×261.5，置中且完整在 viewport 內；`#connectionWindow` 337×138、`#overrideWindow` / `#logoutConfirmWindow` 352.5×288.7，皆完整在 viewport 內。
+- 工作區按鈕：分析主按鈕、複製、清除手稿在桌機與手機均未超出父容器、未偵測文字 scroll overflow；`#reanalyzeButton` 因 hidden 為 0 寬，未列裁切問題。
+- `body.workbench-materializing` 下 `.tool-module` 仍有 `contentSlideUp` stagger，delay 依序為 `0.12s`、`0.18s`、`0.24s`、`0.3s`、`0.36s`、`0.42s`。
+- 歷史抽屜：DOM 僅 1 個 `#historyDrawer`；hidden 狀態 CSS 可落到 opacity 0 / visibility hidden，未列第二鬼影問題。
+- 登入彈窗內文：`body.login-modal-entering` 對 `.auth-header`、`.seal-strip`、`#authTitle`、`#authPrompt`、`.auth-actions` 使用同一組 `contentSlideUp 0.36s ... 0.16s both`，屬整組同步淡入，不是逐條 stagger。
+
+### D 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P2 | D | `public/index.html:665`、`public/index.html:699`、`public/index.html:3460` | `prefers-reduced-motion` 會關閉 `.connection-window[aria-hidden="false"]` 動畫，但未像 `.override-window` 補 final opacity/transform；headless reduced-motion 量到 connection popup 仍為 opacity 0 / scale 0。 | 偏好減少動態的使用者可能看不到「連線確認」狀態視窗，登入/同步回饋變弱。 | 在 reduced-motion 分支補 `.connection-window[aria-hidden="false"]` 的 opacity 1、`translate(-50%, -50%) scale(1)` 與 filter final state。 | 高 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
