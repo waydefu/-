@@ -279,6 +279,27 @@
       filter: saturate(1.03) brightness(0.9);
     }
 
+    html[data-webgl-fallback="context-lost"] #webgl-container canvas {
+      opacity: 0 !important;
+    }
+
+    html[data-webgl-fallback="context-lost"] #webgl-container::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 50% 48%, rgba(244, 208, 129, 0.18), transparent 30%),
+        radial-gradient(ellipse at 24% 22%, rgba(12, 207, 189, 0.16), transparent 32%),
+        radial-gradient(ellipse at 82% 76%, rgba(179, 128, 48, 0.18), transparent 36%),
+        linear-gradient(135deg, #020101 0%, #08141f 52%, #070403 100%);
+    }
+
+    html[data-webgl-fallback="context-lost"] .link-start-fx {
+      display: none !important;
+      opacity: 0 !important;
+    }
+
     .link-start-fx {
       position: fixed;
       inset: 0;
@@ -5219,6 +5240,7 @@
     import { ReferenceGlyphRing } from "./js/webgl/reference-glyph-ring.js";
     import { GoldBokehField } from "./js/webgl/gold-bokeh-field.js";
     import { SteppedAnimationController } from "./js/webgl/stepped-animation.js";
+    import { disposeObjectTree } from "./js/webgl/dispose-utils.js";
 
     const systemPrefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const readMotionPreference = () => {
@@ -6290,6 +6312,8 @@
         this.targetMouse = new THREE.Vector2(0, 0);
         this.systemRoot = new THREE.Group();
         this.scene.add(this.systemRoot);
+        this.contextLost = false;
+        this.disposed = false;
 
         this.scene.add(new THREE.AmbientLight(0x2c1607, 0.56));
         const key = new THREE.PointLight(0xfff2ad, 1.65, 36, 2);
@@ -6304,8 +6328,12 @@
 
         this.onPointerMove = this.onPointerMove.bind(this);
         this.onResize = this.onResize.bind(this);
+        this.onContextLost = this.onContextLost.bind(this);
+        this.onContextRestored = this.onContextRestored.bind(this);
         window.addEventListener("pointermove", this.onPointerMove, { passive: true });
         window.addEventListener("resize", this.onResize);
+        this.renderer.domElement.addEventListener("webglcontextlost", this.onContextLost, false);
+        this.renderer.domElement.addEventListener("webglcontextrestored", this.onContextRestored, false);
       }
 
       onPointerMove(event) {
@@ -6325,6 +6353,46 @@
 
       updateMouse() {
         this.mouse.lerp(this.targetMouse, 0.07);
+      }
+
+      setFallbackState(reason = "") {
+        if (reason) {
+          document.documentElement.dataset.webglFallback = reason;
+          if (this.container) this.container.dataset.webglState = reason;
+        } else {
+          delete document.documentElement.dataset.webglFallback;
+          if (this.container) this.container.dataset.webglState = this.disposed ? "disposed" : "active";
+        }
+      }
+
+      onContextLost(event) {
+        event.preventDefault();
+        if (this.disposed) return;
+        this.contextLost = true;
+        this.setFallbackState("context-lost");
+        window.dispatchEvent(new CustomEvent("flg:webgl-context-lost"));
+      }
+
+      onContextRestored() {
+        if (this.disposed) return;
+        this.contextLost = false;
+        this.setFallbackState("");
+        this.onResize();
+        window.dispatchEvent(new CustomEvent("flg:webgl-context-restored"));
+      }
+
+      dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
+        window.removeEventListener("pointermove", this.onPointerMove);
+        window.removeEventListener("resize", this.onResize);
+        this.renderer?.domElement?.removeEventListener("webglcontextlost", this.onContextLost, false);
+        this.renderer?.domElement?.removeEventListener("webglcontextrestored", this.onContextRestored, false);
+        disposeObjectTree(this.scene);
+        this.renderer?.dispose?.();
+        this.renderer?.forceContextLoss?.();
+        this.renderer?.domElement?.remove();
+        this.setFallbackState("");
       }
     }
 
@@ -6475,6 +6543,7 @@
       }
 
       renderSelectiveBloom(delta) {
+        if (this.manager.contextLost || this.manager.disposed) return;
         if (!this.ready || !this.composer) {
           this.manager.renderer.render(this.scene, this.manager.camera);
           return;
@@ -6490,6 +6559,7 @@
       }
 
       update(time, delta) {
+        if (this.manager.contextLost || this.manager.disposed) return;
         if (!this.ready) {
           this.manager.renderer.render(this.scene, this.manager.camera);
           return;
@@ -6514,8 +6584,22 @@
       }
 
       dispose() {
+        [
+          this.bloomPass,
+          this.saoPass,
+          this.cinematicPass,
+          this.bloomMixPass,
+          this.chromaticAberrationPass
+        ].forEach((pass) => pass?.dispose?.());
+        Object.values(this.darkMaterials || {}).forEach((material) => material?.dispose?.());
         this.bloomComposer?.dispose?.();
         this.composer?.dispose?.();
+        this.originalMaterials?.clear?.();
+        this.bloomPass = null;
+        this.saoPass = null;
+        this.cinematicPass = null;
+        this.bloomMixPass = null;
+        this.chromaticAberrationPass = null;
         this.bloomComposer = null;
         this.composer = null;
         this.ready = false;
@@ -6559,10 +6643,25 @@
         this.uniforms = {};
         this.attribs = {};
         this.buffer = null;
+        this.contextLost = false;
+        this.disposed = false;
+        this.paused = false;
+        this.elapsedBeforePause = 0;
         this.resize = this.resize.bind(this);
+        this.draw = this.draw.bind(this);
+        this.onContextLost = this.onContextLost.bind(this);
+        this.onContextRestored = this.onContextRestored.bind(this);
         if (!canvas || prefersReducedMotion) return;
+        canvas.addEventListener("webglcontextlost", this.onContextLost, false);
+        canvas.addEventListener("webglcontextrestored", this.onContextRestored, false);
+        window.addEventListener("resize", this.resize);
+        this.initializeContext();
+      }
+
+      initializeContext() {
+        if (!this.canvas || prefersReducedMotion || this.disposed) return false;
         try {
-          this.gl = canvas.getContext("webgl", {
+          this.gl = this.canvas.getContext("webgl", {
             alpha: true,
             antialias: false,
             depth: false,
@@ -6570,13 +6669,18 @@
             premultipliedAlpha: true,
             powerPreference: "high-performance"
           });
-          if (!this.gl) return;
+          if (!this.gl) return false;
           this.initProgram();
           this.resize();
-          window.addEventListener("resize", this.resize);
+          this.contextLost = false;
+          delete document.documentElement.dataset.linkStartFallback;
+          this.canvas.dataset.webglState = "active";
+          return true;
         } catch (error) {
           console.warn("[FLG] Link Start FX init failed:", error?.message || error);
+          this.releaseProgram();
           this.gl = null;
+          return false;
         }
       }
 
@@ -6672,6 +6776,38 @@
         ]), gl.STATIC_DRAW);
       }
 
+      releaseProgram() {
+        const gl = this.gl;
+        try {
+          if (gl && this.buffer) gl.deleteBuffer(this.buffer);
+          if (gl && this.program) gl.deleteProgram(this.program);
+        } catch (_) {}
+        this.buffer = null;
+        this.program = null;
+        this.uniforms = {};
+        this.attribs = {};
+      }
+
+      onContextLost(event) {
+        event.preventDefault();
+        if (this.disposed) return;
+        this.contextLost = true;
+        this.stop(true);
+        this.releaseProgram();
+        this.gl = null;
+        if (this.canvas) this.canvas.dataset.webglState = "context-lost";
+        document.documentElement.dataset.linkStartFallback = "context-lost";
+        window.dispatchEvent(new CustomEvent("flg:linkstart-context-lost"));
+      }
+
+      onContextRestored() {
+        if (this.disposed) return;
+        this.contextLost = false;
+        this.initializeContext();
+        window.dispatchEvent(new CustomEvent("flg:linkstart-context-restored"));
+        updateFxMetrics?.();
+      }
+
       resize() {
         if (!this.canvas || !this.gl) return;
         const dpr = Math.min(window.devicePixelRatio || 1, mobileQuery.matches ? 1.3 : 1.75);
@@ -6687,8 +6823,8 @@
 
       draw(now) {
         const gl = this.gl;
-        if (!gl || !this.program || !this.active) return;
-        if (!this.startedAt) this.startedAt = now;
+        if (!gl || !this.program || !this.active || this.paused || this.contextLost) return;
+        if (!this.startedAt) this.startedAt = now - this.elapsedBeforePause;
         const elapsed = now - this.startedAt;
         const progress = clamp(elapsed / this.duration, 0, 1);
         gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -6703,28 +6839,47 @@
         gl.uniform2f(this.uniforms.resolution, this.canvas.width, this.canvas.height);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
         if (progress < 1) {
-          this.frame = requestAnimationFrame((time) => this.draw(time));
+          this.frame = requestAnimationFrame(this.draw);
         } else {
           this.stop();
         }
       }
 
       start(duration = 2600) {
-        if (!this.gl || !this.canvas || prefersReducedMotion) return 0;
+        if ((!this.gl && !this.initializeContext()) || !this.canvas || prefersReducedMotion || this.contextLost) return 0;
         this.stop(true);
         this.duration = Math.max(900, duration);
         this.startedAt = 0;
+        this.elapsedBeforePause = 0;
+        this.paused = false;
         this.active = true;
         this.canvas.style.display = "block";
         this.canvas.classList.add("is-active");
-        this.frame = requestAnimationFrame((time) => this.draw(time));
+        this.frame = requestAnimationFrame(this.draw);
         return this.duration;
+      }
+
+      pause() {
+        if (!this.active || this.paused) return;
+        if (this.frame) cancelAnimationFrame(this.frame);
+        this.frame = 0;
+        this.elapsedBeforePause = this.startedAt ? Math.max(0, performance.now() - this.startedAt) : this.elapsedBeforePause;
+        this.paused = true;
+      }
+
+      resume() {
+        if (!this.active || !this.paused || this.contextLost || !this.gl || !this.program) return;
+        this.paused = false;
+        this.startedAt = 0;
+        this.frame = requestAnimationFrame(this.draw);
       }
 
       stop(immediate = false) {
         if (this.frame) cancelAnimationFrame(this.frame);
         this.frame = 0;
         this.active = false;
+        this.paused = false;
+        this.elapsedBeforePause = 0;
         if (!this.canvas) return;
         this.canvas.classList.remove("is-active");
         const hide = () => {
@@ -6734,6 +6889,22 @@
           hide();
         } else {
           window.setTimeout(hide, 260);
+        }
+      }
+
+      dispose() {
+        if (this.disposed) return;
+        this.disposed = true;
+        this.stop(true);
+        window.removeEventListener("resize", this.resize);
+        this.canvas?.removeEventListener("webglcontextlost", this.onContextLost, false);
+        this.canvas?.removeEventListener("webglcontextrestored", this.onContextRestored, false);
+        this.releaseProgram();
+        this.gl = null;
+        if (this.canvas) {
+          this.canvas.dataset.webglState = "disposed";
+          this.canvas.width = 1;
+          this.canvas.height = 1;
         }
       }
     }
@@ -9294,6 +9465,11 @@
       warp: clamp(core.shock + particles.spiral * 0.72 + post.shockEnergy * 0.35, 0, 1),
       handoff: document.body.classList.contains("operational") || core.operational > 0.3
     });
+    let webglAnimationFrame = 0;
+    let webglRuntimePaused = document.hidden;
+    let webglRuntimeDisposed = false;
+    let webglRuntimeTime = 0;
+    let webglPauseReason = document.hidden ? "hidden" : "";
 
     function updateFxMetrics() {
       window.__FLG_BLOOM_SCENE__ = BLOOM_SCENE;
@@ -9323,6 +9499,14 @@
         bloomLayer: BLOOM_SCENE,
         bloomTargets: bloomTargetCount,
         linkStartShader: !!linkStartFX?.gl,
+        linkStartActive: !!linkStartFX?.active,
+        linkStartPaused: !!linkStartFX?.paused,
+        linkStartContextLost: !!linkStartFX?.contextLost,
+        webglRuntime: document.documentElement.dataset.webglRuntime || "initializing",
+        webglPaused: webglRuntimePaused,
+        webglPauseReason,
+        webglContextLost: manager.contextLost,
+        webglDisposed: webglRuntimeDisposed || manager.disposed,
         modalGlass: false,
         dialogSurface: true,
         deferredRaphaelLayersReady,
@@ -9333,6 +9517,7 @@
       document.documentElement.dataset.ingestionStreams = String(window.__FLG_LOGIN_FX_METRICS__.ingestionStreams);
       document.documentElement.dataset.scanBands = String(window.__FLG_LOGIN_FX_METRICS__.scanBands);
       document.documentElement.dataset.linkStartShader = linkStartFX?.gl ? "ready" : "idle";
+      document.documentElement.dataset.webglContext = manager.contextLost ? "lost" : manager.disposed ? "disposed" : "active";
       document.documentElement.dataset.modalGlass = "removed";
       document.documentElement.dataset.arcaneOpticalBackground = "active";
       document.documentElement.dataset.raphaelSingularityCore = "active";
@@ -9384,7 +9569,133 @@
     updateFxMetrics();
     deferToIdle(initializeDeferredRaphaelLayers, { timeout: 1800 });
     deferToIdle(ensureLinkStartFX, { timeout: 2400 });
-    window.addEventListener("beforeunload", () => steppedAnimationController?.dispose?.(), { once: true });
+
+    function getWebglRuntimeState() {
+      if (webglRuntimeDisposed || manager.disposed) return "disposed";
+      if (manager.contextLost) return "context-lost";
+      if (webglRuntimePaused) return "paused";
+      return "running";
+    }
+
+    function updateWebglRuntimeState() {
+      const state = getWebglRuntimeState();
+      document.documentElement.dataset.webglRuntime = state;
+      if (webglPauseReason) {
+        document.documentElement.dataset.webglPauseReason = webglPauseReason;
+      } else {
+        delete document.documentElement.dataset.webglPauseReason;
+      }
+      document.documentElement.dataset.webglContext = manager.contextLost ? "lost" : manager.disposed ? "disposed" : "active";
+      window.__FLG_WEBGL_RUNTIME_STATE__ = {
+        state,
+        paused: webglRuntimePaused,
+        pauseReason: webglPauseReason,
+        disposed: webglRuntimeDisposed || manager.disposed,
+        contextLost: manager.contextLost,
+        frameScheduled: !!webglAnimationFrame,
+        runtimeTime: Number(webglRuntimeTime.toFixed(3)),
+        postReady: post.ready,
+        postPipeline: document.documentElement.dataset.postPipeline || "renderer",
+        linkStartActive: !!linkStartFX?.active,
+        linkStartPaused: !!linkStartFX?.paused,
+        linkStartContextLost: !!linkStartFX?.contextLost
+      };
+      updateFxMetrics();
+    }
+
+    function cancelWebglFrame() {
+      if (webglAnimationFrame) cancelAnimationFrame(webglAnimationFrame);
+      webglAnimationFrame = 0;
+    }
+
+    function scheduleWebglFrame() {
+      if (webglRuntimeDisposed || webglRuntimePaused || manager.contextLost || manager.disposed || webglAnimationFrame) {
+        updateWebglRuntimeState();
+        return;
+      }
+      webglAnimationFrame = requestAnimationFrame(animate);
+      updateWebglRuntimeState();
+    }
+
+    function pauseWebglRuntime(reason = "manual") {
+      if (webglRuntimeDisposed) return;
+      webglRuntimePaused = true;
+      webglPauseReason = reason;
+      cancelWebglFrame();
+      linkStartFX?.pause?.();
+      updateWebglRuntimeState();
+    }
+
+    function resumeWebglRuntime(reason = "manual") {
+      if (webglRuntimeDisposed) return;
+      if (manager.contextLost || manager.disposed) {
+        pauseWebglRuntime("context-lost");
+        return;
+      }
+      webglRuntimePaused = false;
+      webglPauseReason = "";
+      manager.clock.getDelta();
+      linkStartFX?.resume?.();
+      updateWebglRuntimeState();
+      scheduleWebglFrame();
+    }
+
+    function handleVisibilityChange() {
+      if (document.hidden) {
+        pauseWebglRuntime("hidden");
+      } else {
+        resumeWebglRuntime("visible");
+      }
+    }
+
+    function handleWebglContextLost() {
+      pauseWebglRuntime("context-lost");
+    }
+
+    function handleWebglContextRestored() {
+      post.resize();
+      if (document.hidden) {
+        pauseWebglRuntime("hidden");
+      } else {
+        resumeWebglRuntime("context-restored");
+      }
+    }
+
+    function disposeWebglRuntime() {
+      if (webglRuntimeDisposed) return;
+      webglRuntimeDisposed = true;
+      webglRuntimePaused = true;
+      webglPauseReason = "disposed";
+      cancelWebglFrame();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("flg:webgl-context-lost", handleWebglContextLost);
+      window.removeEventListener("flg:webgl-context-restored", handleWebglContextRestored);
+      linkStartFX?.dispose?.();
+      steppedAnimationController?.dispose?.();
+      goldBokehField?.dispose?.();
+      referenceGlyphRing?.dispose?.();
+      magiculeParticleField?.dispose?.();
+      raphaelComputationRing?.dispose?.();
+      raphaelSingularityCore?.dispose?.();
+      raphaelOpticalBackground?.dispose?.();
+      post.dispose();
+      manager.dispose();
+      updateWebglRuntimeState();
+    }
+
+    window.__FLG_WEBGL_RUNTIME__ = {
+      pause: pauseWebglRuntime,
+      resume: resumeWebglRuntime,
+      dispose: disposeWebglRuntime,
+      get state() {
+        return window.__FLG_WEBGL_RUNTIME_STATE__;
+      }
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("flg:webgl-context-lost", handleWebglContextLost);
+    window.addEventListener("flg:webgl-context-restored", handleWebglContextRestored);
+    window.addEventListener("pagehide", disposeWebglRuntime, { once: true });
+    window.addEventListener("beforeunload", disposeWebglRuntime, { once: true });
 
     if ("PerformanceObserver" in window) {
       window.__FLG_CLS__ = 0;
@@ -9416,13 +9727,21 @@
       }
     }
 
-    window.addEventListener("resize", () => post.resize());
+    window.addEventListener("resize", () => {
+      if (!manager.contextLost && !manager.disposed) post.resize();
+      updateWebglRuntimeState();
+    });
     timeline.start();
 
     function animate() {
-      requestAnimationFrame(animate);
-      const delta = manager.clock.getDelta();
-      const time = manager.clock.elapsedTime;
+      webglAnimationFrame = 0;
+      if (webglRuntimeDisposed || webglRuntimePaused || manager.contextLost || manager.disposed) {
+        updateWebglRuntimeState();
+        return;
+      }
+      const delta = Math.min(manager.clock.getDelta(), 0.05);
+      webglRuntimeTime += delta;
+      const time = webglRuntimeTime;
       manager.updateMouse();
       cameraController.update(delta, document.body.classList.contains("operational"));
       core.update(time, delta);
@@ -9439,9 +9758,11 @@
       goldBokehField?.update(delta, time, raphaelState);
       hud.update(time, login.syncProgress);
       post.update(time, delta);
+      scheduleWebglFrame();
     }
 
-    animate();
+    updateWebglRuntimeState();
+    scheduleWebglFrame();
   </script>
 </body>
 </html>
