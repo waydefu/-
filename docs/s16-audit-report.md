@@ -1,0 +1,56 @@
+# S16 全專案稽核報告
+
+## 進度區塊（最新）
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`1113780`
+- 已掃完面向：✅ [A 前置基準]
+- 進行中：無
+- 下一個面向：B 後端正確性與安全
+- 已記錄問題數：P0=0 P1=0 P2=0 P3=0
+
+## 稽核原則
+- 只診斷、只寫報告；不修改程式、不部署、不 push。
+- `public/index.html` 與 `public/worldforge-login.html` 不整檔讀取；只用 grep/計數或定位後小窗讀取。
+- 每完成一個面向即更新本報告並建立對應 commit。
+- 不確定項目標記 `❓待確認`，不以臆測當結論。
+
+## A. 前置基準
+
+### Git 基準
+- 分支：`codex/arcane-sage-core-20260522`
+- A 掃描前 HEAD：`1113780`
+- 近 10 筆 commit：
+  - `1113780 docs(s15): record remaining fix deploy`
+  - `01ba737 docs(s15): record remaining fix validation`
+  - `760a5b8 fix(s15-a): open google popup before visual preflight`
+  - `aec514d chore(s15): clear functions audit findings`
+  - `68a0da4 chore(s15): clear root audit finding`
+  - `2e58d71 docs(s15): record remaining issue audit`
+  - `e299f37 docs(s15): mark firebase deploy complete`
+  - `5862827 docs(s15): record full firebase deploy`
+  - `59f850d docs(s15): mark acceptance audit complete`
+  - `63a7a05 docs(s15): record acceptance audit findings`
+- 掃描前工作樹：未追蹤 `.claude/`、`output/`。
+
+### 指令基準
+| 指令 | 結果 | 摘要 |
+|---|---|---|
+| `npm run check` | 通過 | frontend `tsc --project jsconfig.json --noEmit`、functions `tsc --noEmit` 通過。 |
+| `npm test` | 通過 | 5 suites / 23 tests 全通過；涵蓋 Firestore rules contract、validation、quota、result parser、SSE helpers。 |
+| `npm run test:visual` | 通過 | 14 tests 全通過；涵蓋 CLS、登入/工作區桌機與手機、歷史抽屜、帳號選單、登出確認彈窗。 |
+| `npm run test:a11y` | 通過 | 3 tests 全通過；登入頁、工作區、歷史抽屜 axe critical/serious 違規皆 0。 |
+| `npm audit --audit-level=moderate` | 通過 | root `found 0 vulnerabilities`。 |
+| `npm --prefix functions audit --audit-level=moderate` | 通過 | functions `found 0 vulnerabilities`。 |
+| `npm run smoke:hosting` | 通過 | hosting shell/config/parser/HUD module/unauthorized contracts/quotaPeek checks 通過。 |
+
+### `public/index.html` 計數基準
+- 行數：`9904`
+- `@keyframes` 出現數：`26`
+- `console.` 出現數：`23`
+
+### A 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| - | A | - | 未記錄 P0-P3 問題。 | 目前基準檢查全通過。 | 後續面向若發現風險再分級列入。 | 高 |
+
+## 優先修復順序（收尾彙整）
+- 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
