@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`18f97af`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`9629b52`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全]
 - 進行中：無
-- 下一個面向：G 前端安全
-- 已記錄問題數：P0=0 P1=1 P2=3 P3=0
+- 下一個面向：H 一致性與漂移
+- 已記錄問題數：P0=0 P1=2 P2=4 P3=0
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -136,6 +136,22 @@
 | 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
 |---|---|---|---|---|---|---|
 | - | F | - | 未記錄 P0-P3 問題。 | 效能掃描未見新的阻塞性退化；高 VFX 成本目前由 reduced-motion、visibility pause、dispose 與 visual/CLS tests 承接。 | 後續若新增 VFX，持續追蹤 filter/backdrop/filter/box-shadow 與 infinite baseline 是否膨脹。 | 中 |
+
+## G. 前端安全
+
+### 掃描摘要
+- CSP：`firebase.json` 使用 `Content-Security-Policy-Report-Only`，不是 enforce header；`script-src` / `script-src-elem` 仍含 `'unsafe-inline'`。
+- SRI：外部 Firebase compat scripts 與 importmap 指向的 jsDelivr Three URL 未見 `integrity=`。
+- XSS 寫入點：主要使用者/模型輸出路徑為 `renderAnalysisResult()` → `createResultSection()` → `renderMarkdownLite()`；`renderMarkdownLite()` 先 `escapeHtml()` 再轉換有限 Markdown tag，未見 DOMPurify/marked 直接信任 HTML。
+- 其他 `innerHTML`：分析進度 shell 與 HUD/system 靜態模板為固定字串；visual test helper 的 `innerHTML` 不屬產品 runtime。
+- 前端 secret 掃描：`public/js/core/config.js` 內 Firebase web `apiKey`、Functions URL、reCAPTCHA Enterprise site key 為 README 定義的 public runtime config；未見 Groq key / server secret / `sk-` / `gsk_`。
+- localStorage：`draftKey()` / `historyKey()` 使用 uid/guest session suffix，跨帳號讀取隔離；但登出流程沒有清除目前 uid 的本機草稿/歷史。
+
+### G 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P1 | G | `firebase.json:50`、`firebase.json:51`、`public/index.html:24` | CSP 仍是 Report-Only，且 `script-src` / `script-src-elem` 允許 `'unsafe-inline'`；外部 Firebase/jsDelivr 資源未見 SRI。 | 瀏覽器目前只回報不阻擋，若有 XSS 或供應鏈腳本異常，前端防線偏弱。 | 先以 hash/nonce 收斂 importmap/inline script，移除 script `unsafe-inline`，再從 Report-Only 切 enforce；外部 CDN 補 SRI 或改成本機 pin 版資產。 | 高 |
+| P2 | G | `public/index.html:8747`、`public/index.html:8751`、`public/index.html:9435`、`public/index.html:9440` | 登出前會 `saveDraft()`，但只移除 `worldforgeGuest`；per-uid `flg_draft_v1_<uid>` / `flg_history_v2_<uid>` 仍留在 localStorage。 | 同一瀏覽器/裝置上仍殘留上一位使用者草稿與分析歷史，雖不會跨 uid 自動載入，但有共享裝置隱私風險。 | 登出時提供「清除此裝置本機草稿/歷史」或至少清除目前 uid draft cache；若保留是設計，需在 UI/README 明示。 | 高 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
