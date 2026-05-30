@@ -5278,13 +5278,13 @@
       inExpo: (t) => t === 0 ? 0 : Math.pow(2, 10 * t - 10),
       inOutSine: (t) => 0.5 - Math.cos(Math.PI * t) / 2
     };
-    function runPhaseClock(durationMs, onUpdate, onComplete) {
+    function runPhaseClock(durationMs, onUpdate, onComplete, sharedStartAt = 0) {
       if (durationMs <= 0) {
         onUpdate(1, durationMs);
         onComplete?.();
         return { kill() {} };
       }
-      let startedAt = 0;
+      let startedAt = Number.isFinite(sharedStartAt) && sharedStartAt > 0 ? sharedStartAt : 0;
       let frame = 0;
       let killed = false;
       const tick = (now) => {
@@ -6724,9 +6724,9 @@
             float r = length(p);
             float angle = atan(p.y, p.x);
             float angular = (angle + PI) / (2.0 * PI);
-            float presence = smoothstep(0.02, 0.1, uProgress);
+            float presence = 0.52 + 0.48 * smoothstep(0.0, 0.08, uProgress);
             float vanish = 1.0 - smoothstep(0.92, 1.0, uProgress);
-            float tunnelPhase = smoothstep(0.04, 0.55, uProgress) * vanish;
+            float tunnelPhase = (0.24 + 0.76 * smoothstep(0.0, 0.48, uProgress)) * vanish;
             float focusPhase = smoothstep(0.48, 0.82, uProgress);
             float speed = mix(8.2, 1.85, focusPhase);
             float depth = 1.0 / max(r, 0.045) + uTime * speed;
@@ -6737,7 +6737,8 @@
             float cyanData = pow(abs(sin(angle * 24.0 - depth * 0.72)), 11.0) * smoothstep(0.42, 1.22, r);
             float outerCircuit = pow(abs(sin(r * 18.0 - uTime * 3.4)), 6.4) * smoothstep(0.5, 1.14, r);
             float vignette = 1.0 - smoothstep(0.3, 1.76, r);
-            float centerCore = smoothstep(0.2, 0.0, r) * smoothstep(0.48, 0.82, uProgress);
+            float centerCore = smoothstep(0.2, 0.0, r) * smoothstep(0.18, 0.72, uProgress);
+            float ignitionCore = smoothstep(0.24, 0.0, r) * (0.28 + 0.72 * smoothstep(0.0, 0.2, uProgress)) * vanish;
             float tunnelLens = smoothstep(1.54, 0.05, r);
             float whiteout = smoothstep(0.94, 1.0, uProgress);
             vec3 gold = vec3(0.94, 0.62, 0.16);
@@ -6748,8 +6749,9 @@
             color += gold * goldGlyphs * (0.94 + tunnelPhase * 1.9);
             color += cyan * (cyanData * 0.64 + outerCircuit * 0.42) * tunnelPhase;
             color += brightGold * centerCore * (1.18 + focusPhase * 1.62);
+            color += brightGold * ignitionCore * (0.42 + focusPhase * 0.32);
             color = mix(color, vec3(1.0, 0.88, 0.58), whiteout * 0.42);
-            float alpha = clamp((0.34 + tunnelLens * 0.16 + goldGlyphs * 0.68 + cyanData * 0.24 + centerCore * 0.5) * vignette * presence, 0.0, 0.96);
+            float alpha = clamp((0.34 + tunnelLens * 0.16 + goldGlyphs * 0.68 + cyanData * 0.24 + centerCore * 0.5 + ignitionCore * 0.34) * vignette * presence, 0.0, 0.96);
             alpha = max(alpha * vanish, whiteout * 0.38);
             gl_FragColor = vec4(color, alpha);
           }
@@ -6845,11 +6847,11 @@
         }
       }
 
-      start(duration = 2600) {
+      start(duration = 2600, sharedStartAt = 0) {
         if ((!this.gl && !this.initializeContext()) || !this.canvas || prefersReducedMotion || this.contextLost) return 0;
         this.stop(true);
         this.duration = Math.max(900, duration);
-        this.startedAt = 0;
+        this.startedAt = Number.isFinite(sharedStartAt) && sharedStartAt > 0 ? sharedStartAt : 0;
         this.elapsedBeforePause = 0;
         this.paused = false;
         this.active = true;
@@ -7804,9 +7806,14 @@
 
       triggerLinkStartHandoff() {
         hideDialogSurface();
-        if (prefersReducedMotion) return 0;
+        if (prefersReducedMotion) {
+          this._authHandoffStartAt = 0;
+          return 0;
+        }
         const duration = Math.round(uiMotion.authHandoff * 1000);
-        const started = window.__FLG_LINK_START__?.start?.(duration) || 0;
+        const startedAt = performance.now();
+        const started = window.__FLG_LINK_START__?.start?.(duration, startedAt) || 0;
+        this._authHandoffStartAt = started ? startedAt : 0;
         this.post.triggerChromaticAberration(0.014, uiMotion.authHandoff);
         return started;
       }
@@ -7941,7 +7948,7 @@
           this._authHandoffClock = null;
           window.clearInterval(messageTimer);
           this.enterOperationalMode();
-        });
+        }, linkStartDuration ? this._authHandoffStartAt : 0);
       }
 
       disintegrateAuthPanel(panel) {
@@ -9424,8 +9431,8 @@
       return linkStartFX;
     }
     window.__FLG_LINK_START__ = {
-      start(duration) {
-        return ensureLinkStartFX()?.start?.(duration);
+      start(duration, sharedStartAt) {
+        return ensureLinkStartFX()?.start?.(duration, sharedStartAt);
       },
       stop() {
         return linkStartFX?.stop?.();
@@ -9566,9 +9573,25 @@
       updateFxMetrics();
     }
 
+    function prewarmLinkStartFX() {
+      if (navigator.webdriver && !window.__FLG_ALLOW_AUTOMATION_LINK_START_PREWARM__) {
+        document.documentElement.dataset.linkStartPrewarm = "automation-skipped";
+        updateFxMetrics();
+        return null;
+      }
+      if (prefersReducedMotion || webglRuntimeDisposed || manager.contextLost) {
+        updateFxMetrics();
+        return null;
+      }
+      const fx = ensureLinkStartFX();
+      document.documentElement.dataset.linkStartPrewarm = fx?.gl ? "ready" : "fallback";
+      updateFxMetrics();
+      return fx;
+    }
+
     updateFxMetrics();
+    deferToIdle(prewarmLinkStartFX, { timeout: 900 });
     deferToIdle(initializeDeferredRaphaelLayers, { timeout: 1800 });
-    deferToIdle(ensureLinkStartFX, { timeout: 2400 });
 
     function getWebglRuntimeState() {
       if (webglRuntimeDisposed || manager.disposed) return "disposed";
