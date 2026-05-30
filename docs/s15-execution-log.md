@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成
-- 進行中：Step 3 Part C 登入內文整塊淡入已改完，等待 commit
-- 下一步：提交 Step 3，然後進 Part D 工作區依序彈出/裁切修復
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入
+- 進行中：無
+- 下一步：進 Part D 工作區依序彈出/裁切修復
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -49,9 +49,10 @@
 - Commit：`3924b81`
 
 ### Step 3 - Part C 登入內文整塊淡入
-- 狀態：完成；等待本步 commit。
+- 狀態：完成。
 - 定位：CSS stagger 來源在 `public/index.html:3545-3559` 與手機 `:3571-3572`；JS WAAPI stagger 來源在 `:8415-8433`，逐節點延遲 `1600/2080/2720/3760ms`。
 - 修改：`public/index.html` / 同步後 `public/worldforge-login.html`。保留 auth panel 本體 materialize；登入內文 `.auth-header`、`.seal-strip`、`#authTitle`、`#authPrompt`、`.auth-actions` 改成同一組 0.36s、0.16s delay 的整塊淡入；手機 `.primary-btn` 不再另跑 2.82s delay；JS `playAuthPanelMaterialize()` 改為同一批 content nodes 同時 360ms fade/translate。
 - 同步：已跑 `npm run sync:login-mother`。
 - 驗證：已跑 `npm run check` 通過；grep 確認舊登入內文逐條 delay 已移除，僅剩非登入流程的 `1600` 事件延遲。
 - 風險：登入內文節奏變短；框體進場特效保留。
+- Commit：`8f88303`
