@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`9629b52`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`639615a`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移]
 - 進行中：無
-- 下一個面向：H 一致性與漂移
-- 已記錄問題數：P0=0 P1=2 P2=4 P3=0
+- 下一個面向：I 依賴與建置
+- 已記錄問題數：P0=0 P1=3 P2=5 P3=1
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -152,6 +152,21 @@
 |---|---|---|---|---|---|---|
 | P1 | G | `firebase.json:50`、`firebase.json:51`、`public/index.html:24` | CSP 仍是 Report-Only，且 `script-src` / `script-src-elem` 允許 `'unsafe-inline'`；外部 Firebase/jsDelivr 資源未見 SRI。 | 瀏覽器目前只回報不阻擋，若有 XSS 或供應鏈腳本異常，前端防線偏弱。 | 先以 hash/nonce 收斂 importmap/inline script，移除 script `unsafe-inline`，再從 Report-Only 切 enforce；外部 CDN 補 SRI 或改成本機 pin 版資產。 | 高 |
 | P2 | G | `public/index.html:8747`、`public/index.html:8751`、`public/index.html:9435`、`public/index.html:9440` | 登出前會 `saveDraft()`，但只移除 `worldforgeGuest`；per-uid `flg_draft_v1_<uid>` / `flg_history_v2_<uid>` 仍留在 localStorage。 | 同一瀏覽器/裝置上仍殘留上一位使用者草稿與分析歷史，雖不會跨 uid 自動載入，但有共享裝置隱私風險。 | 登出時提供「清除此裝置本機草稿/歷史」或至少清除目前 uid draft cache；若保留是設計，需在 UI/README 明示。 | 高 |
+
+## H. 一致性與漂移
+
+### 掃描摘要
+- `public/index.html` 與 `public/worldforge-login.html` SHA256 完全一致：`D598E58AB43CB250D1B2AFF0D79271AF18DA32A619DF4FC825E33162B149F0EC`；兩者大小皆 `356931` bytes。
+- `.clinerules` 與 `.cursorrules` hash 不同；逐行比對只看到標題檔名不同，內容實質一致。
+- 產品 HTML：`gsap` 0、`.sao-btn-glitch` 0、根目錄 `script.js` 不存在；與 README / rules 的部分敘述不一致。
+- 繁中/英文字串：產品內有大量 HUD 英文（`SYSTEM HANDSHAKE`、`APPRAISAL ENGINE` 等），符合 README 的 VFX 語彙；未將其列為文案問題。`placeholder` 為繁中。
+
+### H 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P1 | H | `README.md:89`、`README.md:278`、`README.md:366`、`public/index.html:5126`、`public/index.html:7905` | 登入規格漂移：README 同時宣稱 Google-only、Email/Password、匿名訪客；產品碼只呈現 Google popup，且未找到 `signInAnonymously` / Email Auth 路徑。 | 執行單宣稱真實架構含匿名 Auth，但目前 UI/runtime 看起來無匿名登入，訪客 quota 與匿名流程可能實際不可用或只剩本機 guest flag。 | 先決策正式支援範圍：若要 Google+匿名，補匿名 Auth UI/runtime 與驗收；若只保留 Google，更新 README/rules/測試與配額敘述。 | 高 |
+| P2 | H | `.clinerules:47`、`.cursorrules:47`、`firebase.json:51` | 輔助規則檔宣稱 CSP 已移除 `unsafe-inline` 並加 SRI，但目前 Firebase header 仍 Report-Only + `unsafe-inline`，外部 scripts 未見 SRI。 | 舊規則會誤導後續安全判斷，可能讓下一輪 agent 誤以為 G 面向問題已解。 | 依 README 單一真相政策退役或改寫 `.clinerules` / `.cursorrules` 的安全段落；安全現況以本報告與 `firebase.json` 為準。 | 高 |
+| P3 | H | `README.md:69`、`README.md:253`、`README.md:506` | README 仍提 GSAP、GSAP timeline cleanup 與舊 `maximum-scale=1.0` a11y baseline；產品 HTML 已無 GSAP，viewport 也已移除 maximum-scale。 | 文件雜訊會拖慢接手判斷，但目前不影響 runtime。 | 在下一輪文件清理中刪除或標註歷史段落，保留真正現況。 | 高 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
