@@ -1,10 +1,10 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`0fb086c`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`8018927`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼]
 - 進行中：無
-- 下一個面向：C 前端架構與死碼
+- 下一個面向：D UI/UX 行為
 - 已記錄問題數：P0=0 P1=1 P2=1 P3=0
 
 ## 稽核原則
@@ -68,6 +68,24 @@
 |---|---|---|---|---|---|---|
 | P1 | B | `functions/src/index.ts:14`、`functions/src/index.ts:15`、`functions/src/index.ts:177` | `ENFORCE_APP_CHECK=false` 且 `LOG_MISSING_APP_CHECK=false`，`analyzeV2` 對 missing/invalid App Check 只記狀態不阻擋也不記 missing log。 | 公開前端可被濫用匿名 Auth 反覆打 Groq，且目前缺少正式流量中 missing token 的觀測資料。 | 先開 `LOG_MISSING_APP_CHECK` 觀察 Email/Google/匿名正式流量，再分階段將 `ENFORCE_APP_CHECK` 切為 true。 | 高 |
 | P2 | B | `functions/src/index.ts:261`、`functions/src/index.ts:287` | Groq 建連失敗會退 quota，但 SSE 串流中途 `stream_error` 只回 `stream-interrupted`，沒有退還或標記部分成功。 | 使用者可能收到失敗/不完整結果但仍消耗每日 5/30 次額度，會放大暫時性網路或上游串流錯誤的體驗成本。 | 明確定義「已輸出足量內容才算成功」或在 stream error 時依狀態退還 quota；同時補測試覆蓋。 | 中 |
+
+## C. 前端架構與死碼
+
+### 掃描摘要
+- 產品 HTML `public/index.html` / `public/worldforge-login.html`：`gsap` 命中數皆為 0。
+- `linkStart` 在兩份 HTML 各 35 次，且與 `#linkStartFX`、`LinkStartFX` runtime、metrics 與 lifecycle 路徑相連；未作為死殘留列 issue。
+- `.sao-btn-glitch` 在兩份 HTML 命中數皆為 0；S14 移除層仍乾淨。
+- 兩份 HTML 各有 `@keyframes=26`、`animation_names=25`，缺少對應 keyframes 的 animation name 為空。
+- 兩份 HTML 各自檢查 `id="..."`，未發現同檔重複 id。
+- 以函式/類別宣告列表抽查，兩份 HTML 的頂層 `function` / `class` 宣告未見同名重複。
+- `public/js/*.js` 模組均可在入口 HTML、模組相依、tests、scripts、README 或 package script 中找到引用；未列孤兒模組。
+- repo 內未找到根目錄或 public 根層的 `script.js` 檔案；未發現入口引用退役 `script.js`。
+- README 仍提到 GSAP，但這屬文件漂移，保留到 H 面向記錄。
+
+### C 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| - | C | - | 未記錄 P0-P3 問題。 | 前端死碼與架構抽查未見阻塞風險。 | H 面向再處理 README/文件漂移。 | 中 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
