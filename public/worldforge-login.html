@@ -1716,6 +1716,10 @@
       animation: overrideMaterialize 5.2s var(--sao-easing-back) both;
     }
 
+    .sao-confirm-window[aria-hidden="false"] {
+      animation: overrideMaterialize 0.72s var(--sao-easing-back) both;
+    }
+
     .override-window[data-closing="true"] {
       pointer-events: none;
       animation: overrideDissolve 2.2s var(--sao-easing-out) both !important;
@@ -1746,6 +1750,29 @@
 
     .override-window[aria-hidden="false"] .override-actions {
       animation: contentSlideUp 1.48s var(--sao-easing-back) 4.1s both;
+    }
+
+    .sao-confirm-window[aria-hidden="false"] .override-header,
+    .sao-confirm-window[aria-hidden="false"] .override-body > b,
+    .sao-confirm-window[aria-hidden="false"] .override-body > p,
+    .sao-confirm-window[aria-hidden="false"] .override-actions {
+      animation-duration: 0.36s;
+    }
+
+    .sao-confirm-window[aria-hidden="false"] .override-header {
+      animation-delay: 0.12s;
+    }
+
+    .sao-confirm-window[aria-hidden="false"] .override-body > b {
+      animation-delay: 0.18s;
+    }
+
+    .sao-confirm-window[aria-hidden="false"] .override-body > p {
+      animation-delay: 0.24s;
+    }
+
+    .sao-confirm-window[aria-hidden="false"] .override-actions {
+      animation-delay: 0.32s;
     }
 
     .override-header {
@@ -4938,6 +4965,10 @@
         animation: overrideMaterializeMobile 5.2s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       }
 
+      .sao-confirm-window[aria-hidden="false"] {
+        animation: overrideMaterializeMobile 0.72s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+      }
+
       .override-window[data-closing="true"] {
         animation: overrideDissolveMobile 2.2s cubic-bezier(0.64, 0, 0.78, 0) both !important;
       }
@@ -5796,6 +5827,7 @@
         this.state = "opening";
         this.lastFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
         this.setLock(true);
+        target.getAnimations().forEach((animation) => animation.cancel());
         target.hidden = false;
         target.removeAttribute("data-closing");
         target.style.removeProperty("display");
@@ -5809,7 +5841,9 @@
           const first = target.querySelector("button, [href], input, textarea, [tabindex]:not([tabindex='-1'])");
           if (first instanceof HTMLElement) first.focus();
         };
-        const focusDelay = target.classList.contains("override-window") ? 4500 : 2400;
+        const focusDelay = target.classList.contains("sao-confirm-window")
+          ? 820
+          : target.classList.contains("override-window") ? 4500 : 2400;
         window.setTimeout(() => {
           if (token !== this.token) return;
           this.state = "open";
