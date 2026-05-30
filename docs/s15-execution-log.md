@@ -2,10 +2,10 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項；`68a0da4` - 清除 root dev-tool high audit
-- 進行中：functions transitive audit 已修，下一步做 Part A 真 Google popup 量測
-- 下一步：使用 preview/live 真 Google popup 量測 click 到 `signInWithPopup` 呼叫與 popup 繪製；有證據才改 popup 鏈路
-- 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項；`68a0da4` - 清除 root dev-tool high audit；`aec514d` - 清除 functions transitive audit
+- 進行中：Part A popup-first 修法已完成，下一步跑全套驗證
+- 下一步：跑 `npm run check` / `npm test` / `npm run test:visual` / audits / smoke；通過後視需要部署
+- 未決 / 待我確認：破壞性/部署/推送需先確認；App Check 強制模式仍依 README 需正式網域 Email/Google/訪客 log 皆 valid 才能切
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
 ## 前置狀態
@@ -153,3 +153,12 @@
 - 原因：Firebase Admin 13.10.0 目前仍透過 optional Google SDK 拉到舊 semver range；不降級 `firebase-admin` / `firebase-functions`，改用 npm overrides 收斂已知 vulnerable transitive versions。
 - 驗證：`npm --prefix functions audit --audit-level=moderate` 回 `found 0 vulnerabilities`；`npm --prefix functions ls qs uuid --all` exit 0，顯示 `uuid@11.1.1` / `qs@6.15.2` 為 overridden 而非 invalid；`npm run check:functions` 通過；`git diff --check -- functions/package.json functions/package-lock.json` 通過。
 - 風險：Functions runtime transitive dependency resolution 變更；未修改 Functions TypeScript 行為，仍需全套測試與部署前 smoke。
+- Commit：`aec514d`
+
+### Step 15 - Part A popup-first 修法與診斷開關
+- 狀態：完成。
+- 修改：`public/index.html` / 同步後 `public/worldforge-login.html`。新增 query-param gated `flgAuthPopupTiming=1` 診斷開關，以 `performance.now()` 記錄 submit、OAuth preflight、`signInWithPopup` 前後等 marks，並在診斷模式輸出 `window.__FLG_AUTH_POPUP_TIMING__` / `data-auth-popup-timing` / console debug。登入流程改為先檢查 Firebase Auth / Google provider 是否可用；可用時在點擊同步堆疊內先呼叫 `signInWithPopup()`，再做 `setStatus`、HUD notice、`is-oauth` class、WebGL energy、connection window 等視覺前置。
+- 原因：Part A 的等待點是「點 Google 登入到 Google popup 出現」，原鏈路在 `signInWithPopup()` 前仍有 DOM/HUD/WebGL/window materialize 同步前置。為降低 popup 被同步視覺工作拖慢的風險，改成 popup-first；Link Start 成功後過場不移除、不弱化。
+- 診斷限制：Chrome extension / Playwright 自動化在本機會把登入面板卡在進場或將受控 tab 切到 Firebase auth handler，無法代表實機 popup latency；臨時量測腳本與輸出留於未追蹤 `output/`。因此不宣稱已完成真實帳號選擇頁手感驗收，仍列待裝置驗收。
+- 驗證：已跑 `npm run sync:login-mother`；已跑 `npm run check:frontend` 通過；`git diff --check -- public/index.html public/worldforge-login.html` 通過。
+- 風險：OAuth 視覺提示比 popup 呼叫晚數毫秒啟動；Google popup / 取消 / 失敗分支仍走原 catch 與 `restoreLoginControls()`，但需真 Chrome 實機確認 popup 出現速度。

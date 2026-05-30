@@ -5280,9 +5280,16 @@
     import { disposeObjectTree } from "./js/webgl/dispose-utils.js";
 
     const systemPrefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const readQueryParam = (name) => {
+      try {
+        return new URLSearchParams(window.location.search).get(name) || "";
+      } catch (_) {
+        return "";
+      }
+    };
     const readMotionPreference = () => {
       try {
-        const requested = new URLSearchParams(window.location.search).get("flgMotion");
+        const requested = readQueryParam("flgMotion");
         if (requested === "full" || requested === "reduce") {
           localStorage.setItem("flgMotionPreference", requested);
         } else if (requested === "system") {
@@ -5295,6 +5302,7 @@
     };
     const motionPreference = readMotionPreference();
     const prefersReducedMotion = motionPreference === "full" ? false : motionPreference === "reduce" ? true : systemPrefersReducedMotion;
+    const authPopupTimingEnabled = readQueryParam("flgAuthPopupTiming") === "1";
     window.__FLG_MOTION_STATE__ = {
       systemReduced: systemPrefersReducedMotion,
       preference: motionPreference || "system",
@@ -7599,6 +7607,7 @@
         this.syncProgress = 0;
         this.operational = false;
         this.mode = "email";
+        this.oauthPopupTiming = null;
         this.ritualStack = document.getElementById("ritualStack");
         this.authPanel = document.getElementById("authPanel");
         this.form = document.getElementById("authForm");
@@ -7650,6 +7659,7 @@
       bindEvents() {
         this.form.addEventListener("submit", (event) => {
           event.preventDefault();
+          this.startPopupTiming("auth-form-submit");
           this.beginOAuthSeal();
         });
 
@@ -7693,6 +7703,34 @@
           this.core.hoverTarget = 0;
           this.post.setHoverEnergy(0);
         });
+      }
+
+      startPopupTiming(source) {
+        if (!authPopupTimingEnabled) return;
+        this.oauthPopupTiming = {
+          source,
+          startedAt: performance.now(),
+          marks: []
+        };
+        window.__FLG_AUTH_POPUP_TIMING__ = this.oauthPopupTiming;
+        this.markPopupTiming("submit");
+      }
+
+      markPopupTiming(name, extra = {}) {
+        if (!authPopupTimingEnabled || !this.oauthPopupTiming) return;
+        const now = performance.now();
+        const mark = {
+          name,
+          elapsed: Number((now - this.oauthPopupTiming.startedAt).toFixed(2)),
+          ...extra
+        };
+        this.oauthPopupTiming.marks.push(mark);
+        this.oauthPopupTiming.last = mark;
+        document.documentElement.dataset.authPopupTiming = `${name}:${mark.elapsed}`;
+        try {
+          window.name = `FLG_AUTH_POPUP_TIMING:${JSON.stringify(this.oauthPopupTiming)}`;
+        } catch (_) {}
+        console.debug("[FLG auth popup timing]", JSON.stringify(this.oauthPopupTiming));
       }
 
       setStatus(text, isError = false) {
@@ -7785,46 +7823,73 @@
         this.hud.showNotice("Google 重新導向登入失敗");
       }
 
+      getGoogleAuthRuntime() {
+        const auth = firebaseRuntime.auth || AppState.get("fbAuth");
+        const Provider = window.firebase?.auth?.GoogleAuthProvider;
+        return auth && Provider ? { auth, Provider } : null;
+      }
+
+      handleGoogleAuthUnavailable() {
+        this.markPopupTiming("perform-google-missing-auth");
+        this.setStatus("Google 授權尚未載入，請稍後再試", true);
+        this.hud.showNotice("Google 授權通道載入失敗");
+        this.mode = "email";
+        this.openButton.disabled = false;
+        this.runes.setSpeedScale(1);
+      }
+
       beginOAuthSeal() {
         if (this.operational || this.mode !== "email") return;
+        const googleRuntime = this.getGoogleAuthRuntime();
+        if (!googleRuntime) {
+          this.handleGoogleAuthUnavailable();
+          return;
+        }
+        this.markPopupTiming("begin-oauth-start");
         this.mode = "oauth";
+        this.openButton.disabled = true;
+        this.performGoogleSignIn(googleRuntime);
+        this.markPopupTiming("sign-in-dispatched-before-visuals");
         this.setStatus("Google 授權通道開啟中");
         this.hud.showNotice("OAuth 封印通道開啟中");
         this.ritualStack.classList.add("is-oauth");
-        this.openButton.disabled = true;
+        this.markPopupTiming("ui-state-updated");
         this.core.setIntensity(0.36);
         this.runes.setSpeedScale(0.24);
         this.post.setHoverEnergy(0);
+        this.markPopupTiming("webgl-energy-updated");
         this.setConnectionText({
           label: "OAUTH_GATE",
           state: "DIMENSIONAL LINK",
           title: "Google 授權確認中",
           copy: "授權通道已開啟，鑑定核心正等待回傳"
         });
+        this.markPopupTiming("connection-copy-updated");
         this.manifestWindow(this.connectionWindow);
-        this.performGoogleSignIn();
+        this.markPopupTiming("connection-window-opened");
       }
 
-      async performGoogleSignIn() {
-        const auth = firebaseRuntime.auth || AppState.get("fbAuth");
-        if (!auth || !window.firebase?.auth?.GoogleAuthProvider) {
-          this.setStatus("Google 授權尚未載入，請稍後再試", true);
-          this.hud.showNotice("Google 授權通道載入失敗");
-          this.mode = "email";
-          this.openButton.disabled = false;
-          this.runes.setSpeedScale(1);
+      async performGoogleSignIn(googleRuntime = this.getGoogleAuthRuntime()) {
+        this.markPopupTiming("perform-google-start");
+        if (!googleRuntime) {
+          this.handleGoogleAuthUnavailable();
           return;
         }
         try {
-          const provider = new window.firebase.auth.GoogleAuthProvider();
-          const pending = auth.signInWithPopup(provider);
+          const provider = new googleRuntime.Provider();
+          this.markPopupTiming("google-provider-created");
+          this.markPopupTiming("sign-in-popup-before");
+          const pending = googleRuntime.auth.signInWithPopup(provider);
+          this.markPopupTiming("sign-in-popup-after");
           await pending;
+          this.markPopupTiming("sign-in-popup-resolved");
           this.googlePopupClosedCount = 0;
           this.collapseWindow(this.connectionWindow, uiMotion.collapse);
           this.beginAuthentication("Google 授權完成", { skipAuth: true });
         } catch (error) {
           this.collapseWindow(this.connectionWindow, uiMotion.collapse);
           const code = error?.code || "";
+          this.markPopupTiming("sign-in-popup-error", { code });
           this.googlePopupClosedCount = code === "auth/popup-closed-by-user" ? this.googlePopupClosedCount + 1 : 0;
           this.restoreLoginControls();
           if (code === "auth/popup-closed-by-user") {
