@@ -2194,7 +2194,7 @@
       position: absolute;
       top: calc(100% + 10px);
       right: 12px;
-      z-index: var(--z-menu);
+      z-index: calc(var(--z-menu) + 20);
       display: grid;
       gap: 8px;
       width: min(264px, calc(100vw - 28px));
@@ -3589,19 +3589,33 @@
     }
 
     body.workbench-materializing .codex-session {
-      animation: contentSlideUp 1.28s var(--sao-easing-out) 1.34s both;
+      animation: contentSlideUp 0.36s var(--sao-easing-out) 0.08s both;
     }
 
     body.workbench-materializing .codex-panel {
-      animation: contentSlideUp 0.72s var(--sao-easing-out) 2.38s both;
+      animation: contentSlideUp 0.38s var(--sao-easing-out) 0.14s both;
     }
 
-    body.workbench-materializing .operational-actions .sao-btn {
-      animation: contentSlideUp 0.72s var(--sao-easing-back) 3.42s both;
+    body.workbench-materializing .operational-actions .sao-btn,
+    body.workbench-materializing .dossier-actions .sao-btn {
+      animation: contentSlideUp 0.28s var(--sao-easing-back) both;
+      animation-delay: 0.22s;
+    }
+
+    body.workbench-materializing .dossier-actions .sao-btn:nth-child(1) {
+      animation-delay: 0.28s;
+    }
+
+    body.workbench-materializing .dossier-actions .sao-btn:nth-child(2) {
+      animation-delay: 0.34s;
+    }
+
+    body.workbench-materializing .dossier-actions .sao-btn:nth-child(3) {
+      animation-delay: 0.4s;
     }
 
     body.workbench-materializing .analysis-dossier {
-      animation: contentSlideUp 0.72s var(--sao-easing-out) 4.18s both;
+      animation: contentSlideUp 0.36s var(--sao-easing-out) 0.32s both;
     }
 
     body.operational .tool-module {
@@ -3610,15 +3624,15 @@
     }
 
     body.workbench-materializing .tool-module {
-      animation: contentSlideUp 0.72s var(--sao-easing-out) both;
+      animation: contentSlideUp 0.34s var(--sao-easing-out) both;
     }
 
-    body.workbench-materializing .tool-stack.left .tool-module:nth-child(1) { animation-delay: 1.22s; }
-    body.workbench-materializing .tool-stack.left .tool-module:nth-child(2) { animation-delay: 1.4s; }
-    body.workbench-materializing .tool-stack.left .tool-module:nth-child(3) { animation-delay: 1.58s; }
-    body.workbench-materializing .tool-stack.right .tool-module:nth-child(1) { animation-delay: 1.76s; }
-    body.workbench-materializing .tool-stack.right .tool-module:nth-child(2) { animation-delay: 1.94s; }
-    body.workbench-materializing .tool-stack.right .tool-module:nth-child(3) { animation-delay: 2.12s; }
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(1) { animation-delay: 0.12s; }
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(2) { animation-delay: 0.18s; }
+    body.workbench-materializing .tool-stack.left .tool-module:nth-child(3) { animation-delay: 0.24s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(1) { animation-delay: 0.3s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(2) { animation-delay: 0.36s; }
+    body.workbench-materializing .tool-stack.right .tool-module:nth-child(3) { animation-delay: 0.42s; }
 
     body.operational .codex-panel,
     body.operational .analysis-dossier {
@@ -4695,8 +4709,9 @@
       width: min(360px, calc(100vw - 32px));
       max-height: min(76dvh, 620px);
       gap: 12px;
-      overflow: auto;
-      padding: 18px;
+      overflow: visible;
+      padding: 20px 24px 24px 20px;
+      pointer-events: auto;
       border: 1px solid rgba(214, 166, 77, 0.38);
       clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
       background:
@@ -4710,7 +4725,7 @@
     }
 
     .sao-system-menu:not([hidden]):not(.is-closing) {
-      animation: contentSlideUp 0.72s cubic-bezier(0.18, 0.92, 0.2, 1) both;
+      animation: contentSlideUp 0.32s cubic-bezier(0.18, 0.92, 0.2, 1) both;
     }
 
     .sao-system-menu::before {
@@ -4765,24 +4780,24 @@
     }
 
     .sao-system-menu:not([hidden]) .sao-btn {
-      animation: contentSlideUp 0.46s cubic-bezier(0.2, 0.86, 0.18, 1) both;
-      animation-delay: 0.9s;
+      animation: contentSlideUp 0.28s cubic-bezier(0.2, 0.86, 0.18, 1) both;
+      animation-delay: 0.06s;
     }
 
     .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(2) {
-      animation-delay: 1.24s;
+      animation-delay: 0.12s;
     }
 
     .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(3) {
-      animation-delay: 1.58s;
+      animation-delay: 0.18s;
     }
 
     .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(4) {
-      animation-delay: 1.92s;
+      animation-delay: 0.24s;
     }
 
     .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(5) {
-      animation-delay: 2.26s;
+      animation-delay: 0.3s;
     }
 
     .sao-system-menu.is-closing {
@@ -5320,7 +5335,7 @@
       loginBackdrop: 1.16,
       loginPanel: 5.2,
       authHandoff: 5.8,
-      workbenchReveal: 5.8,
+      workbenchReveal: 1.2,
       mobileEnterClass: 5520
     };
     document.documentElement.classList.toggle("motion-reduced", prefersReducedMotion);
@@ -8120,19 +8135,11 @@
           sysStateHud.innerHTML = "MULTILAYER BARRIER LIFTED<br />APPRAISAL ENGINE ONLINE<br />SYSTEM ID: SAGE-09";
         }
 
-        const startingLeylineOpacity = Number.parseFloat(getComputedStyle(this.leylineRain).opacity || "0");
-        const startCoreZ = this.core.group.position.z;
-        const startCoreScale = this.core.group.scale.x;
-        const startRuneScale = this.runes.group.scale.x;
-        const startParticleScale = this.particles.group.scale.x;
-        runPhaseClock(prefersReducedMotion ? 0 : 1800, (progress) => {
-          const eased = ease.outPow2(progress);
-          this.leylineRain.style.opacity = String(lerp(startingLeylineOpacity, 0.42, ease.outPow2(clamp01(progress * 1.5))));
-          this.core.group.position.z = lerp(startCoreZ, -1.5, eased);
-          this.core.group.scale.setScalar(lerp(startCoreScale, 0.82, eased));
-          this.runes.group.scale.setScalar(lerp(startRuneScale, 0.86, eased));
-          this.particles.group.scale.setScalar(lerp(startParticleScale, 0.9, eased));
-        });
+        this.leylineRain.style.opacity = "0.42";
+        this.core.group.position.z = -1.5;
+        this.core.group.scale.setScalar(0.82);
+        this.runes.group.scale.setScalar(0.86);
+        this.particles.group.scale.setScalar(0.9);
         if (!prefersReducedMotion) {
           window.setTimeout(() => {
             document.querySelectorAll(".tool-module").forEach((node) => node.classList.add("deploy-sweep"));
