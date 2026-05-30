@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項；`68a0da4` - 清除 root dev-tool high audit；`aec514d` - 清除 functions transitive audit；`760a5b8` - Google popup-first 修法與診斷開關
-- 進行中：全套驗證已通過，下一步部署最新修補
-- 下一步：以 `FUNCTIONS_DISCOVERY_TIMEOUT=120` 執行 Firebase deploy，部署後跑 live smoke
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成；`5ed55b2` - 本地預覽靜態取樣；`e454210` - 標記本地預覽完成；`63a7a05` - 驗收與 UI/UX/前後端稽核；`59f850d` - 標記驗收稽核完成；`5862827` - Firebase 全量部署並通過 live smoke；`e299f37` - 標記 Firebase 部署完成；`2e58d71` - 重新盤點剩餘 audit 與 Part A 待證據項；`68a0da4` - 清除 root dev-tool high audit；`aec514d` - 清除 functions transitive audit；`760a5b8` - Google popup-first 修法與診斷開關；`01ba737` - 全套驗證通過
+- 進行中：無
+- 下一步：等待實機驗收真 Google popup 速度與動效手感；若需推送再等明確指示
 - 未決 / 待我確認：推送需先確認；App Check 強制模式仍依 README 需正式網域 Email/Google/訪客 log 皆 valid 才能切
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -171,3 +171,12 @@
 - Rules：`npm run test:rules` 仍因既有 emulator 占用 `127.0.0.1:8099` 失敗；未 kill 既有 process。改用臨時 `output/s15-audit/firebase-emulator-8299.json` 跑同一 Firestore rules emulator 測試，exit 0；產生的 `firestore-debug.log` 已移到 `output/s15-audit/firestore-debug-8299.log`。
 - 限制：`test:visual` 仍會拔 script、藏 WebGL，不能驗證真 Link Start / popup 實機手感；Part A 真 Google 帳號選擇頁出現速度仍列待裝置驗收。
 - 風險：驗證-only；未改產品行為。
+- Commit：`01ba737`
+
+### Step 17 - Firebase 全量部署剩餘修補
+- 狀態：完成。
+- 指令：依先前「全部署」指示，設定 `$env:FUNCTIONS_DISCOVERY_TIMEOUT="120"` 後執行 `firebase deploy --non-interactive --debug`，完整 debug log 存於 `output/s15-deploy/firebase-deploy-remaining-debug.log`。
+- 部署結果：部署到 `project-7276420283723642146`；Firestore rules 編譯並 release 成功；Functions `analyzeV2`、`cspReport`、`quotaPeek` 皆 Successful update operation；Hosting version `projects/65341047777/sites/project-7276420283723642146/versions/da9a672da80fc6fa` finalized，live release `projects/65341047777/sites/project-7276420283723642146/channels/live/releases/1780137941215000`。
+- 部署後驗證：`npm run smoke:hosting` 通過；線上 `https://project-7276420283723642146.web.app/?v=s15-final` HTML 確認包含 `flgAuthPopupTiming` 與 `sign-in-dispatched-before-visuals`。
+- 未做：未推送 git；未宣稱真機動效與 Google 帳號選擇頁速度已驗收。
+- 風險：live 站已更新；Functions 因 dependency override 產生新 revisions，smoke 通過但仍需實際登入/分析流程觀察。
