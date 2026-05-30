@@ -1,11 +1,11 @@
 # S16 全專案稽核報告
 
 ## 進度區塊（最新）
-- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`639615a`
-- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移]
+- 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`94f87c7`
+- 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移] ✅ [I 依賴與建置]
 - 進行中：無
-- 下一個面向：I 依賴與建置
-- 已記錄問題數：P0=0 P1=3 P2=5 P3=1
+- 下一個面向：J 邊界/錯誤路徑
+- 已記錄問題數：P0=0 P1=3 P2=5 P3=3
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。
@@ -167,6 +167,21 @@
 | P1 | H | `README.md:89`、`README.md:278`、`README.md:366`、`public/index.html:5126`、`public/index.html:7905` | 登入規格漂移：README 同時宣稱 Google-only、Email/Password、匿名訪客；產品碼只呈現 Google popup，且未找到 `signInAnonymously` / Email Auth 路徑。 | 執行單宣稱真實架構含匿名 Auth，但目前 UI/runtime 看起來無匿名登入，訪客 quota 與匿名流程可能實際不可用或只剩本機 guest flag。 | 先決策正式支援範圍：若要 Google+匿名，補匿名 Auth UI/runtime 與驗收；若只保留 Google，更新 README/rules/測試與配額敘述。 | 高 |
 | P2 | H | `.clinerules:47`、`.cursorrules:47`、`firebase.json:51` | 輔助規則檔宣稱 CSP 已移除 `unsafe-inline` 並加 SRI，但目前 Firebase header 仍 Report-Only + `unsafe-inline`，外部 scripts 未見 SRI。 | 舊規則會誤導後續安全判斷，可能讓下一輪 agent 誤以為 G 面向問題已解。 | 依 README 單一真相政策退役或改寫 `.clinerules` / `.cursorrules` 的安全段落；安全現況以本報告與 `firebase.json` 為準。 | 高 |
 | P3 | H | `README.md:69`、`README.md:253`、`README.md:506` | README 仍提 GSAP、GSAP timeline cleanup 與舊 `maximum-scale=1.0` a11y baseline；產品 HTML 已無 GSAP，viewport 也已移除 maximum-scale。 | 文件雜訊會拖慢接手判斷，但目前不影響 runtime。 | 在下一輪文件清理中刪除或標註歷史段落，保留真正現況。 | 高 |
+
+## I. 依賴與建置
+
+### 掃描摘要
+- root `npm outdated`：`firebase` current `12.13.0`、wanted/latest `12.14.0`。
+- functions `npm outdated`：`groq-sdk` current `1.2.0`、wanted/latest `1.2.1`；`typescript` current/wanted `5.9.3`、latest `6.0.3`。
+- root scripts：`check`、`test`、`test:visual`、`test:a11y`、`smoke:hosting` 已在 A 面向通過；`build:functions` 也由 `npm test` 執行。
+- `.gitignore` 已排除 `functions/lib/`、`test-results/`、`playwright-report/`、`artifacts/`、`.npm-cache/`、`.tmp/`。
+- `git status` 顯示 `output/` 目前未追蹤，且 `.gitignore` 未排除。
+
+### I 面向發現
+| 嚴重度 | 面向 | 位置 | 問題 | 影響 | 建議 | 信心 |
+|---|---|---|---|---|---|---|
+| P3 | I | `package.json`、`functions/package.json` | 依賴有小幅漂移：root `firebase` patch update、functions `groq-sdk` patch update；TypeScript 6 是 major，不宜自動升。 | 目前 audit 為 0 漏洞且測試通過，屬維護排程，不是即時風險。 | 下一張維護單分開升 patch 依賴並重跑完整測試；TypeScript 6 另開相容性評估。 | 高 |
+| P3 | I | `.gitignore`、`output/` | `output/` 目前未追蹤但未列入 `.gitignore`。 | Playwright/人工驗證產物容易長期污染工作樹，影響稽核與 commit 範圍判斷。 | 將 `output/` 納入 ignore，或定義其為有意保留的人工驗證輸出並建立清理規則。 | 高 |
 
 ## 優先修復順序（收尾彙整）
 - 尚未完成 B-J，待全掃描後彙整 P0/P1 與前三優先事項。
