@@ -21,10 +21,10 @@
   <link rel="modulepreload" href="/js/webgl/optical-background.js" />
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Noto+Sans+TC:wght@300;400;500;700;900&family=Noto+Serif+TC:wght@400;600;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
   <script src="/swkill.js?v=61" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer crossorigin="anonymous"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js" defer crossorigin="anonymous"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" defer crossorigin="anonymous" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" defer crossorigin="anonymous" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" defer crossorigin="anonymous" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-check-compat.js" defer crossorigin="anonymous" integrity="sha384-E3vxFxXu8FhW5kvqdQJ5Yf8ugrV7iCJP8jgnItRH2Rk8Q08cJzJGTi/oMC3FEp3j"></script>
   <script type="importmap">
     {
       "imports": {
@@ -1901,7 +1901,7 @@
     .codex-panel {
       position: relative;
       overflow: hidden;
-      min-height: clamp(480px, 68dvh, 780px);
+      min-height: clamp(420px, 58dvh, 680px);
       padding: clamp(18px, 1.8vw, 28px);
       border: 1px solid rgba(214, 166, 77, 0.2);
       background:
@@ -2583,9 +2583,9 @@
     .draft-field-shell {
       position: relative;
       display: grid;
-      grid-template-rows: auto auto minmax(300px, 1fr);
+      grid-template-rows: auto auto minmax(220px, 1fr);
       gap: 7px;
-      min-height: clamp(300px, 42dvh, 460px);
+      min-height: clamp(220px, 32dvh, 360px);
     }
 
     .field,
@@ -3468,6 +3468,11 @@
         transform: translate(-50%, -50%) scaleX(1) scaleY(1);
         filter: none;
       }
+      .connection-window[aria-hidden="false"] {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+        filter: none;
+      }
       .spell-list span {
         opacity: 1;
         transform: none;
@@ -4187,13 +4192,15 @@
       }
 
       .draft-field-help {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        overflow: hidden;
-        white-space: nowrap;
+        position: static;
+        width: auto;
+        height: auto;
+        clip: auto;
+        clip-path: none;
+        overflow: visible;
+        white-space: normal;
+        font-size: var(--fs-caption);
+        line-height: 1.55;
       }
 
       .draft-field-title {
@@ -5195,7 +5202,7 @@
         </div>
         <label class="draft-field-shell" for="draftField">
           <span class="draft-field-title" id="draftFieldLabel">小說手稿輸入</span>
-          <span class="draft-field-help" id="draftFieldHelp">貼上 1,800 字以內手稿；系統會先完整重寫，再輸出精煉審稿摘要。</span>
+          <span class="draft-field-help" id="draftFieldHelp">1,800 字內；系統會先完整重寫，再輸出精煉審稿摘要。</span>
           <textarea id="draftField" aria-labelledby="draftFieldLabel" aria-describedby="draftFieldHelp charCount spellWarn" placeholder="貼上需要校準的小說手稿"></textarea>
           <span class="draft-meta" aria-live="polite">
             <span class="char-count" id="charCount">0 / 1,800</span>
@@ -5267,7 +5274,7 @@
       UI_CONFIG
     } from "./js/core/config.js";
     import { AppState } from "./js/core/state.js";
-    import { analyzeDraft, getAppCheckToken } from "./js/services/analyze-api.js";
+    import { analyzeDraft, getAppCheckToken, isApiError } from "./js/services/analyze-api.js";
     import { buildHudState, emptyHudState } from "./js/utils/hud-state.js";
     import { renderMarkdownLite, splitAnalysisSections } from "./js/utils/result-sections.js";
     import { ArcaneSingularityCore } from "./js/webgl/arcane-core.js";
@@ -8340,7 +8347,12 @@
           this.persistHistory({ draft, result, ts: startedAt });
           window.dispatchEvent(new CustomEvent("worldforge:analysis-complete", { detail: { fromCache } }));
         } catch (error) {
-          const message = error?.name === "AbortError" ? MSG.TIMEOUT : (error?.userMessage || error?.message || MSG.FETCH_FAIL);
+          const message = error?.name === "AbortError"
+            ? MSG.TIMEOUT
+            : (isApiError(error) ? (error?.userMessage || MSG.FETCH_FAIL) : MSG.FETCH_FAIL);
+          if (!isApiError(error) && error?.message) {
+            console.warn("[FLG] analysis request failed:", error.message);
+          }
           renderAnalysisResult(resultBox, message);
           this.scrollWorkbenchToDossier(80);
           this.setOperationalStatus("鑑定中斷，請重試", true);
@@ -8777,8 +8789,8 @@
           toggle.className = "system-menu-toggle sao-btn";
           toggle.id = "systemMenuToggle";
           toggle.type = "button";
-          toggle.title = "SYSTEM MENU";
-          toggle.setAttribute("aria-label", "SYSTEM MENU");
+          toggle.title = "工作區選單";
+          toggle.setAttribute("aria-label", "工作區選單");
           toggle.setAttribute("aria-haspopup", "menu");
           toggle.setAttribute("aria-expanded", "false");
           toggle.setAttribute("aria-controls", "systemMenuPanel");
@@ -8788,7 +8800,7 @@
           symbol.textContent = "SYS";
           const label = document.createElement("span");
           label.className = "sao-btn-label";
-          label.textContent = "SYSTEM";
+          label.textContent = "工作區選單";
           toggle.append(symbol, label);
         }
         this.navActions.replaceChildren(toggle);
@@ -8803,7 +8815,7 @@
           panel.hidden = true;
           this.navActions.after(panel);
         }
-        [this.historyToggle, this.clearDraftButton, this.reanalyzeButton, this.logoutButton]
+        [this.historyToggle, this.accountToggle, this.clearDraftButton, this.reanalyzeButton, this.logoutButton]
           .filter((button) => button instanceof HTMLElement)
           .forEach((button) => {
             button.classList.add("system-menu-item");
@@ -9428,6 +9440,8 @@
       }
 
       async logout() {
+        const localDraftKey = this.draftKey();
+        const localHistoryKey = this.historyKey();
         if (this.confirmLogoutButton) {
           this.confirmLogoutButton.disabled = true;
           setButtonGlyph(this.confirmLogoutButton, "⇥", "封存中");
@@ -9437,6 +9451,8 @@
         this.hud.showNotice("正在結束鑑定核心工作階段");
         try {
           firebaseRuntime.guest = false;
+          localStorage.removeItem(localDraftKey);
+          localStorage.removeItem(localHistoryKey);
           localStorage.removeItem("worldforgeGuest");
           AppState.set("guestId", null);
           if (window.__FLG_LOGIN_CONTROLLER__) {

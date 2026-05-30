@@ -12,7 +12,7 @@ const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 admin.initializeApp();
 
 const ENFORCE_APP_CHECK = false;
-const LOG_MISSING_APP_CHECK = false;
+const LOG_MISSING_APP_CHECK = true;
 
 type AppCheckStatus = "missing" | "valid" | "invalid";
 
@@ -32,6 +32,31 @@ function applyCors(req: any, res: any): void {
 function sendError(req: any, res: any, status: number, code: string, message: string): void {
   applyCors(req, res);
   res.status(status).json({ code, message });
+}
+
+function normalizeGroqError(err: any): { status: number; code: string; message: string } {
+  const status = Number(err?.status || err?.response?.status || 503);
+  const code = String(err?.code || err?.error?.code || "").toLowerCase();
+  const message = String(err?.message || "");
+  if (status === 429 || code.includes("rate")) {
+    return {
+      status: 429,
+      code: "ai-rate-limited",
+      message: "分析服務目前忙碌或已達速率限制，請稍後再試。",
+    };
+  }
+  if (status === 413 || status === 400 || code.includes("token") || code.includes("context") || message.toLowerCase().includes("token")) {
+    return {
+      status: 413,
+      code: "ai-token-budget",
+      message: "手稿或回應超出分析服務可承載的長度，請縮短段落後再試。",
+    };
+  }
+  return {
+    status: 503,
+    code: "ai-unavailable",
+    message: "分析服務暫時不可用，請稍後再試。",
+  };
 }
 
 function getRequestId(req: any): string {
@@ -257,9 +282,10 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
       stream: true,
     });
   } catch (apiErr: any) {
-    warnEvent("groq_error", { requestId, uidHash, ms: Date.now() - requestStartedAt, message: apiErr?.message });
+    const normalized = normalizeGroqError(apiErr);
+    warnEvent("groq_error", { requestId, uidHash, ms: Date.now() - requestStartedAt, upstreamStatus: apiErr?.status, code: normalized.code });
     await refundQuota(admin.firestore(), decodedToken.uid, quotaEventId);
-    sendError(req, res, 503, "ai-unavailable", `分析服務暫時不可用：${apiErr?.message || "API Error"}`);
+    sendError(req, res, normalized.status, normalized.code, normalized.message);
     return;
   }
 
@@ -285,10 +311,15 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
     logEvent("analysis_done", { requestId, uidHash, ms: Date.now() - startTime, totalMs: Date.now() - requestStartedAt, appCheckStatus });
   } catch (streamErr: any) {
     warnEvent("stream_error", { requestId, uidHash, ms: Date.now() - requestStartedAt, message: streamErr?.message });
+    try {
+      await refundQuota(admin.firestore(), decodedToken.uid, quotaEventId);
+    } catch (refundErr: any) {
+      warnEvent("quota_refund_error", { requestId, uidHash, message: refundErr?.message });
+    }
     res.write(`data: ${JSON.stringify({
       error: {
         code: "stream-interrupted",
-        message: streamErr?.message || "Stream interrupted",
+        message: "分析串流中斷，已退還本次額度，請稍後再試。",
       },
     })}\n\n`);
     res.write("data: [DONE]\n\n");

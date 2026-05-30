@@ -4,8 +4,14 @@
 - 分支：`codex/arcane-sage-core-20260522`　工作樹：有未提交/未追蹤（`.claude/`、`output/`）　HEAD：`e39da5f`
 - 已掃完面向：✅ [A 前置基準] ✅ [B 後端正確性與安全] ✅ [C 前端架構與死碼] ✅ [D UI/UX 行為] ✅ [E 無障礙 a11y] ✅ [F 效能] ✅ [G 前端安全] ✅ [H 一致性與漂移] ✅ [I 依賴與建置] ✅ [J 邊界/錯誤路徑]
 - 進行中：無
-- 下一個面向：全面向完成，等待下一張修復執行單
+- 下一個面向：S16/S17 修復驗證完成；後續新增需求另開單
 - 已記錄問題數：P0=0 P1=3 P2=7 P3=3
+
+## 修復狀態（2026-05-31）
+- 已修：App Check missing log、CSP/SRI、SSE 中途錯誤退還 quota、Groq 錯誤正規化、前端 network error 繁中訊息、登出清本機草稿/歷史、依賴 patch、`output/` ignore。
+- 已修 S17 UI/UX：SYSTEM menu 可抵達帳號中樞、1366 首屏密度、reduced-motion connection final state、可見按鈕 44px target assertion、手機草稿短提示、工作區選單本地化、互動 visual tests。
+- 依最新使用者指示：Auth 暫時只留 Google 登入；S16 P1 的匿名/Email 方向先略過，不實作。
+- 本地驗證：`npm run check`、`npm test`、`npm run test:visual -- --reporter=line --workers=1`、`npm run test:a11y -- --reporter=line --workers=1`、`npm run build`、root/functions `npm audit --audit-level=moderate`、`git diff --check` 均通過。
 
 ## 稽核原則
 - 只診斷、只寫報告；不修改程式、不部署、不 push。

@@ -5,8 +5,14 @@
 - 稽核範圍：UI/UX 專項，不修改產品程式、不部署、不 push。
 - 已掃完面向：✅ [A 前置基準] ✅ [B 桌機工作台] ✅ [C 手機 RWD] ✅ [D 彈窗與狀態回饋] ✅ [E Reduced Motion 與 A11y] ✅ [F 優先修復彙整]
 - 進行中：無
-- 下一個面向：等待 S17 修復單
+- 下一個面向：S17 修復驗證完成；後續新增 UI/UX 需求另開單
 - 已記錄問題數：P0=0 P1=2 P2=3 P3=2
+
+## 修復狀態（2026-05-31）
+- 已修 P1：帳號中樞回到 SYSTEM menu 可點擊路徑；桌機工作台密度下修，主分析 CTA 在常見 1366 視野更早可見。
+- 已修 P2/P3：reduced-motion connection 視窗補 final visible state；手機保留短版草稿提示；SYSTEM menu 可見/ARIA label 本地化為工作區選單；可見按鈕補 44px target size regression test。
+- 已補測試：從 SYSTEM menu 開帳號中樞、44px target size、reduced-motion connection final state，並更新 `workbench-390` snapshot。
+- 本地驗證：`npm run test:visual -- --reporter=line --workers=1` 17/17 通過；`npm run test:a11y -- --reporter=line --workers=1` 3/3 通過。
 
 ## 稽核原則
 - `public/index.html` 與 `public/worldforge-login.html` 不整檔讀取；只用 grep/定位後小窗讀取。

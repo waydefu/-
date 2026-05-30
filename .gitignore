@@ -21,6 +21,7 @@ functions/lib/
 test-results/
 playwright-report/
 artifacts/
+output/
 
 # Local command cache/temp (keeps checks off a full C: drive)
 .npm-cache/

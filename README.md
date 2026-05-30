@@ -23,7 +23,7 @@
 
 1. 視覺語言必須是黑暗西幻魔導系統，不是冷藍 cyberpunk、蘋果式 glassmorphism、一般 SaaS 登入頁或行銷 landing page。
 2. 登入頁可以電影感很強，主工具頁必須安靜、可讀、可長時間編修。儀式感服務於進入工作台，不可蓋過草稿輸入、分析結果、歷史紀錄與帳號狀態。
-3. Firebase Auth 是唯一登入真相。動畫只能在真實 Email / Google / 訪客登入成功後播放 handoff，不可用假帳密、自動成功或固定時間硬切來偽裝驗證。
+3. Firebase Auth 是唯一登入真相。當前正式入口只保留 Google popup；動畫只能在真實 Google 登入成功後播放 handoff，不可用假帳密、自動成功或固定時間硬切來偽裝驗證。
 4. 保留現有 DOM id 與模組契約：`#ritualStack`、`#openRitualBtn`、`#operationalDeck`、`#draftField`、`[data-op="analyze"]`、`#analysisResult`、`#historyToggle`、`#accountToggle`、`#logoutConfirmWindow` 等不可任意改名；完整清單見 `docs/project-navigation-map.md`。
 5. 不可在 Markdown、程式碼註解、截圖、issue 或 log 中記錄 Groq API key、key prefix、Firebase Admin credential、Secret Manager 輸出或任何真正 server secret。
 6. 所有 WebGL / Canvas / Audio loop 必須有 cleanup。離開登入頁、登出、WebGL context lost、reduced motion、visibility hidden、頁面卸載都要停止 CPU / GPU 工作。
@@ -66,7 +66,7 @@ flowchart LR
 
 ### Frontend
 
-- `public/index.html`：正式入口。包含 HTML、CSS、Firebase compat SDK、GSAP、Three.js importmap、登入 / 工作台 DOM、主 orchestration inline module。
+- `public/index.html`：正式入口。包含 HTML、CSS、Firebase compat SDK、Three.js importmap、登入 / 工作台 DOM、主 orchestration inline module。
 - `public/worldforge-login.html`：同版視覺母體備份。改登入儀式、WebGL、HUD、Operational Mode 或 RWD 核心時，需以 `npm run sync:login-mother` 或 `npm run build` 的 `prebuild` hook 從 `public/index.html` 同步。
 - `public/js/core/`：跨模組設定、狀態與型別，包含 `config.js`、`state.js`、`types.js`。
 - `public/js/services/`：外部服務邊界，包含 `analyze-api.js`、`cache.js`。
@@ -250,7 +250,7 @@ Great Sage / Raphael 強化層：
 
 - 不使用純白硬切。
 - 強光後必須讓攝影機、粒子、文字與 UI 一起落回可讀狀態。
-- 若使用 GSAP timeline，所有 tween 必須可被 cleanup kill。
+- 所有自訂動畫 timeline / `requestAnimationFrame` / Web Animations 都必須可 cleanup、cancel 或 kill。
 
 ### 4. 編修待命模式：3.8s 之後
 
@@ -273,17 +273,15 @@ Great Sage / Raphael 強化層：
 
 登入頁採「魔導認證面板」而非普通帳密卡。
 
-必留路徑：
+當前必留路徑：
 
-- Email / Password 登入。
-- Email / Password 註冊。
 - Google 登入。
-- 訪客登入。
+- Email / Password 與訪客登入暫緩，不作為目前正式入口或驗收項。
 
 布局原則：
 
-- Email / Password 是主要儀式入口，保留在中央或核心附近。
-- Google 與訪客是次要入口，可放在 `EXTERNAL SEALS` 或旁側 HUD 模組。
+- Google 是目前唯一正式儀式入口，保留在中央或核心附近。
+- 若未來恢復 Email / Password 或訪客登入，需同步更新 UI、Auth 驗收、配額敘述與 README。
 - 表單文案可使用「作者印記」、「奧術密鑰」、「開啟編修儀式」，但錯誤訊息仍要清楚可理解。
 - 登入按鈕、欄位、mode tabs 必須 keyboard 可用，focus state 明確。
 - 失敗不播放 warp，只在登入面板內顯示低亮度紅琥珀錯誤。
@@ -363,15 +361,15 @@ sequenceDiagram
 
 ### Auth
 
-- Firebase Auth 支援 Email / Password、Google popup、匿名訪客。
+- Firebase Auth 目前正式入口只保留 Google popup；Email / Password 與匿名訪客入口暫緩，不作為當前驗收項。
 - 手機 Chrome 的 redirect 狀態問題目前以 popup-only 規避。
 - `authDomain` 使用同源 `.web.app`，降低第三方儲存分割問題。
 
 ### App Check
 
 - 前端會嘗試取得 reCAPTCHA Enterprise token，並以 `X-Firebase-AppCheck` 傳給後端。
-- 後端目前 `ENFORCE_APP_CHECK = false`，只記錄 `missing`、`valid`、`invalid`。
-- 切強制模式前必須在正式網域以 Email、Google、訪客各送短草稿，確認 Functions log 皆為 `appCheckStatus: 'valid'`。
+- 後端目前 `ENFORCE_APP_CHECK = false`，會記錄 `missing`、`valid`、`invalid` 以便觀察正式流量。
+- 切強制模式前必須在正式網域以 Google 登入送短草稿，確認 Functions log 為 `appCheckStatus: 'valid'`。
 
 ### Firestore
 
@@ -470,18 +468,15 @@ firebase functions:log --only analyzeV2 -n 80
 - 桌機 `1366x768`：登入視窗置中，無水平溢出，WebGL 背景非空白。
 - 手機 `390x844`：登入頁可垂直捲動，鍵盤不遮住必要欄位，無水平溢出。
 - `prefers-reduced-motion`：不播放長 warp，不使用高強度 bloom。
-- WebGL 不可用：Email / Google / 訪客登入仍可操作。
+- WebGL 不可用：Google 登入仍可操作。
 - 登入成功：只有本次使用者操作後播放 handoff，重新整理已登入狀態直接進主工具。
 - 登出後：登入畫面重新出現，舊 canvas / renderer 已 cleanup。
 - Google popup 取消：不播放 warp，不顯示嚴重錯誤。
 
 ### 改 Auth / App Check / API 後
 
-- Email 註冊成功，導覽列顯示 displayName 或 email 前綴。
-- Email 登入成功。
 - Google 登入成功。
-- 訪客登入成功。
-- 登出後結果面板不殘留上一個帳號的分析內容，密碼欄位清空。
+- 登出後結果面板不殘留上一個帳號的分析內容。
 - 未登入 POST `analyzeV2` 回 `401 { code, message }`，不碰 Groq。
 - 正式網域 App Check token 在 Functions log 顯示 `valid`。
 
@@ -503,7 +498,7 @@ firebase functions:log --only analyzeV2 -n 80
 
 - S9 自動化 baseline 已新增 `npm.cmd run test:a11y`，以 Playwright + axe 掃描登入頁、工作區、歷史抽屜開啟三種狀態。
 - axe critical / serious violations：0。
-- axe moderate / minor：每個狀態各 1 個 moderate，皆為 `meta-viewport`。原因是目前 viewport 仍含 `maximum-scale=1.0`；這是 S10 Part A 的指定修正，不在 S9 先行搬動。
+- axe moderate / minor：目前自動化 baseline 以 critical / serious 為阻塞；viewport 已移除 `maximum-scale`，保留使用者縮放能力。
 - visual baseline 已新增 `npm.cmd run test:visual`，涵蓋登入頁 1366、登入頁 390、工作區 1366、歷史抽屜 1366、帳號選單 1366；5 張 snapshot 已建立並逐張確認 cyan 只保留在 status / sync 語意附近。
 - 真機 SR 測試（NVDA / VoiceOver / TalkBack）：尚未執行，列入後續專項。
 

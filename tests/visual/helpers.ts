@@ -118,6 +118,7 @@ export async function applyStaticSystemMenu(page: Page) {
     const navActions = document.querySelector<HTMLElement>(".workbench-nav-actions");
     if (!navActions) return;
     const historyToggle = document.getElementById("historyToggle");
+    const accountToggle = document.getElementById("accountToggle");
     const reanalyzeButton = document.getElementById("reanalyzeButton");
     const clearDraftButton = document.getElementById("clearDraftButton");
     const logoutButton = document.getElementById("logoutButton");
@@ -128,12 +129,12 @@ export async function applyStaticSystemMenu(page: Page) {
       toggle.className = "system-menu-toggle sao-btn";
       toggle.id = "systemMenuToggle";
       toggle.type = "button";
-      toggle.title = "SYSTEM MENU";
-      toggle.setAttribute("aria-label", "SYSTEM MENU");
+      toggle.title = "工作區選單";
+      toggle.setAttribute("aria-label", "工作區選單");
       toggle.setAttribute("aria-haspopup", "menu");
       toggle.setAttribute("aria-expanded", "false");
       toggle.setAttribute("aria-controls", "systemMenuPanel");
-      toggle.innerHTML = `<span class="sao-btn-symbol" aria-hidden="true">SYS</span><span class="sao-btn-label">SYSTEM</span>`;
+      toggle.innerHTML = `<span class="sao-btn-symbol" aria-hidden="true">SYS</span><span class="sao-btn-label">工作區選單</span>`;
     }
     navActions.replaceChildren(toggle);
 
@@ -147,7 +148,7 @@ export async function applyStaticSystemMenu(page: Page) {
       panel.hidden = true;
       navActions.after(panel);
     }
-    [historyToggle, clearDraftButton, reanalyzeButton, logoutButton]
+    [historyToggle, accountToggle, clearDraftButton, reanalyzeButton, logoutButton]
       .filter((button): button is HTMLElement => button instanceof HTMLElement)
       .forEach((button) => {
         button.classList.add("system-menu-item");
@@ -264,7 +265,13 @@ export async function openHistoryDrawer(page: Page) {
 
 export async function openAccountMenu(page: Page) {
   await page.evaluate(() => {
+    const panel = document.getElementById("systemMenuPanel");
     const toggle = document.getElementById("accountToggle");
+    if (!(panel instanceof HTMLElement) || !(toggle instanceof HTMLElement) || !panel.contains(toggle)) {
+      throw new Error("account center is not reachable from the system menu");
+    }
+    document.getElementById("systemMenuToggle")?.setAttribute("aria-expanded", "false");
+    panel.hidden = true;
     toggle?.setAttribute("aria-expanded", "true");
     const menu = document.getElementById("accountMenu");
     menu?.removeAttribute("hidden");
