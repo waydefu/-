@@ -1,10 +1,10 @@
 # S14-4 Execution Log - L0 奇觀層與 Link Start 過場
 
 ## 恢復區塊（最新狀態）
-- 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證；`b9d1a76` - 標記 Step 9 log 完成；`8fb7c88` - 解除 dialog top-layer 遮擋並強化 Link Start 切場；`43c376e` - 回寫 Step 10 過場辨識度修正；`a5b3666` - 標記 Step 10 log 完成；`c349d02` - Part C lifecycle fallback / pause / teardown；`76bc496` - 回寫 Step 11 lifecycle log
-- 進行中：無
-- 下一步：交付 Part C lifecycle 結果；待使用者裝置驗收 Link Start 手感與手機 60fps
+- 分支：codex/arcane-sage-core-20260522　工作樹：有未提交 deployment log；既有未追蹤 `.claude/`、`output/`
+- 已完成：S14-1 完成，最後 commit `0b8db67`；S14-2 完成，最後已知 commit `556388b`；S14-3 完成，最後 commit `3f4a0bf`；`5c9670b` - 初始化 S14-4 執行 log；`3780ab9` - 回寫 Step 0 hash；`fb84a50` - 盤點 WebGL orchestrator 現況；`e8f8850` - 回寫 Step 1 hash；`fc26e96` - 記錄修改前 render 基準；`bced2e2` - 回寫 Step 2 hash；`ed9cd3a` - gate WebGL post pipeline；`b611ed5` - 回寫 Step 3 驗證；`4ebdf6d` - 標記 Step 3 log 已落地；`592f59a` - Link Start 金色隧道 shader；`707624b` - 回寫 Step 4 視覺里程碑；`6ad98ba` - 記錄 preview Auth 網域 caveat；`5858953` - 已登入 auto-handoff 也播放 Link Start；`c4c4d35` - 回寫 Step 6 無動畫修正；`48940ea` - 標記 Step 6 log 完成；`9978824` - Link Start 首幀起算並提早顯影；`c87124e` - 回寫 Step 7/8 診斷與驗證；`bbad63d` - 標記 Step 8 log 完成；`1e21911` - motion override 與 reduced-motion 可見 handoff；`6583f56` - 回寫 Step 9 根因與驗證；`b9d1a76` - 標記 Step 9 log 完成；`8fb7c88` - 解除 dialog top-layer 遮擋並強化 Link Start 切場；`43c376e` - 回寫 Step 10 過場辨識度修正；`a5b3666` - 標記 Step 10 log 完成；`c349d02` - Part C lifecycle fallback / pause / teardown；`76bc496` - 回寫 Step 11 lifecycle log；`e705f22` - 標記 Step 11 log 完成
+- 進行中：Step 12 Hosting 部署已完成，正在記錄 deploy / smoke 結果
+- 下一步：提交 deployment log，回報正式 Hosting URL 與待裝置驗收項
 - 未決 / 待我確認：若要在手機實機完成 Google Auth，需要 Firebase Hosting / preview channel / 已授權 HTTPS tunnel；LAN IP `10.95.167.113:5599` 通常無法登入
 - 待裝置驗收：Link Start 隧道、中央光爆、CA/glitch/掃描線手感、WebGL 待機背景、POCO F6 Pro 實機 60fps
 
@@ -301,3 +301,25 @@
   - Headless 可驗狀態與 fallback，不可驗 POCO F6 Pro 實機 60fps、Link Start 動效手感與 context restore 在手機 GPU/瀏覽器上的真實表現。
 - Commit：`c349d02`
 - Log Commit：`76bc496`
+
+### Step 12 - Firebase Hosting 部署
+- 狀態：部署完成；本 log 回寫中。
+- 觸發：使用者明確要求「部署」。
+- 部署範圍：Firebase Hosting only；未部署 Functions，未推送 git。
+- 部署前狀態：
+  - `git status --short --branch`：tracked clean；既有未追蹤 `.claude/`、`output/`。
+  - `.firebaserc` default project：`project-7276420283723642146`。
+  - `firebase.json` hosting public：`public`。
+- 部署前驗證：
+  - `npm run build`：通過；prebuild 重新執行 `npm run sync:login-mother`，但 tracked diff 仍乾淨。
+- 部署：
+  - 指令：`firebase deploy --only hosting`。
+  - 結果：成功，found 26 files in `public`，release complete。
+  - Hosting URL：`https://project-7276420283723642146.web.app`
+  - Project Console：`https://console.firebase.google.com/project/project-7276420283723642146/overview`
+- 部署後 smoke：
+  - `npm run smoke:hosting`：通過。
+  - smoke 項目：Worldforge inline shell / Google-only modal / App Check SDK、frontend config site key 與 deployed function URLs、result parser module、HUD state module、unauthorized function/quotaPeek 標準錯誤且未洩漏 quota。
+- 限制 / 待裝置驗收：
+  - 部署 smoke 不驗 Link Start 動效流暢度；仍需使用者於實機驗收 Link Start 隧道、中央光爆、CA/glitch/掃描線手感與 POCO F6 Pro 60fps。
+- Log Commit：待回填
