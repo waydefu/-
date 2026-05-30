@@ -2,9 +2,9 @@
 
 ## 恢復區塊（最新狀態）
 - 分支：codex/arcane-sage-core-20260522　工作樹：tracked clean；既有未追蹤 `.claude/`、`output/`
-- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄
-- 進行中：無
-- 下一步：Part A 需 preview/真 Google popup 診斷；部署/推送需明確同意
+- 已完成：`a5f97f5` - 初始化 S15 執行 log；`b555349` - 回填 Step 0 hash；`f68db77` - 標記 Step 0 log 完成；`de597d4` - 收斂 Step 0 恢復區塊；`5dabba2` - 記錄 S15 基準診斷；`8ddc505` - 標記基準診斷完成；`3924b81` - Part B Link Start 預熱/首幀/時鐘對齊；`1851104` - 標記 Part B 完成；`8f88303` - Part C 登入內文整塊淡入；`39b2d47` - 標記 Part C 完成；`3352ef2` - Part D 工作區短 stagger/去背景補間；`d0be121` - 標記 Part D 完成；`8fc791f` - Part E 歷史抽屜 animation-driven close；`135ee3d` - 標記 Part E 完成；`f00461b` - Part F 登出確認彈窗動效；`3136d3e` - 標記 Part F 完成；`3abdb3d` - Part G 面板開啟殘留超長時序修復；`8e149be` - 標記 Part G 完成；`985017c` - 最終驗證通過紀錄；`6da1f02` - 標記最終驗證完成
+- 進行中：Step 9 本地 in-app Browser 預覽靜態取樣完成，待 commit 回填 hash
+- 下一步：commit 本地預覽紀錄；Part A 需 preview/真 Google popup 診斷；部署/推送需明確同意
 - 未決 / 待我確認：Part A 點登入到 Google 選帳號頁慢，必須先量測與實機/preview 診斷，有證據才改 popup 鏈路；破壞性/部署/推送需先確認
 - 待裝置驗收：真 Google popup 出現速度、Link Start 隧道可見度/穩定與 60fps、工作區進場手感、登出彈窗手感、POCO F6 Pro 實機流暢度
 
@@ -102,3 +102,10 @@
 - 限制：`test:visual` 會拔 script、藏 WebGL，不能驗證 Link Start / 登入過場 / panel materialize / 登出彈窗動效；動效與 Google popup 速度仍列待裝置/preview 驗收。
 - Part A：仍未修改 popup 鏈路，因缺真 Google popup 的 `performance.now()`、Network、Performance 面板證據。
 - Commit：`985017c`
+
+### Step 9 - 本地 in-app Browser 預覽靜態狀態取樣
+- 狀態：完成，待 commit 回填。
+- 指令/目標：打開 `http://127.0.0.1:5599/?flgMotion=full`，等待登入 boot 完成後讀 DOM 狀態。
+- 結果：title 正常；`bodyClasses="boot-complete"`；`loginOpen=true`；`authPanelVisible=true`；`linkStartShader="ready"`；`linkStartPrewarm="ready"`；`pageErrorCount=0`；`consoleErrorCount=0`。
+- 限制：這是本地靜態 DOM 狀態取樣，不代表真 Google popup latency、Link Start 隧道動態手感或手機實機 60fps。
+- Commit：待回填
