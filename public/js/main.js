@@ -49,7 +49,9 @@
       }
     };
     const motionPreference = readMotionPreference();
-    const prefersReducedMotion = motionPreference === "full" ? false : motionPreference === "reduce" ? true : systemPrefersReducedMotion;
+    // 全站預設全動效：只有使用者明確選 reduce（?flgMotion=reduce）才降動效；
+    // 系統的 prefers-reduced-motion 不再自動關閉（依使用者要求，手機/電腦都要看到所有動效）。
+    const prefersReducedMotion = motionPreference === "reduce";
     const authPopupTimingEnabled = readQueryParam("flgAuthPopupTiming") === "1";
     window.__FLG_MOTION_STATE__ = {
       systemReduced: systemPrefersReducedMotion,
