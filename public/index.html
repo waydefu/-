@@ -277,8 +277,10 @@
     }
 
     body.operational #webgl-container canvas {
-      opacity: 0.46;
-      filter: saturate(1.03) brightness(0.9);
+      /* 工作區以閱讀為主：壓低背景奇觀亮度，避免核心透出蓋住手稿/審稿文字。
+         登入頁(非 operational)維持滿強度奇觀。 */
+      opacity: 0.2;
+      filter: saturate(1.03) brightness(0.78);
     }
 
     html[data-webgl-fallback="context-lost"] #webgl-container canvas {
@@ -2893,7 +2895,8 @@
       overflow: visible;
       padding: 20px 22px;
       border: 1px solid rgba(214, 166, 77, 0.16);
-      background: rgba(0, 0, 0, 0.28);
+      /* 加實底色：原 0.28 太透，背景 WebGL 核心會透到審稿全文後方蓋字、影響閱讀 */
+      background: rgba(6, 4, 10, 0.9);
       color: rgba(241, 222, 194, 0.84);
       font-size: var(--fs-body);
       line-height: 1.7;
