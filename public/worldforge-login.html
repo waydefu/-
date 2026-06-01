@@ -335,8 +335,12 @@
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
+      /* 鎖定為獨立、穩定的合成層：.interface 在其上方捲動時，背景舞台完全不
+         重繪/不重新合成，徹底消除捲動時背景閃現。 */
       transform: translateZ(0);
       backface-visibility: hidden;
+      will-change: transform;
+      contain: layout paint;
     }
     /* 容器內所有原本 fixed 的裝飾層改為 absolute；inset:0 / left-top:50% 的定位
        相對 #bg-stage 與相對 viewport 完全等價（舞台本身即全屏 fixed）。 */
@@ -779,7 +783,9 @@
       grid-template-rows: auto 1fr;
       grid-template-columns: minmax(260px, 340px) minmax(0, 1fr) minmax(320px, 430px);
       gap: clamp(12px, 1.6vw, 22px);
-      transform-style: preserve-3d;
+      /* 移除 preserve-3d：.interface 是 fixed overflow-y:auto 的捲動容器，
+         preserve-3d 會建立 3D 合成上下文，與內部捲動疊加造成手機捲動時的
+         重新合成抖動/閃現。子元素未依賴父層 3D，移除無視覺影響。 */
     }
 
     body.operational .interface {
