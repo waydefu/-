@@ -3563,6 +3563,11 @@
       transform: none;
     }
 
+    /* 進入工作區後品牌頂列已由 workbench-nav 取代，隱藏以免在輸入區上方留白 */
+    body.operational .top-hud {
+      display: none;
+    }
+
     body.boot-complete .ritual-stack {
       opacity: 1;
       transform: none;
