@@ -2303,6 +2303,7 @@
       transform: scaleX(0.02) scaleY(0.02) translateY(-6px);
       pointer-events: none;
       visibility: hidden;
+      content-visibility: hidden;
       transition:
         opacity 0.16s ease,
         transform var(--sao-dur-fast) var(--sao-easing-out),
@@ -2381,6 +2382,9 @@
       transform: scaleX(0.02) scaleY(0.02) translateY(-8px);
       pointer-events: none;
       visibility: hidden;
+      /* 隱藏時完全跳過渲染/合成：避免這個 fixed z:220 層在手機捲動時被重新
+         合成、閃現蓋住前景（含按鈕）。content-visibility 不影響打開時的過場。 */
+      content-visibility: hidden;
       transition:
         opacity var(--sao-dur-fast) ease,
         transform var(--sao-dur-fast) var(--sao-easing-out),
