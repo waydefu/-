@@ -325,6 +325,33 @@
       opacity: 0.98;
     }
 
+    /* 單一 fixed 背景舞台：所有裝飾層改 absolute 收進此容器（見 body 內 #bg-stage）。
+       手機捲動時只需合成這一個 fixed 層，根治「多個分散 fixed 層捲動時合成順序錯亂、
+       隨機閃現蓋住前景含按鈕」的問題（桌面合成策略不同，原本即無此問題）。
+       參考：Chromium issue 299371（多個 fixed+z-index 元素的合成 bug）。 */
+    #bg-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      transform: translateZ(0);
+      backface-visibility: hidden;
+    }
+    /* 容器內所有原本 fixed 的裝飾層改為 absolute；inset:0 / left-top:50% 的定位
+       相對 #bg-stage 與相對 viewport 完全等價（舞台本身即全屏 fixed）。 */
+    #bg-stage > #webgl-container,
+    #bg-stage > #linkStartFX,
+    #bg-stage > .atmosphere,
+    #bg-stage > .leyline-rain,
+    #bg-stage > .boot-veil,
+    #bg-stage > .shockwave,
+    #bg-stage > .core-pulse,
+    #bg-stage > .reference-side-fill,
+    #bg-stage > .center-caption {
+      position: absolute;
+    }
+
     .atmosphere {
       position: fixed;
       inset: 0;
@@ -3994,9 +4021,10 @@
         justify-self: center;
         align-self: start;
         transform: none !important;
-        width: min(780px, calc(100vw - 18px));
+        /* 加寬可用橫向空間：邊距由 18px 縮到 8px */
+        width: min(820px, calc(100vw - 8px));
         margin: 4px auto 34px;
-        padding: 10px;
+        padding: 6px;
         gap: 8px;
         grid-template-columns: 1fr;
       }
@@ -4006,8 +4034,8 @@
       }
 
       .codex-panel {
-        padding: 14px;
-        padding-top: 13px;
+        padding: 10px;
+        padding-top: 12px;
         min-height: auto;
         gap: 8px;
         grid-template-rows: none;
@@ -4928,9 +4956,9 @@
 
       /* 手機審稿全文加大加亮（獨立於上方共用群組，確保不被覆蓋回 --fs-body） */
       .result-section-body {
-        font-size: clamp(1.125rem, 1.04rem + 1.1vw, 1.3125rem);
-        line-height: 1.9;
-        color: rgba(248, 240, 220, 0.98);
+        font-size: clamp(1.25rem, 1.12rem + 1.6vw, 1.5rem);
+        line-height: 1.95;
+        color: rgba(250, 244, 226, 1);
       }
 
       .sao-system-menu {
@@ -5063,6 +5091,9 @@
   </style>
 </head>
 <body class="is-booting">
+  <!-- 單一 fixed 背景舞台：所有裝飾層改 absolute 收進此容器，手機捲動時只合成這一個
+       fixed 層，根治多個分散 fixed 層在捲動時合成順序錯亂、隨機閃現蓋住前景的問題。 -->
+  <div id="bg-stage" aria-hidden="true">
   <div id="webgl-container" aria-hidden="true"></div>
   <canvas id="linkStartFX" class="link-start-fx" aria-hidden="true"></canvas>
   <div class="atmosphere" aria-hidden="true"></div>
@@ -5084,6 +5115,7 @@
     <b id="decryptText">SINGULARITY CORE STABILIZED</b>
     <span>並列演算核心穩定待命</span>
   </div>
+  </div><!-- /#bg-stage -->
   <a href="#draftField" class="skip-link">跳至手稿輸入區</a>
   <div class="connection-window" id="connectionWindow" role="status" aria-live="polite" aria-atomic="true" aria-hidden="true">
     <div class="connection-header">
