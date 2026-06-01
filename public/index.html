@@ -2583,9 +2583,14 @@
     .draft-field-shell {
       position: relative;
       display: grid;
-      grid-template-rows: auto auto minmax(220px, 1fr);
+      /* title / help 取自然高，textarea 吃剩餘空間；避免多餘 grid row 把 help 撐成 220px 留白 */
+      grid-template-rows: auto auto 1fr;
       gap: 7px;
       min-height: clamp(220px, 32dvh, 360px);
+    }
+
+    .draft-field-shell textarea {
+      min-height: clamp(180px, 26dvh, 320px);
     }
 
     .field,
@@ -2714,18 +2719,20 @@
 
     .draft-meta {
       position: absolute;
-      left: 13px;
-      right: 13px;
-      bottom: 12px;
+      left: 2px;
+      right: 2px;
+      bottom: 2px;
       z-index: 1;
       display: grid;
       grid-template-columns: max-content minmax(0, 1fr);
       gap: 10px;
       align-items: center;
       min-height: 24px;
-      padding: 3px 0 0;
-      border-top: 1px solid rgba(214, 166, 77, 0.16);
-      background: linear-gradient(180deg, transparent, rgba(0, 0, 0, 0.34));
+      padding: 5px 11px;
+      border-top: 1px solid rgba(214, 166, 77, 0.22);
+      border-radius: 0 0 9px 9px;
+      /* 實心底色：避免 textarea 捲動內文從半透明背景穿透造成「重疊」 */
+      background: rgba(10, 6, 4, 0.94);
       color: rgba(241, 222, 194, 0.62);
       font: var(--fs-nano)/1.6 var(--font-mono);
       letter-spacing: 0.12em;
@@ -4191,7 +4198,7 @@
       }
 
       .draft-field-shell {
-        grid-template-rows: auto minmax(220px, auto);
+        grid-template-rows: auto auto 1fr;
         gap: 8px;
         min-height: 260px;
       }
@@ -4214,9 +4221,9 @@
       }
 
       .draft-meta {
-        left: 12px;
-        right: 12px;
-        bottom: 9px;
+        left: 2px;
+        right: 2px;
+        bottom: 2px;
         grid-template-columns: max-content minmax(0, 1fr);
         gap: 8px;
         font-size: var(--fs-nano);
