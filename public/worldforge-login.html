@@ -266,7 +266,7 @@
       width: 100%;
       height: 100%;
       opacity: 0;
-      /* 移除 mix-blend-mode:screen 與 blur：兩者搭配持續重繪的 canvas + 上層
+      /* 移除 mix-blend-mode: normal 與 blur：兩者搭配持續重繪的 canvas + 上層
          backdrop-filter 會讓合成層反覆重算造成頻閃（旗艦機亦然，是合成 bug 非算力）。
          黑底場景下普通 alpha 疊加的視覺差異極小。 */
       filter: saturate(1.08) brightness(0.96);
@@ -343,7 +343,7 @@
       background:
         repeating-linear-gradient(0deg, rgba(255, 230, 162, 0.028) 0 1px, transparent 1px 4px),
         repeating-linear-gradient(90deg, transparent 0 46px, rgba(214, 166, 77, 0.022) 47px, transparent 48px);
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
       opacity: 0.36;
     }
 
@@ -496,7 +496,7 @@
       pointer-events: none;
       opacity: 0;
       overflow: hidden;
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
       mask-image: radial-gradient(ellipse at 50% 50%, transparent 0 26%, #000 48%, #000 100%);
     }
 
@@ -534,7 +534,7 @@
       aspect-ratio: 1;
       transform: translate(-50%, -50%);
       pointer-events: none;
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
       opacity: 0.72;
       filter: drop-shadow(0 0 24px rgba(214, 166, 77, 0.2));
     }
@@ -602,7 +602,7 @@
       inset: -18%;
       opacity: 0.62;
       filter: blur(0.8px);
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
     }
 
     .arcane-lens .lens-side.left {
@@ -629,7 +629,7 @@
       z-index: var(--z-decoration);
       pointer-events: none;
       overflow: hidden;
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
       opacity: 0.66;
     }
 
@@ -1604,7 +1604,7 @@
       border-radius: 50%;
       background: radial-gradient(circle, rgba(255, 226, 160, 0.58), rgba(214, 166, 77, 0.22) 42%, transparent 72%);
       pointer-events: none;
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
       transform: scale(0);
       opacity: 0.88;
       animation: saoRipple 0.8s var(--sao-easing-out) forwards;
@@ -1943,7 +1943,7 @@
         linear-gradient(90deg, rgba(214, 166, 77, 0.42), transparent 14%, transparent 86%, rgba(255, 226, 160, 0.36)),
         linear-gradient(180deg, rgba(255, 246, 203, 0.14), transparent 32%);
       opacity: 0.35;
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
     }
 
     .sao-window::after {
@@ -3148,7 +3148,7 @@
         repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.055) 0 1px, transparent 1px 14px);
       opacity: 0.7;
       transform: translateX(-74%);
-      mix-blend-mode: screen;
+      mix-blend-mode: normal;
     }
 
     .analysis-progress-bar::after {
@@ -4308,8 +4308,10 @@
 
       .result-section-body {
         padding: 12px;
-        font-size: var(--fs-body);
-        line-height: 1.7;
+        /* 手機審稿全文加大加亮，提升長文閱讀舒適度 */
+        font-size: clamp(1.0625rem, 1rem + 1.2vw, 1.25rem);
+        line-height: 1.85;
+        color: rgba(248, 240, 220, 0.98);
       }
 
       .result-section-head h3 {
@@ -4919,10 +4921,16 @@
       .draft-field-help,
       .ritual-status,
       .analysis-empty,
-      .result-section-body,
       .analysis-result {
         font-size: var(--fs-body);
         line-height: 1.7;
+      }
+
+      /* 手機審稿全文加大加亮（獨立於上方共用群組，確保不被覆蓋回 --fs-body） */
+      .result-section-body {
+        font-size: clamp(1.125rem, 1.04rem + 1.1vw, 1.3125rem);
+        line-height: 1.9;
+        color: rgba(248, 240, 220, 0.98);
       }
 
       .sao-system-menu {
