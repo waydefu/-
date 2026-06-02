@@ -123,9 +123,9 @@
       deckY: 1.08,
       loginBackdrop: 1.16,
       loginPanel: 5.2,
-      authHandoff: 5.8,
-      workbenchReveal: 1.2,
-      mobileEnterClass: 5520
+      authHandoff: 3.0,
+      workbenchReveal: 0.7,
+      mobileEnterClass: 3200
     };
     document.documentElement.classList.toggle("motion-reduced", prefersReducedMotion);
     document.documentElement.dataset.motionPreference = window.__FLG_MOTION_STATE__.preference;
@@ -2751,7 +2751,16 @@
           this.disintegrateAuthPanel(this.ritualStack);
         }
         this._authHandoffClock?.kill?.();
-        this._authHandoffClock = runPhaseClock(Math.round(uiMotion.authHandoff * 1000), (progress, elapsed) => {
+        // 相位以總時長等比例縮放（原設計基於 5800ms）：縮短 authHandoff 時所有
+        // 能量/衝擊波/白幕窗口同步壓縮，不會錯位或留空等尾段。
+        const totalMs = Math.round(uiMotion.authHandoff * 1000);
+        const hk = totalMs / 5800;
+        const P_peak = 2200 * hk;     // 能量衝高結束
+        const P_settle = 2400 * hk;   // 能量收斂時長
+        const P_shockDur = 1800 * hk; // 衝擊波擴散時長
+        const P_veilStart = 2260 * hk;
+        const P_veilDur = 80 * hk;
+        this._authHandoffClock = runPhaseClock(totalMs, (progress, elapsed) => {
           const collapseT = ease.inPow2(phaseProgress(elapsed, 0, collapseMs));
           collapseNodes.forEach(({ node, transformPrefix }) => {
             node.style.opacity = String(lerp(1, 0, collapseT));
@@ -2766,9 +2775,9 @@
             });
           }
 
-          const energyUp = phaseProgress(elapsed, 0, 2200);
-          const energyDown = phaseProgress(elapsed, 2200, 2400);
-          if (elapsed < 2200) {
+          const energyUp = phaseProgress(elapsed, 0, P_peak);
+          const energyDown = phaseProgress(elapsed, P_peak, P_settle);
+          if (elapsed < P_peak) {
             const charged = ease.inExpo(energyUp);
             driver.shock = charged;
             driver.spiral = charged;
@@ -2784,18 +2793,18 @@
           this.applyAuthenticationEnergy(driver);
 
           if (this.shockwave) {
-            const shockwaveT = phaseProgress(elapsed, 2200, 1800);
+            const shockwaveT = phaseProgress(elapsed, P_peak, P_shockDur);
             this.shockwave.style.opacity = String(lerp(0.72, 0, ease.outPow2(shockwaveT)));
             this.shockwave.style.transform = `translate(-50%, -50%) scale(${lerp(0.18, 10, ease.outPow2(shockwaveT))})`;
           }
-          if (this.bootVeil && elapsed >= 2200) {
+          if (this.bootVeil && elapsed >= P_peak) {
             if (!veilShown) {
               veilShown = true;
               this.bootVeil.style.display = "block";
               this.bootVeil.style.backgroundColor = "#ddccaa";
               this.bootVeil.style.opacity = "0.62";
             }
-            const veilT = phaseProgress(elapsed, 2260, 2340);
+            const veilT = phaseProgress(elapsed, P_veilStart, P_veilDur);
             this.bootVeil.style.backgroundColor = veilT > 0 ? "#020101" : "#ddccaa";
             this.bootVeil.style.opacity = String(lerp(0.62, 0, ease.outPow2(veilT)));
           }

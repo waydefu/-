@@ -36,12 +36,13 @@ class ArcaneSingularityCore {
         this.createReduced(THREE);
       } else {
         this.createSingularityCore(THREE);
-        this.createCyanRings(THREE, profile.mobile ? 3 : 6);
+        // 手機（旗艦為主力）核心動畫拉到接近桌面密度；真正弱機由 lowPower 另行降級。
+        this.createCyanRings(THREE, profile.mobile ? 5 : 6);
         this.createGoldComputationRings(THREE, profile);
         this.createTickRings(THREE, profile);
         this.createGlyphLattice(THREE, profile);
-        const goldSparks = profile.mobile ? 72 : profile.lowPower ? 64 : 240;
-        const cyanRefractions = profile.mobile ? 12 : profile.lowPower ? 10 : 42;
+        const goldSparks = profile.lowPower ? 64 : profile.mobile ? 190 : 240;
+        const cyanRefractions = profile.lowPower ? 10 : profile.mobile ? 34 : 42;
         this.createBokehField(THREE, goldSparks, cyanRefractions);
         this.createColdLights(THREE, profile);
       }
@@ -370,7 +371,7 @@ class ArcaneSingularityCore {
   }
 
   createTickRings(THREE, profile) {
-    const ringCount = profile.mobile ? 2 : 3;
+    const ringCount = profile.lowPower ? 2 : 3;
     const configs = [
       { radius: 4.6, ticks: 24, speed: 0.06, axis: "y", color: RAPHAEL_GOLD_CORE, opacity: 0.18 },
       { radius: 6.6, ticks: 36, speed: -0.04, axis: "x", color: WARM_GOLD_NODE, opacity: 0.14 },
@@ -408,10 +409,10 @@ class ArcaneSingularityCore {
   }
 
   createGlyphLattice(THREE, profile) {
-    const lineCount = profile.reduced ? 20 : profile.mobile ? 48 : profile.lowPower ? 72 : 120;
+    const lineCount = profile.reduced ? 20 : profile.lowPower ? 72 : profile.mobile ? 100 : 120;
     const lines = [];
     const baseRadius = 4.5;
-    const spread = profile.mobile ? 12 : profile.lowPower ? 16 : 22;
+    const spread = profile.lowPower ? 16 : 22;
 
     for (let i = 0; i < lineCount; i++) {
       const t = lineCount > 1 ? i / (lineCount - 1) : 0;
@@ -438,7 +439,7 @@ class ArcaneSingularityCore {
       }
     }
 
-    const tickCount = profile.mobile ? 24 : profile.lowPower ? 36 : 60;
+    const tickCount = profile.lowPower ? 36 : 60;
     for (let k = 0; k < tickCount; k++) {
       const a = (k / tickCount) * TAU + Math.sin(k * 0.7) * 0.06;
       const baseR = 4.2 + (k % 7) * 1.4;
@@ -452,12 +453,12 @@ class ArcaneSingularityCore {
       );
     }
 
-    const arcCount = profile.mobile ? 2 : 4;
+    const arcCount = profile.lowPower ? 2 : 4;
     for (let k = 0; k < arcCount; k++) {
       const arcR = 5.5 + k * 2.0;
       const startA = k * 1.3 + 0.2;
       const arcLen = 0.4 + k * 0.12;
-      const segs = profile.mobile ? 4 : 8;
+      const segs = profile.lowPower ? 4 : 8;
       for (let j = 0; j < segs; j++) {
         const a1 = startA + (j / segs) * arcLen;
         const a2 = startA + ((j + 1) / segs) * arcLen;
@@ -484,7 +485,7 @@ class ArcaneSingularityCore {
 
     const goldDots = [];
     const cyanDots = [];
-    const dotCount = profile.mobile ? 16 : profile.lowPower ? 24 : 42;
+    const dotCount = profile.lowPower ? 24 : 42;
     for (let i = 0; i < dotCount; i++) {
       const t = i / dotCount;
       const angle = t * TAU * (2 + (i % 3) * 0.3);

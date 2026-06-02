@@ -2309,7 +2309,7 @@
       transform: scaleX(0.02) scaleY(0.02) translateY(-6px);
       pointer-events: none;
       visibility: hidden;
-      content-visibility: hidden;
+      contain: paint;
       transition:
         opacity 0.16s ease,
         transform var(--sao-dur-fast) var(--sao-easing-out),
@@ -2388,9 +2388,10 @@
       transform: scaleX(0.02) scaleY(0.02) translateY(-8px);
       pointer-events: none;
       visibility: hidden;
-      /* 隱藏時完全跳過渲染/合成：避免這個 fixed z:220 層在手機捲動時被重新
-         合成、閃現蓋住前景（含按鈕）。content-visibility 不影響打開時的過場。 */
-      content-visibility: hidden;
+      /* 隱藏時隔離合成但「不」跳過佈局：content-visibility:hidden 會讓內部
+         動態內容（歷史項/帳號資訊）在打開瞬間才佈局，與打開動畫打架造成選單
+         顯示異常。改用 contain:paint 仍能避免捲動時不必要的重繪。 */
+      contain: paint;
       transition:
         opacity var(--sao-dur-fast) ease,
         transform var(--sao-dur-fast) var(--sao-easing-out),
