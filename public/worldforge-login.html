@@ -4045,7 +4045,7 @@
       }
 
       .codex-panel {
-        padding: 10px;
+        padding: 6px;
         padding-top: 12px;
         min-height: auto;
         gap: 8px;
@@ -4278,7 +4278,11 @@
 
       .operational-deck textarea {
         min-height: 220px;
-        font-size: var(--text-input);
+        /* 手機輸入手稿字級加大（原 --text-input ~16px 偏小）+ 收左右 padding 擠出橫向空間 */
+        font-size: clamp(1.125rem, 1.04rem + 1vw, 1.3125rem);
+        line-height: 1.85;
+        padding-left: 10px;
+        padding-right: 10px;
         padding-bottom: 44px;
       }
 
@@ -4529,25 +4533,40 @@
       display: none;
     }
 
+    /* SAO 塌縮：先垂直壓成一條掃描線，再橫向收掉並熄滅（非淡出）。 */
     @keyframes saoPanelDissolve {
       0% {
         opacity: 1;
-        transform: scaleY(1);
+        transform: scaleX(1) scaleY(1);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
+      55% {
+        opacity: 1;
+        transform: scaleX(1) scaleY(0.04);
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
       }
       100% {
         opacity: 0;
-        transform: scaleY(0.96);
+        transform: scaleX(0.02) scaleY(0.02);
+        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
       }
     }
 
     @keyframes saoSystemMenuDissolve {
       0% {
         opacity: 1;
-        transform: translate3d(0, 0, 0) scaleX(1) scaleY(1);
+        transform: scaleX(1) scaleY(1);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
+      55% {
+        opacity: 1;
+        transform: scaleX(1) scaleY(0.04);
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
       }
       100% {
         opacity: 0;
-        transform: translate3d(8px, -6px, 0) scale(0.96);
+        transform: scaleX(0.02) scaleY(0.02);
+        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
       }
     }
 
@@ -4555,10 +4574,17 @@
       0% {
         opacity: 1;
         transform: translateX(-50%) scaleX(1) scaleY(1);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
+      55% {
+        opacity: 1;
+        transform: translateX(-50%) scaleX(1) scaleY(0.04);
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
       }
       100% {
         opacity: 0;
-        transform: translateX(-50%) translate3d(0, -6px, 0) scale(0.96);
+        transform: translateX(-50%) scaleX(0.04) scaleY(0.02);
+        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
       }
     }
 
@@ -4787,10 +4813,17 @@
       0% {
         opacity: 1;
         transform: scaleX(1) scaleY(1);
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+      }
+      55% {
+        opacity: 1;
+        transform: scaleX(1) scaleY(0.04);
+        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
       }
       100% {
         opacity: 0;
-        transform: scale(0.96);
+        transform: scaleX(0.04) scaleY(0.02);
+        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
       }
     }
 
@@ -4896,13 +4929,13 @@
 
     .sao-system-menu.is-closing {
       pointer-events: none;
-      animation: saoSystemMenuDissolve 2.2s cubic-bezier(0.64, 0, 0.78, 0) both;
+      animation: saoSystemMenuDissolve 0.34s cubic-bezier(0.6, 0, 0.4, 1) both;
     }
 
     .account-menu.is-closing,
     .history-drawer.is-closing {
       pointer-events: none;
-      animation: saoPanelDissolve 2.2s cubic-bezier(0.64, 0, 0.78, 0) both;
+      animation: saoPanelDissolve 0.34s cubic-bezier(0.6, 0, 0.4, 1) both;
     }
 
     .account-menu,

@@ -3585,7 +3585,7 @@
         panel.classList.remove("is-closing");
       }
 
-      closePanel(panel, duration = 2200) {
+      closePanel(panel, duration = 340) {
         if (!(panel instanceof HTMLElement) || panel.hidden) return;
         this.cancelPanelClose(panel);
         panel.getAnimations().forEach((animation) => animation.cancel());
@@ -3673,7 +3673,7 @@
           this.systemMenuPanel.hidden = false;
           this.playPanelOpen(this.systemMenuPanel, "system");
         } else {
-          this.closePanel(this.systemMenuPanel, 2200);
+          this.closePanel(this.systemMenuPanel, 340);
         }
       }
 
@@ -3687,7 +3687,7 @@
           this.accountMenu.hidden = false;
           this.playPanelOpen(this.accountMenu, "menu");
         } else {
-          this.closePanel(this.accountMenu, 2200);
+          this.closePanel(this.accountMenu, 340);
         }
       }
 
@@ -3964,7 +3964,7 @@
           this.refreshHistory(true);
           this.hud.showNotice("鑑定紀錄面板已展開");
         } else {
-          this.closePanel(this.historyDrawer, 2200);
+          this.closePanel(this.historyDrawer, 340);
           this.pendingHistoryDeleteId = "";
           this.renderHistory();
         }
