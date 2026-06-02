@@ -3461,6 +3461,15 @@
         this.historyClear = document.getElementById("historyClear");
         this.historyDrawer = document.getElementById("historyDrawer");
         this.historyList = document.getElementById("historyList");
+        // account-menu / history-drawer 原在 operational-deck 內，該容器 clip-path 會
+        // 成為 fixed 後代的裁切上下文，把這兩個 fixed 覆蓋層裁掉（遮擋且點不到）。
+        // 移到 <body> 脫離裁切祖先。其 CSS 選擇器皆為 .account-menu/.history-drawer
+        // 開頭、不依賴祖先 context，搬移後樣式不變。參考 WebKit/MDN：clip-path 祖先 clip fixed 後代。
+        [this.accountMenu, this.historyDrawer].forEach((panel) => {
+          if (panel instanceof HTMLElement && panel.parentElement !== document.body) {
+            document.body.appendChild(panel);
+          }
+        });
         this.logoutButton = document.getElementById("logoutButton");
         this.logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
         this.cancelLogoutButton = document.getElementById("cancelLogoutBtn");

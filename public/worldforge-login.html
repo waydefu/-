@@ -1553,7 +1553,7 @@
     .sao-btn:hover:not(:disabled)::after {
       background: var(--sao-cyber-primary-hover);
       filter: brightness(0.92) saturate(1.02);
-      animation: saoButtonStrike 0.48s steps(2, end) both;
+      animation: saoButtonStrike 0.5s cubic-bezier(0.3, 0, 0.2, 1) both;
     }
 
     .sao-btn:hover:not(:disabled) {
@@ -1712,7 +1712,7 @@
       body.boot-complete .sao-btn:hover:not(:disabled)::after,
       body.boot-complete .sao-btn:focus-visible::after,
       body.boot-complete .analyze-ritual-btn.is-loading::after {
-        animation: saoButtonStrike 0.48s steps(2, end) both;
+        animation: saoButtonStrike 0.5s cubic-bezier(0.3, 0, 0.2, 1) both;
       }
     }
 
@@ -4516,7 +4516,7 @@
       opacity: 1;
       transform: none;
       filter: brightness(0.92) saturate(1.02);
-      animation: saoButtonStrike 0.48s steps(2, end) both;
+      animation: saoButtonStrike 0.5s cubic-bezier(0.3, 0, 0.2, 1) both;
     }
 
     .sao-btn:hover:not(:disabled)::before,
