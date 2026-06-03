@@ -3059,9 +3059,10 @@
     .result-section-body {
       padding: 14px 16px;
       font-family: var(--font-serif);
-      font-size: var(--text-body);
-      line-height: 1.7;
-      color: rgba(241, 222, 194, 0.88);
+      /* S20：桌面輸出區也加大一階 → ~18-21px */
+      font-size: clamp(1.125rem, 1.04rem + 0.45vw, 1.3125rem);
+      line-height: 1.85;
+      color: rgba(244, 228, 200, 0.94);
       white-space: normal;
       word-break: break-word;
     }
@@ -5021,8 +5022,9 @@
 
       /* 手機審稿全文加大加亮（獨立於上方共用群組，確保不被覆蓋回 --fs-body） */
       .result-section-body {
-        font-size: clamp(1.25rem, 1.12rem + 1.6vw, 1.5rem);
-        line-height: 1.95;
+        /* S20：輸出區（審稿全文）再加大一階 → 22-28px */
+        font-size: clamp(1.375rem, 1.2rem + 1.9vw, 1.75rem);
+        line-height: 2;
         color: rgba(250, 244, 226, 1);
       }
 
@@ -5153,6 +5155,52 @@
       }
     }
 
+    /* ═══ S20：帳號中樞 / 歷史紀錄 — 移到 body 後的權威定位（壓過所有舊規則） ═══
+       這兩個面板已從 operational-deck 移到 body 直接子層（脫離 clip-path 裁切）。
+       舊 CSS 部分依賴 deck grid context（position:static / grid-column），搬出後失效，
+       故在此用 body 子選擇器以高特異性統一覆寫為 fixed 置中彈窗（與登出彈窗同形）。 */
+    body > #accountMenu,
+    body > #historyDrawer {
+      position: fixed !important;
+      top: 50% !important;
+      left: 50% !important;
+      right: auto !important;
+      bottom: auto !important;
+      transform: translate(-50%, -50%) !important;
+      transform-origin: center center !important;
+      z-index: var(--z-modal-critical) !important;
+      margin: 0 !important;
+      grid-column: auto !important;
+      isolation: isolate;
+      pointer-events: auto !important;
+      opacity: 1 !important;
+      visibility: visible !important;
+    }
+    body > #accountMenu {
+      width: min(360px, calc(100vw - 28px)) !important;
+      height: auto !important;
+      max-height: min(80dvh, 560px) !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+    }
+    body > #historyDrawer {
+      width: min(500px, calc(100vw - 28px)) !important;
+      height: auto !important;
+      max-height: min(82dvh, 640px) !important;
+      display: block !important;
+      overflow: auto !important;
+      overscroll-behavior: contain;
+    }
+    /* 隱藏態優先：hidden 時完全不顯示（壓過上面的 display/opacity） */
+    body > #accountMenu[hidden],
+    body > #historyDrawer[hidden] {
+      display: none !important;
+      opacity: 0 !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+
   </style>
 </head>
 <body class="is-booting">
@@ -5222,6 +5270,24 @@
         <button class="ghost-btn sao-btn" id="cancelLogoutBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">返回工作區</span></button>
         <button class="secondary-btn danger-btn sao-btn is-danger" id="confirmLogoutBtn" type="button"><span class="sao-btn-symbol" aria-hidden="true">⇥</span><span class="sao-btn-label">封存並登出</span></button>
       </div>
+    </div>
+  </div>
+
+  <!-- S20：帳號中樞 / 歷史紀錄移到 .interface 之前（body 直接子層，與登出彈窗同層）。
+       原本在 operational-deck 內被其 clip-path 裁切上下文裁掉 → 遮擋且點不到。
+       它們桌面本即 fixed 置中（見既有 .account-menu/.history-drawer 規則），CSS 不變，
+       只是脫離裁切祖先。見 docs/s20。 -->
+  <div class="account-menu" id="accountMenu" role="menu" hidden>
+    <button class="sao-btn is-danger" type="button" id="logoutButton" role="menuitem"><span class="sao-btn-symbol" aria-hidden="true">⇥</span><span class="sao-btn-label">登出</span></button>
+  </div>
+  <div class="history-drawer" id="historyDrawer" role="region" aria-labelledby="historyHeading" hidden>
+    <div class="history-head">
+      <span id="historyHeading" aria-label="歷史鑑定卷宗">APPRAISAL ARCHIVE</span>
+      <button class="sao-btn is-danger" type="button" id="historyClear"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">清空紀錄</span></button>
+      <button class="sao-btn" type="button" id="historyClose"><span class="sao-btn-symbol" aria-hidden="true">⌃</span><span class="sao-btn-label">收合面板</span></button>
+    </div>
+    <div class="history-list" id="historyList">
+      <p class="history-empty">尚無鑑定紀錄。</p>
     </div>
   </div>
 
@@ -5300,19 +5366,6 @@
               <small id="sessionSyncState">草稿記憶待命中</small>
             </span>
           </button>
-        </div>
-        <div class="account-menu" id="accountMenu" role="menu" hidden>
-          <button class="sao-btn is-danger" type="button" id="logoutButton" role="menuitem"><span class="sao-btn-symbol" aria-hidden="true">⇥</span><span class="sao-btn-label">登出</span></button>
-        </div>
-        <div class="history-drawer" id="historyDrawer" role="region" aria-labelledby="historyHeading" hidden>
-          <div class="history-head">
-            <span id="historyHeading" aria-label="歷史鑑定卷宗">APPRAISAL ARCHIVE</span>
-            <button class="sao-btn is-danger" type="button" id="historyClear"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">清空紀錄</span></button>
-            <button class="sao-btn" type="button" id="historyClose"><span class="sao-btn-symbol" aria-hidden="true">⌃</span><span class="sao-btn-label">收合面板</span></button>
-          </div>
-          <div class="history-list" id="historyList">
-            <p class="history-empty">尚無鑑定紀錄。</p>
-          </div>
         </div>
       </nav>
 
