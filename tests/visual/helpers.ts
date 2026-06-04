@@ -246,6 +246,7 @@ export async function openHistoryDrawer(page: Page) {
     toggle?.setAttribute("aria-expanded", "true");
     const drawer = document.getElementById("historyDrawer");
     drawer?.removeAttribute("hidden");
+    drawer?.setAttribute("aria-hidden", "false");
     const list = document.getElementById("historyList");
     if (list) {
       list.innerHTML = `
@@ -275,6 +276,8 @@ export async function openAccountMenu(page: Page) {
     toggle?.setAttribute("aria-expanded", "true");
     const menu = document.getElementById("accountMenu");
     menu?.removeAttribute("hidden");
+    // S20：account-menu 改用 [aria-hidden=false] 控制顯示（override 配方），需一併設定
+    menu?.setAttribute("aria-hidden", "false");
   });
 }
 

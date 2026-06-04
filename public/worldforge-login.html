@@ -5155,40 +5155,56 @@
       }
     }
 
-    /* ═══ S20：帳號中樞 / 歷史紀錄 — 移到 body 後的權威定位（壓過所有舊規則） ═══
-       這兩個面板已從 operational-deck 移到 body 直接子層（脫離 clip-path 裁切）。
-       舊 CSS 部分依賴 deck grid context（position:static / grid-column），搬出後失效，
-       故在此用 body 子選擇器以高特異性統一覆寫為 fixed 置中彈窗（與登出彈窗同形）。 */
-    /* 定位用 inset + margin:auto 置中（不碰 transform），這樣完全不與 JS 開啟動畫
-       playPanelOpen(WAAPI 操作 transform/opacity）衝突——先前 transform/opacity !important
-       會鎖死動畫起始幀，造成「只有一條線 / 閃一下 / 頻閃」。
-       此處只管定位與尺寸；顯示/動畫交給既有 [hidden] / WAAPI。 */
+    /* ═══ S20：帳號中樞 / 歷史紀錄 = 完整複製登出彈窗（override-window）配方 ═══
+       這兩個面板已移到 body 直接子層（脫離 operational-deck 的 clip-path 裁切）。
+       此前在「舊 deck-based CSS（:not([hidden]) + playPanelOpen WAAPI）」上疊加 body 覆寫，
+       兩套打架 → 看不到 / 閃一下 / 不置中。改為：完全照搬登出彈窗那套「display:none →
+       [aria-hidden=false] display:block + CSS animation」，用 !important 壓過所有舊規則，
+       JS 改用 SaoWindowController（純 aria-hidden 控制，不再用 playPanelOpen）。 */
     body > #accountMenu,
     body > #historyDrawer {
       position: fixed !important;
-      inset: 0 !important;
-      margin: auto !important;
-      top: auto !important;
-      left: auto !important;
+      left: 50% !important;
+      top: 50% !important;
       right: auto !important;
       bottom: auto !important;
-      z-index: var(--z-modal-critical) !important;
+      margin: 0 !important;
       grid-column: auto !important;
+      z-index: var(--z-modal-critical) !important;
+      transform: translate(-50%, -50%) scaleX(0) scaleY(0.02) !important;
+      transform-origin: center center !important;
+      display: none !important;
+      opacity: 0 !important;
+      overflow: auto !important;
+      overscroll-behavior: contain;
       isolation: isolate;
+      backface-visibility: hidden;
+      contain: layout paint;
+      will-change: transform, opacity;
+      pointer-events: auto !important;
     }
     body > #accountMenu {
       width: min(360px, calc(100vw - 28px)) !important;
-      height: -moz-fit-content;
-      height: fit-content !important;
       max-height: min(80dvh, 560px) !important;
     }
     body > #historyDrawer {
-      width: min(500px, calc(100vw - 28px)) !important;
-      height: -moz-fit-content;
-      height: fit-content !important;
+      width: min(520px, calc(100vw - 28px)) !important;
       max-height: min(82dvh, 640px) !important;
-      overflow: auto !important;
-      overscroll-behavior: contain;
+    }
+    /* 開啟：照搬 overrideMaterialize（純 CSS 動畫，從 translate 置中的中心展開） */
+    body > #accountMenu[aria-hidden="false"],
+    body > #historyDrawer[aria-hidden="false"] {
+      display: block !important;
+      opacity: 1 !important;
+      animation: overrideMaterialize 0.6s var(--sao-easing-back) both !important;
+    }
+    /* 關閉：照搬 overrideDissolve（data-closing 期間仍需 display:block 才看得到退場） */
+    body > #accountMenu[data-closing="true"],
+    body > #historyDrawer[data-closing="true"] {
+      display: block !important;
+      opacity: 1 !important;
+      pointer-events: none !important;
+      animation: overrideDissolve 0.34s var(--sao-easing-out) both !important;
     }
 
   </style>

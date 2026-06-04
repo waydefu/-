@@ -3461,15 +3461,9 @@
         this.historyClear = document.getElementById("historyClear");
         this.historyDrawer = document.getElementById("historyDrawer");
         this.historyList = document.getElementById("historyList");
-        // account-menu / history-drawer 原在 operational-deck 內，該容器 clip-path 會
-        // 成為 fixed 後代的裁切上下文，把這兩個 fixed 覆蓋層裁掉（遮擋且點不到）。
-        // 移到 <body> 脫離裁切祖先。其 CSS 選擇器皆為 .account-menu/.history-drawer
-        // 開頭、不依賴祖先 context，搬移後樣式不變。參考 WebKit/MDN：clip-path 祖先 clip fixed 後代。
-        [this.accountMenu, this.historyDrawer].forEach((panel) => {
-          if (panel instanceof HTMLElement && panel.parentElement !== document.body) {
-            document.body.appendChild(panel);
-          }
-        });
+        // S20：account/history HTML 已移到 .interface 之前（body 直接子層、脫離 deck
+        // clip-path 裁切）。開關用 openOverlayPanel/closeOverlayPanel（純 aria-hidden +
+        // CSS animation），不再用 playPanelOpen，避免兩套顯隱機制打架。
         this.logoutButton = document.getElementById("logoutButton");
         this.logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
         this.cancelLogoutButton = document.getElementById("cancelLogoutBtn");
@@ -3692,12 +3686,38 @@
         this.accountToggle?.setAttribute("aria-expanded", String(shouldOpen));
         this.accountToggle?.setAttribute("aria-label", shouldOpen ? "關閉帳號中樞" : "開啟帳號中樞");
         if (shouldOpen) {
-          this.cancelPanelClose(this.accountMenu);
-          this.accountMenu.hidden = false;
-          this.playPanelOpen(this.accountMenu, "menu");
+          this.openOverlayPanel(this.accountMenu);
         } else {
-          this.closePanel(this.accountMenu, 340);
+          this.closeOverlayPanel(this.accountMenu);
         }
+      }
+
+      // S20：account/history 的極簡開關。只切 aria-hidden + hidden，動畫全交給 CSS
+      // （body > #...[aria-hidden=false] overrideMaterialize / [data-closing] overrideDissolve）。
+      // 不用 SaoWindowController（其 setLock/showDialogSurface/4500ms focus 等副作用會干擾）。
+      openOverlayPanel(panel) {
+        if (!(panel instanceof HTMLElement)) return;
+        window.clearTimeout(panel.__overlayCloseTimer);
+        panel.removeAttribute("data-closing");
+        panel.hidden = false;
+        panel.setAttribute("aria-hidden", "false");
+      }
+
+      closeOverlayPanel(panel) {
+        if (!(panel instanceof HTMLElement) || panel.hidden) return;
+        window.clearTimeout(panel.__overlayCloseTimer);
+        if (prefersReducedMotion) {
+          panel.setAttribute("aria-hidden", "true");
+          panel.hidden = true;
+          panel.removeAttribute("data-closing");
+          return;
+        }
+        panel.setAttribute("data-closing", "true");
+        panel.setAttribute("aria-hidden", "true");
+        panel.__overlayCloseTimer = window.setTimeout(() => {
+          panel.hidden = true;
+          panel.removeAttribute("data-closing");
+        }, 360);
       }
 
       playPanelOpen(panel, type = "menu") {
@@ -3938,13 +3958,11 @@
         this.historyToggle?.setAttribute("aria-expanded", String(shouldOpen));
         this.historyToggle?.setAttribute("aria-label", shouldOpen ? "關閉鑑定紀錄" : "開啟鑑定紀錄");
         if (shouldOpen) {
-          this.cancelPanelClose(this.historyDrawer);
-          this.historyDrawer.hidden = false;
-          this.playPanelOpen(this.historyDrawer, "drawer");
+          this.openOverlayPanel(this.historyDrawer);
           this.refreshHistory(true);
           this.hud.showNotice("鑑定紀錄面板已展開");
         } else {
-          this.closePanel(this.historyDrawer, 340);
+          this.closeOverlayPanel(this.historyDrawer);
           this.pendingHistoryDeleteId = "";
           this.renderHistory();
         }

@@ -61,5 +61,13 @@
   3. account/history 已 CSS 置中，動畫不再疊 `translate(-50%,-50%)`（`baseTransform=""`）。
 - 驗證：check 0、test 23/23、CSS 平衡。動效順暢需實機（preview 有快取）。
 
+### Step 5 — 徹底改用「登出彈窗配方」+ 找到 !important 真兇
+- 症狀（前幾步仍未解）：SYS 頻閃、帳號中樞看不到、鑑定紀錄閃一下沒置中。
+- 真因（終於定位，computed 數值鐵證）：`body > #accountMenu` 覆寫的 `transform/opacity` 加了 **`!important`**。**CSS animation 無法覆蓋 !important 宣告**，所以 `overrideMaterialize` 動畫被鎖死在 0% 起始幀 `scaleX(0) scaleY(0.02)` → 面板永遠是「一條線 / 看不到」。登出彈窗正常正是因為它 base 的 transform/opacity **沒有 !important**。
+- 修法（完整複製登出彈窗配方）：
+  1. CSS：account/history 用 `body > #...` 完整套 override-window 配方（display:none → `[aria-hidden=false]` display:block + `overrideMaterialize` 動畫；`[data-closing]` → `overrideDissolve`）。**關鍵：transform/opacity 不加 !important**（只有 left/top/display/z-index 等定位用 !important 壓過舊規則）。
+  2. JS：toggleAccount/toggleHistory 改用極簡 `openOverlayPanel`/`closeOverlayPanel`（只切 aria-hidden + hidden + data-closing，動畫全交 CSS），**棄用 playPanelOpen**（其逐幀 blur 是頻閃源）與 SaoWindowController（其 setLock/showDialogSurface/4500ms focus 副作用會干擾）。
+- 驗證（computed 數值）：動畫 finish 後 `transform: matrix(1,0,0,1,…)` = scaleX(1) 完整展開、rect 347×134、置中、visible:true。✅
+
 ### 待移除（後續清理，非本次）
 - 舊 `.account-menu[hidden]` / `:not([hidden])` / `.is-closing` / 手機 `position:static` 規則現被 `!important` 覆寫壓過、無害但冗餘，可於確認線上 OK 後清理。
