@@ -50,5 +50,16 @@
 - `npm run check` 0 error、CSS 大括號平衡 704/704、`npm test` 23/23。
 - ⚠️ account/history 開啟後的實際顯示**因 preview 快取無法在開發環境確認**，需使用者實機（強制重整/無痕）驗收。CSS `!important` 特異性絕對足夠，磁碟/HTTP 已確認含新規則。
 
+### Step 4 — 修頻閃 / 一條線 / 閃一下（playPanelOpen 重寫）
+- 症狀：SYS 點擊後頻閃、帳號中樞只有一條線、鑑定紀錄閃一下才正常。
+- 根因（兩個疊加）：
+  1. `body > #accountMenu/#historyDrawer` 的 `transform/opacity/visibility !important` 鎖死了 `playPanelOpen` 的 WAAPI 動畫起始幀 → 卡成「一條線」。
+  2. `playPanelOpen` 動畫每幀變 `filter:blur` + 逐幀 `clip-path`（共 16 處 blur）→ 手機 GPU 每幀重算高斯模糊跟不上 → 頻閃/卡幀（三選單共用此函式，故三者都中）。
+- 修法：
+  1. CSS 覆寫改用 `inset:0 + margin:auto` 置中（不碰 transform/opacity/visibility），不再與動畫衝突；只管定位+尺寸。
+  2. `playPanelOpen` 重寫為純 `transform:scaleY + opacity` 的 3 幀塌展（移除所有 blur 與逐幀 clip-path），時長 760→320ms。只用 GPU 合成屬性，順暢不閃。
+  3. account/history 已 CSS 置中，動畫不再疊 `translate(-50%,-50%)`（`baseTransform=""`）。
+- 驗證：check 0、test 23/23、CSS 平衡。動效順暢需實機（preview 有快取）。
+
 ### 待移除（後續清理，非本次）
 - 舊 `.account-menu[hidden]` / `:not([hidden])` / `.is-closing` / 手機 `position:static` 規則現被 `!important` 覆寫壓過、無害但冗餘，可於確認線上 OK 後清理。

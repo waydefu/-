@@ -5159,46 +5159,36 @@
        這兩個面板已從 operational-deck 移到 body 直接子層（脫離 clip-path 裁切）。
        舊 CSS 部分依賴 deck grid context（position:static / grid-column），搬出後失效，
        故在此用 body 子選擇器以高特異性統一覆寫為 fixed 置中彈窗（與登出彈窗同形）。 */
+    /* 定位用 inset + margin:auto 置中（不碰 transform），這樣完全不與 JS 開啟動畫
+       playPanelOpen(WAAPI 操作 transform/opacity）衝突——先前 transform/opacity !important
+       會鎖死動畫起始幀，造成「只有一條線 / 閃一下 / 頻閃」。
+       此處只管定位與尺寸；顯示/動畫交給既有 [hidden] / WAAPI。 */
     body > #accountMenu,
     body > #historyDrawer {
       position: fixed !important;
-      top: 50% !important;
-      left: 50% !important;
+      inset: 0 !important;
+      margin: auto !important;
+      top: auto !important;
+      left: auto !important;
       right: auto !important;
       bottom: auto !important;
-      transform: translate(-50%, -50%) !important;
-      transform-origin: center center !important;
       z-index: var(--z-modal-critical) !important;
-      margin: 0 !important;
       grid-column: auto !important;
       isolation: isolate;
-      pointer-events: auto !important;
-      opacity: 1 !important;
-      visibility: visible !important;
     }
     body > #accountMenu {
       width: min(360px, calc(100vw - 28px)) !important;
-      height: auto !important;
+      height: -moz-fit-content;
+      height: fit-content !important;
       max-height: min(80dvh, 560px) !important;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 8px !important;
     }
     body > #historyDrawer {
       width: min(500px, calc(100vw - 28px)) !important;
-      height: auto !important;
+      height: -moz-fit-content;
+      height: fit-content !important;
       max-height: min(82dvh, 640px) !important;
-      display: block !important;
       overflow: auto !important;
       overscroll-behavior: contain;
-    }
-    /* 隱藏態優先：hidden 時完全不顯示（壓過上面的 display/opacity） */
-    body > #accountMenu[hidden],
-    body > #historyDrawer[hidden] {
-      display: none !important;
-      opacity: 0 !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
     }
 
   </style>

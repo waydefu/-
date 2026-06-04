@@ -3703,48 +3703,19 @@
       playPanelOpen(panel, type = "menu") {
         if (!(panel instanceof HTMLElement) || prefersReducedMotion) return;
         panel.getAnimations().forEach((animation) => animation.cancel());
-        const isDrawer = type === "drawer";
         const isSystem = type === "system";
-        const isMobilePanel = mobileQuery.matches;
-        const fixedCenter = !mobileQuery.matches && (panel.classList.contains("account-menu") || panel.classList.contains("history-drawer"));
-        const baseTransform = fixedCenter ? "translate(-50%, -50%) " : "";
+        const isDrawer = type === "drawer";
+        // S20：重寫為乾淨的 SAO 塌展動畫。移除逐幀 filter:blur 與逐幀 clip-path——
+        // 那是三個選單在手機頻閃/卡幀（「只有一條線 / 閃一下 / 持續頻閃」）的共同根因：
+        // 高斯模糊每幀重算 GPU 跟不上。改為純 transform(scaleY) + opacity，
+        // 只用 GPU 合成屬性，順暢不閃。account/history 已用 CSS 置中，不疊 translate。
         panel.animate([
-          {
-            opacity: 0,
-            clipPath: "polygon(50% 49%, 50% 49%, 50% 51%, 50% 51%)",
-            transform: `${baseTransform}scaleX(0.02) scaleY(0.02) translateY(-10px)`,
-            filter: "blur(8px) brightness(1.72)"
-          },
-          {
-            opacity: 1,
-            clipPath: "polygon(18% 46%, 82% 46%, 82% 54%, 18% 54%)",
-            transform: `${baseTransform}scaleX(0.72) scaleY(0.06) translateY(-3px)`,
-            filter: "blur(5px) brightness(1.56)",
-            offset: 0.18
-          },
-          {
-            opacity: 1,
-            clipPath: "polygon(0 38%, 100% 38%, 100% 62%, 0 62%)",
-            transform: `${baseTransform}scaleX(1) scaleY(0.18) translateY(-1px)`,
-            filter: "blur(3px) brightness(1.3)",
-            offset: 0.34
-          },
-          {
-            opacity: 1,
-            clipPath: "polygon(0 0, 100% 0, 100% 84%, 0 84%)",
-            transform: `${baseTransform}scaleX(1) scaleY(${isMobilePanel ? "1" : "1.045"}) translateY(${isMobilePanel ? "0" : "2px"})`,
-            filter: "blur(1px) brightness(1.1)",
-            offset: 0.64
-          },
-          {
-            opacity: 1,
-            clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
-            transform: `${baseTransform}scaleX(1) scaleY(1) translateY(0)`,
-            filter: "blur(0) brightness(1)"
-          }
+          { opacity: 0, transform: "scaleY(0.04)", transformOrigin: "center center" },
+          { opacity: 1, transform: "scaleY(1.04)", offset: 0.7 },
+          { opacity: 1, transform: "scaleY(1)" }
         ], {
-          duration: isSystem ? 760 : isDrawer ? 720 : 680,
-          easing: "cubic-bezier(0.34, 1.56, 0.64, 1)",
+          duration: isSystem ? 320 : isDrawer ? 300 : 280,
+          easing: "cubic-bezier(0.34, 1.4, 0.5, 1)",
           fill: "none"
         });
       }
