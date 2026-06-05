@@ -3677,8 +3677,12 @@
         this.systemMenuToggle?.setAttribute("aria-expanded", String(shouldOpen));
         if (shouldOpen) {
           this.cancelPanelClose(this.systemMenuPanel);
+          // 只靠 CSS（.sao-system-menu:not([hidden]):not(.is-closing) 的 contentSlideUp）
+          // 開啟。先取消殘留 WAAPI 動畫，避免與 CSS 動畫疊加 → 閃。不再用 playPanelOpen
+          // （與帳號中樞/歷史一致化，那兩個移除 WAAPI 後就不閃了）。
+          this.systemMenuPanel.getAnimations().forEach((a) => { try { a.cancel(); } catch (_) {} });
+          this.systemMenuPanel.classList.remove("is-closing");
           this.systemMenuPanel.hidden = false;
-          this.playPanelOpen(this.systemMenuPanel, "system");
         } else if (instant) {
           // 從 SYS 選單內點 account/history toggle 時，SYS 必須「瞬間」隱藏（不跑
           // 340ms dissolve），否則「按鈕邊消失邊開新彈窗」會視覺閃爍。

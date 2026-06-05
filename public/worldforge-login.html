@@ -335,12 +335,13 @@
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
-      /* 鎖定為獨立、穩定的合成層：.interface 在其上方捲動時，背景舞台完全不
-         重繪/不重新合成，徹底消除捲動時背景閃現。 */
+      /* 鎖定為獨立、穩定的合成層：.interface 在其上方捲動時，背景舞台完全不重繪。
+         用 translateZ + will-change 提升成獨立 GPU 層即可；移除 contain:paint——
+         paint containment 在手機捲動慣性中會讓區域「先填黑再繪」造成隨機黑塊
+         （atmosphere 本身是大面積黑色暈影，黑塊更明顯）。參考 Chromium 339841685。 */
       transform: translateZ(0);
       backface-visibility: hidden;
       will-change: transform;
-      contain: layout paint;
     }
     /* 容器內所有原本 fixed 的裝飾層改為 absolute；inset:0 / left-top:50% 的定位
        相對 #bg-stage 與相對 viewport 完全等價（舞台本身即全屏 fixed）。 */
