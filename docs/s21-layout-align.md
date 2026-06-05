@@ -21,4 +21,11 @@
 - account/history 保留置中彈窗（不改下拉）。
 
 ## 變更紀錄
-（逐步填寫）
+- 2026-06-05 Part B（已部署 599b85a）：operational-deck width 1480px → `min(760px, calc(100vw-32px))`。
+  原本就是單欄 grid（minmax(0,1fr)），只是 max 寬太寬；收成 760 即對齊舊版單欄。
+- 2026-06-05 Part D（已部署 599b85a）：operationalDeck 內底部新增 `.app-footer`
+  （版權 + wayde.fu@gmail.com，SAO 金黑小字，隨內容捲動）。
+- Part C（字級）：**跳過**。現況已接近舊版（標題 1.5-1.9rem vs 舊 1.4-2.1rem、
+  按鈕 15-17px vs 舊 15-16px），且輸出區大字（S20）刻意保留。
+- Part A（navbar）：**交棒 Codex**，執行單見桌面 `FLG-執行單-S21\S21-A-navbar頂部導航.md`。
+  方向＝navbar 直接放各鈕（拆 SYS 選單）；手機 56px 塞不下 5 鈕，取捨見執行單 A-3。
