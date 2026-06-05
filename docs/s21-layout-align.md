@@ -27,5 +27,13 @@
   （版權 + wayde.fu@gmail.com，SAO 金黑小字，隨內容捲動）。
 - Part C（字級）：**跳過**。現況已接近舊版（標題 1.5-1.9rem vs 舊 1.4-2.1rem、
   按鈕 15-17px vs 舊 15-16px），且輸出區大字（S20）刻意保留。
-- Part A（navbar）：**交棒 Codex**，執行單見桌面 `FLG-執行單-S21\S21-A-navbar頂部導航.md`。
-  方向＝navbar 直接放各鈕（拆 SYS 選單）；手機 56px 塞不下 5 鈕，取捨見執行單 A-3。
+- 2026-06-06 Part A（已完成 commit `78f2836`）：新增 fixed 56px navbar，歷史/帳號直接放 navbar，
+  拆除 SYS 選單；手機 navbar 只保留歷史/帳號 44px icon-only，清稿移回工作區啟動鈕旁，
+  重鑑保留在卷宗工具列。詳細恢復區塊與驗收紀錄見 `docs/s21a-navbar.md`。
+
+## S21 當前狀態（2026-06-06）
+
+- 實作面：S21 A/B/C/D 已收斂；C 按既定取捨跳過，保留 S20 輸出大字。
+- 本機驗收：S21-A 已跑 `sync:login-mother`、`check`、`test`、`test:a11y`、`test:visual`，皆通過；visual snapshots 已在人工確認後更新。
+- 待使用者同意後執行：Firebase Hosting deploy。
+- 部署後驗收：用線上站 computed 數值與 Playwright 驗 navbar/760/footer；preview 與手機快取重，手機動效/RWD 手感仍待無痕實機確認。
