@@ -4662,6 +4662,23 @@
       animation: none;
     }
 
+    /* 複製/刪除按鈕的 underplate（::before）被刻意設 none（扁平設計），但 .sao-btn 本體
+       又是透明 → 鑑定後按鈕看起來「消失、只剩點擊區」。給本體一個實體底+邊框（高特異性
+       壓過 .sao-btn 的透明），讓它有可見外觀，不依賴偽元素。 */
+    .result-section .result-section-copy.sao-btn,
+    .history-entry .history-delete.sao-btn {
+      background:
+        linear-gradient(180deg, rgba(40, 24, 8, 0.96), rgba(14, 8, 3, 0.96)) !important;
+      border: 1px solid rgba(214, 166, 77, 0.4) !important;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 226, 160, 0.08) !important;
+    }
+    .result-section .result-section-copy.sao-btn:hover,
+    .history-entry .history-delete.sao-btn:hover {
+      background:
+        linear-gradient(180deg, rgba(58, 34, 10, 0.98), rgba(20, 11, 4, 0.98)) !important;
+      border-color: rgba(255, 226, 160, 0.6) !important;
+    }
+
     .sao-btn::after {
       background: var(--sao-cyber-primary);
       box-shadow:
