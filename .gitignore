@@ -38,6 +38,6 @@ Thumbs.db
 *.swo
 
 # Local assistant settings
-.claude/settings.local.json
+.claude/
 .clinerules
 .cursorrules

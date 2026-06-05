@@ -45,4 +45,21 @@ describe("result parser", () => {
     assert.doesNotMatch(renderMarkdownLite("<script>alert(1)</script>"), /<script>/);
     assert.match(sectionsToPlainText(parsed), /修改後全文/);
   });
+
+  it("keeps hard-logic summary labels inside the review summary section", () => {
+    const parsed = splitAnalysisSections(`✍️ 修改後全文
+
+他咬住牙，又把手探向椅腳旁的手機。
+
+📋 審查摘要
+
+硬傷：原句沒有交代拿手機是為了求救。
+語感：魔力表述避免使用本源。
+已處理：重寫補足動作目的與感官來源。`);
+
+    assert.match(parsed.summary, /硬傷：/);
+    assert.match(parsed.summary, /語感：/);
+    assert.match(parsed.summary, /已處理：/);
+    assert.equal(parsed.fallback, "");
+  });
 });
