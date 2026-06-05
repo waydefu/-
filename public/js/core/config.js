@@ -48,6 +48,7 @@ export const LIMITS = {
 export const UI_CONFIG = {
   STORAGE_KEY:       "flg_history_v2",
   DRAFT_KEY:         "flg_draft_v1",
+  ANALYSIS_RULE_VERSION: "hard-logic-western-fantasy-v1",
   DRAFT_DEBOUNCE_MS: 3000,
   RATE_LIMIT_MAX:    5,
   RATE_LIMIT_WINDOW_MS: 60000,
