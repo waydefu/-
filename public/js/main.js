@@ -3463,7 +3463,7 @@
         this.historyList = document.getElementById("historyList");
         // S20：account/history HTML 已移到 .interface 之前（body 直接子層、脫離 deck
         // clip-path 裁切）。開關用 openOverlayPanel/closeOverlayPanel（純 aria-hidden +
-        // CSS animation），不再用 playPanelOpen，避免兩套顯隱機制打架。
+        // CSS animation），避免兩套顯隱機制打架。
         this.logoutButton = document.getElementById("logoutButton");
         this.logoutConfirmWindow = document.getElementById("logoutConfirmWindow");
         this.cancelLogoutButton = document.getElementById("cancelLogoutBtn");
@@ -3472,10 +3472,8 @@
         this.copyButton = document.getElementById("copyAllButton");
         this.reanalyzeButton = document.getElementById("reanalyzeButton");
         this.clearDraftButton = document.getElementById("clearDraftButton");
-        this.navActions = document.querySelector(".workbench-nav-actions");
-        this.ensureSystemMenu();
-        this.systemMenuToggle = document.getElementById("systemMenuToggle");
-        this.systemMenuPanel = document.getElementById("systemMenuPanel");
+        this.navbarActions = document.querySelector(".app-navbar-actions");
+        this.ensureNavbar();
         this.charCount = document.getElementById("charCount");
         this.spellWarn = document.getElementById("spellWarn");
         this.spellList = document.getElementById("spellList");
@@ -3536,100 +3534,40 @@
         }
       }
 
-      ensureSystemMenu() {
-        if (!(this.navActions instanceof HTMLElement)) return;
-        let toggle = document.getElementById("systemMenuToggle");
-        if (!toggle) {
-          toggle = document.createElement("button");
-          toggle.className = "system-menu-toggle sao-btn";
-          toggle.id = "systemMenuToggle";
-          toggle.type = "button";
-          toggle.title = "工作區選單";
-          toggle.setAttribute("aria-label", "工作區選單");
-          toggle.setAttribute("aria-haspopup", "menu");
-          toggle.setAttribute("aria-expanded", "false");
-          toggle.setAttribute("aria-controls", "systemMenuPanel");
-          const symbol = document.createElement("span");
-          symbol.className = "sao-btn-symbol";
-          symbol.setAttribute("aria-hidden", "true");
-          symbol.textContent = "SYS";
-          const label = document.createElement("span");
-          label.className = "sao-btn-label";
-          label.textContent = "工作區選單";
-          toggle.append(symbol, label);
-        }
-        this.navActions.replaceChildren(toggle);
+      ensureNavbar() {
+        if (!(this.navbarActions instanceof HTMLElement)) return;
 
-        let panel = document.getElementById("systemMenuPanel");
-        if (!panel) {
-          panel = document.createElement("div");
-          panel.className = "sao-system-menu";
-          panel.id = "systemMenuPanel";
-          panel.setAttribute("role", "menu");
-          panel.setAttribute("aria-label", "SAO system menu");
-          panel.hidden = true;
-          this.navActions.after(panel);
-        }
-        // S20/S21：logoutButton 不再搬進 SYS 選單——它必須留在 account-menu 內，否則
-        // account-menu 變空殼，點帳號中樞只剩一條細線。history/account toggle 仍作為
-        // SYS 選單的入口（S21 會移到 navbar）。
         [this.historyToggle, this.accountToggle, this.clearDraftButton, this.reanalyzeButton]
           .filter((button) => button instanceof HTMLElement)
           .forEach((button) => {
-            button.classList.add("system-menu-item");
-            button.setAttribute("role", "menuitem");
-            panel.appendChild(button);
+            if (button.getAttribute("role") === "menuitem") button.removeAttribute("role");
           });
-        hydrateSaoButton(toggle);
-        hydrateAllSaoButtons(panel);
-      }
 
-      cancelPanelClose(panel) {
-        if (!(panel instanceof HTMLElement)) return;
-        window.clearTimeout(panel.__saoCloseTimer);
-        panel.__saoCloseToken = (panel.__saoCloseToken || 0) + 1;
-        panel.classList.remove("is-closing");
-      }
+        [this.historyToggle, this.accountToggle]
+          .filter((button) => button instanceof HTMLElement)
+          .forEach((button) => {
+            if (button.parentElement !== this.navbarActions) this.navbarActions.appendChild(button);
+          });
 
-      closePanel(panel, duration = 340) {
-        if (!(panel instanceof HTMLElement) || panel.hidden) return;
-        this.cancelPanelClose(panel);
-        panel.getAnimations().forEach((animation) => animation.cancel());
-        const closeToken = (panel.__saoCloseToken || 0) + 1;
-        panel.__saoCloseToken = closeToken;
-        const finishClose = () => {
-          if (panel.__saoCloseToken !== closeToken) return;
-          window.clearTimeout(panel.__saoCloseTimer);
-          panel.hidden = true;
-          panel.classList.remove("is-closing");
-        };
-        if (prefersReducedMotion) {
-          finishClose();
-          return;
+        const operationalActions = document.querySelector(".operational-actions");
+        if (operationalActions instanceof HTMLElement && this.clearDraftButton instanceof HTMLElement && this.clearDraftButton.parentElement !== operationalActions) {
+          operationalActions.appendChild(this.clearDraftButton);
         }
-        panel.classList.add("is-closing");
-        requestAnimationFrame(() => {
-          if (panel.__saoCloseToken !== closeToken) return;
-          const animations = panel.getAnimations().filter((animation) => animation.playState !== "finished");
-          if (animations.length) {
-            Promise.allSettled(animations.map((animation) => animation.finished)).then(finishClose);
-          } else {
-            finishClose();
-          }
-        });
-        panel.__saoCloseTimer = window.setTimeout(finishClose, duration + 160);
+
+        const dossierActions = document.querySelector(".dossier-actions");
+        if (dossierActions instanceof HTMLElement && this.reanalyzeButton instanceof HTMLElement && this.reanalyzeButton.parentElement !== dossierActions) {
+          dossierActions.appendChild(this.reanalyzeButton);
+        }
+
+        hydrateAllSaoButtons(this.navbarActions);
       }
 
       bindControls() {
-        this.systemMenuToggle?.addEventListener("click", () => this.toggleSystemMenu());
         this.historyToggle?.addEventListener("click", () => {
-          // 先瞬間關 SYS（toggle 在 SYS 內，避免邊消失邊開新窗的閃），再開歷史
-          this.toggleSystemMenu(false, true);
           this.toggleAccount(false);
           this.toggleHistory();
         });
         this.accountToggle?.addEventListener("click", () => {
-          this.toggleSystemMenu(false, true);
           this.toggleHistory(false);
           this.toggleAccount();
         });
@@ -3640,11 +3578,9 @@
         this.confirmLogoutButton?.addEventListener("click", () => this.logout());
         this.copyButton?.addEventListener("click", () => this.copyDossier());
         this.reanalyzeButton?.addEventListener("click", () => {
-          this.toggleSystemMenu(false);
           this.loginController.runBusinessAnalysis();
         });
         this.clearDraftButton?.addEventListener("click", () => {
-          this.toggleSystemMenu(false);
           this.clearDraft();
         });
         this.resultBox?.addEventListener("click", (event) => {
@@ -3657,10 +3593,6 @@
       handleOutsidePointer(event) {
         const target = event.target;
         if (!(target instanceof Node)) return;
-        if (this.systemMenuPanel && !this.systemMenuPanel.hidden) {
-          const insideSystem = this.systemMenuPanel.contains(target) || this.systemMenuToggle?.contains(target);
-          if (!insideSystem) this.toggleSystemMenu(false);
-        }
         if (this.historyDrawer && !this.historyDrawer.hidden) {
           const insideHistory = this.historyDrawer.contains(target) || this.historyToggle?.contains(target);
           if (!insideHistory) this.toggleHistory(false);
@@ -3668,30 +3600,6 @@
         if (this.accountMenu && !this.accountMenu.hidden) {
           const insideAccount = this.accountMenu.contains(target) || this.accountToggle?.contains(target);
           if (!insideAccount) this.toggleAccount(false);
-        }
-      }
-
-      toggleSystemMenu(force, instant = false) {
-        if (!this.systemMenuPanel) return;
-        const shouldOpen = typeof force === "boolean" ? force : this.systemMenuPanel.hidden;
-        this.systemMenuToggle?.setAttribute("aria-expanded", String(shouldOpen));
-        if (shouldOpen) {
-          this.cancelPanelClose(this.systemMenuPanel);
-          // 只靠 CSS（.sao-system-menu:not([hidden]):not(.is-closing) 的 contentSlideUp）
-          // 開啟。先取消殘留 WAAPI 動畫，避免與 CSS 動畫疊加 → 閃。不再用 playPanelOpen
-          // （與帳號中樞/歷史一致化，那兩個移除 WAAPI 後就不閃了）。
-          this.systemMenuPanel.getAnimations().forEach((a) => { try { a.cancel(); } catch (_) {} });
-          this.systemMenuPanel.classList.remove("is-closing");
-          this.systemMenuPanel.hidden = false;
-        } else if (instant) {
-          // 從 SYS 選單內點 account/history toggle 時，SYS 必須「瞬間」隱藏（不跑
-          // 340ms dissolve），否則「按鈕邊消失邊開新彈窗」會視覺閃爍。
-          this.cancelPanelClose(this.systemMenuPanel);
-          this.systemMenuPanel.getAnimations().forEach((a) => { try { a.cancel(); } catch (_) {} });
-          this.systemMenuPanel.hidden = true;
-          this.systemMenuPanel.classList.remove("is-closing");
-        } else {
-          this.closePanel(this.systemMenuPanel, 340);
         }
       }
 
@@ -3735,29 +3643,8 @@
         }, 360);
       }
 
-      playPanelOpen(panel, type = "menu") {
-        if (!(panel instanceof HTMLElement) || prefersReducedMotion) return;
-        panel.getAnimations().forEach((animation) => animation.cancel());
-        const isSystem = type === "system";
-        const isDrawer = type === "drawer";
-        // S20：重寫為乾淨的 SAO 塌展動畫。移除逐幀 filter:blur 與逐幀 clip-path——
-        // 那是三個選單在手機頻閃/卡幀（「只有一條線 / 閃一下 / 持續頻閃」）的共同根因：
-        // 高斯模糊每幀重算 GPU 跟不上。改為純 transform(scaleY) + opacity，
-        // 只用 GPU 合成屬性，順暢不閃。account/history 已用 CSS 置中，不疊 translate。
-        panel.animate([
-          { opacity: 0, transform: "scaleY(0.04)", transformOrigin: "center center" },
-          { opacity: 1, transform: "scaleY(1.04)", offset: 0.7 },
-          { opacity: 1, transform: "scaleY(1)" }
-        ], {
-          duration: isSystem ? 320 : isDrawer ? 300 : 280,
-          easing: "cubic-bezier(0.34, 1.4, 0.5, 1)",
-          fill: "none"
-        });
-      }
-
       openLogoutConfirm() {
         if (!this.logoutConfirmWindow) return;
-        this.toggleSystemMenu(false);
         this.toggleAccount(false);
         this.setStatus("請確認是否封存草稿並結束本次工作階段");
         this.hud.showNotice("登出確認視窗已開啟");

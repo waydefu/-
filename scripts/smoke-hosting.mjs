@@ -35,7 +35,9 @@ const main = async () => {
   assert.doesNotMatch(home.text, /login-modal-backdrop/, "Dead login backdrop should be removed");
   assert.match(home.text, /data-op="analyze"/, "Home should include the stable operational analysis action hook");
   assert.match(home.text, /啟動手稿鑑定引擎/, "Home should include the S10.7 operational analysis action copy");
-  assert.match(home.text, /codex-session/, "Home should include the operational account controls");
+  assert.match(home.text, /app-navbar/, "Home should include the fixed operational navbar");
+  assert.match(home.text, /id="historyToggle"/, "Home should include the history navbar control");
+  assert.match(home.text, /id="accountToggle"/, "Home should include the account navbar control");
   assert.match(home.text, /西方奇幻小說 AI 重寫與審稿系統/, "Home should include S10.7 Worldforge editorial copy");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
   ok("hosting Worldforge inline shell, Google-only modal, and App Check SDK");

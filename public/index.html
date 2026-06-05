@@ -2033,115 +2033,80 @@
       animation-delay: 0.08s;
     }
 
-    .codex-session {
-      position: relative;
-      z-index: var(--z-floating-action);
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      align-items: center;
-      gap: 12px;
-      width: min(100%, 1280px);
-      margin: 0 auto;
-      padding: 10px;
-      border: 1px solid rgba(214, 166, 77, 0.26);
-      border-radius: 8px;
+    .app-navbar {
+      position: fixed;
+      inset: 0 0 auto;
+      z-index: calc(var(--z-modal-critical) - 10);
+      display: none;
+      min-height: calc(56px + env(safe-area-inset-top));
+      padding-top: env(safe-area-inset-top);
+      border-bottom: 1px solid rgba(214, 166, 77, 0.22);
       background:
-        linear-gradient(135deg, rgba(4, 14, 28, 0.86), rgba(9, 4, 1, 0.8)),
-        radial-gradient(ellipse at 0% 0%, rgba(214, 166, 77, 0.14), transparent 42%),
-        radial-gradient(ellipse at 100% 100%, rgba(200, 120, 8, 0.12), transparent 42%);
-      box-shadow: 0 14px 44px rgba(0, 0, 0, 0.34), inset 0 0 28px rgba(255, 226, 160, 0.045);
-      opacity: 0;
-      visibility: hidden;
-      transform: translateY(8px);
-      transition: opacity 0.35s ease, transform 0.35s ease, visibility 0.35s ease;
+        linear-gradient(180deg, rgba(12, 6, 1, 0.96), rgba(9, 4, 1, 0.9)),
+        radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.12), transparent 58%);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       pointer-events: auto;
     }
 
-    .workbench-nav-title {
-      display: grid;
-      gap: 2px;
-      min-width: 0;
-      color: rgba(255, 226, 160, 0.88);
-      font-family: var(--font-tw);
-      letter-spacing: 0;
+    body.operational .app-navbar {
+      display: flex;
     }
 
-    .workbench-nav-title b {
-      font-size: var(--text-section);
-      font-weight: 700;
-      line-height: 1.45;
-      letter-spacing: var(--tracking-zh);
-      text-shadow: 1px 1px 0 rgba(0, 0, 0, 0.62);
+    .app-navbar-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: min(100%, 760px);
+      height: 56px;
+      margin-inline: auto;
+      padding-inline: clamp(14px, 4vw, 24px);
+      box-sizing: border-box;
     }
 
-    .workbench-nav-title span {
+    .app-navbar-brand {
       overflow: hidden;
-      color: rgba(200, 216, 232, 0.62);
-      font: 600 var(--text-hud)/1.4 var(--font-mono);
-      letter-spacing: var(--tracking-en-hud);
+      color: rgba(255, 226, 160, 0.92);
+      font-family: var(--font-display, "Cinzel", serif);
+      font-size: clamp(1rem, 2.2vw, 1.18rem);
+      font-weight: 800;
+      letter-spacing: 0.18em;
+      line-height: 1;
       text-overflow: ellipsis;
       text-transform: uppercase;
       white-space: nowrap;
+      text-shadow: 0 0 18px rgba(214, 166, 77, 0.18);
     }
 
-    .workbench-nav-actions {
+    .app-navbar-actions {
       display: inline-flex;
       align-items: center;
       justify-content: flex-end;
       gap: 8px;
       min-width: 0;
+      flex: 0 0 auto;
     }
 
-    .workbench-nav-actions > button {
+    .app-navbar-actions > button {
       position: relative;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      min-height: 52px;
-      padding: 0 16px;
-      overflow: hidden;
-      border: 1px solid rgba(214, 166, 77, 0.34);
-      border-radius: 8px;
-      background:
-        linear-gradient(180deg, rgba(255, 246, 203, 0.13), rgba(200, 120, 8, 0.08) 42%, rgba(0, 0, 0, 0.46)),
-        radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.14), transparent 58%),
-        rgba(0, 0, 0, 0.56);
-      color: rgba(255, 226, 160, 0.84);
+      min-width: 44px;
+      min-height: 44px;
+      padding: 0 14px;
+      color: rgba(255, 226, 160, 0.9);
       font-family: var(--font-tw);
       font-size: var(--fs-body);
-      font-weight: 700;
+      font-weight: 800;
       letter-spacing: 0;
       cursor: pointer;
-      box-shadow:
-        0 8px 22px rgba(0, 0, 0, 0.24),
-        inset 0 1px 0 rgba(255, 246, 203, 0.14),
-        inset 0 -16px 28px rgba(0, 0, 0, 0.22);
-      transition: transform 0.28s ease, border-color 0.28s ease, color 0.28s ease, background 0.28s ease, box-shadow 0.28s ease;
     }
 
-    .workbench-nav-actions > button::before {
-      content: "";
-      position: absolute;
-      inset: 4px;
-      pointer-events: none;
-      border: 1px solid rgba(255, 226, 160, 0.08);
-      border-radius: 5px;
-      opacity: 0.72;
-    }
-
-    .workbench-nav-actions > button::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      background: linear-gradient(115deg, transparent 0 30%, rgba(255, 246, 203, 0.18), transparent 62% 100%);
-      opacity: 0;
-      transform: translateX(-120%);
-      transition: opacity 0.32s ease, transform 0.52s ease;
-    }
-
-    .codex-session .history-chip {
+    .app-navbar-actions .history-chip {
       white-space: nowrap;
     }
 
@@ -2174,6 +2139,21 @@
       display: none;
     }
 
+    .app-navbar-actions .account-nav-label {
+      display: inline;
+      white-space: nowrap;
+    }
+
+    .app-navbar-actions .account-meta {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+
     .account-chip {
       display: inline-flex;
       align-items: center;
@@ -2181,6 +2161,10 @@
       gap: 10px;
       min-width: min(236px, 36vw);
       text-align: left;
+    }
+
+    .app-navbar-actions .account-chip {
+      min-width: 154px;
     }
 
     .account-avatar {
@@ -2249,34 +2233,55 @@
       white-space: nowrap;
     }
 
-    .workbench-nav-actions > button:hover,
-    .workbench-nav-actions > button:focus-visible {
-      border-color: rgba(255, 226, 160, 0.62);
-      background:
-        linear-gradient(180deg, rgba(255, 246, 203, 0.18), rgba(200, 120, 8, 0.14) 46%, rgba(0, 0, 0, 0.42)),
-        radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.18), transparent 58%),
-        rgba(102, 58, 15, 0.42);
-      color: var(--gold-hot);
-      box-shadow:
-        0 12px 30px rgba(0, 0, 0, 0.32),
-        0 0 22px rgba(214, 166, 77, 0.2),
-        inset 0 1px 0 rgba(255, 246, 203, 0.18);
-      transform: translateY(-1px);
-      outline: none;
-    }
-
-    .workbench-nav-actions > button:hover::after,
-    .workbench-nav-actions > button:focus-visible::after {
-      opacity: 1;
-      transform: translateX(120%);
-    }
-
     .history-chip:hover .nav-glyph,
     .history-chip:focus-visible .nav-glyph,
     .account-chip:hover .account-avatar,
     .account-chip:focus-visible .account-avatar {
       filter: drop-shadow(0 0 14px rgba(214, 166, 77, 0.68));
       transform: scale(1.08);
+    }
+
+    @media (max-width: 640px) {
+      .app-navbar-inner {
+        gap: 8px;
+        padding-left: max(10px, env(safe-area-inset-left));
+        padding-right: max(10px, env(safe-area-inset-right));
+      }
+
+      .app-navbar-brand {
+        font-size: clamp(0.9rem, 3.8vw, 1rem);
+        letter-spacing: 0.1em;
+      }
+
+      .app-navbar-actions {
+        gap: 6px;
+      }
+
+      .app-navbar-actions > button {
+        width: 44px;
+        min-width: 44px;
+        min-height: 44px;
+        padding-inline: 0;
+      }
+
+      .app-navbar-actions .history-chip,
+      .app-navbar-actions .account-chip {
+        width: 44px;
+        min-width: 44px;
+        justify-content: center;
+      }
+
+      .app-navbar-actions .nav-label,
+      .app-navbar-actions .account-nav-label,
+      .app-navbar-actions .account-meta {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+        clip: rect(0 0 0 0);
+        clip-path: inset(50%);
+        white-space: nowrap;
+      }
     }
 
     .history-chip[aria-expanded="true"],
@@ -3649,7 +3654,7 @@
       transform: none;
     }
 
-    /* 進入工作區後品牌頂列已由 workbench-nav 取代，隱藏以免在輸入區上方留白 */
+    /* 進入工作區後品牌頂列已由 fixed navbar 取代，隱藏以免在輸入區上方留白 */
     body.operational .top-hud {
       display: none;
     }
@@ -3706,13 +3711,13 @@
       -webkit-backdrop-filter: var(--glass-filter-none);
     }
 
+    body.operational #operationalDeck {
+      padding-top: calc(56px + clamp(8px, 2vw, 20px));
+    }
+
     body.workbench-materializing .operational-deck {
       animation: contentSlideUp 1.2s cubic-bezier(0.18, 0.92, 0.2, 1) both;
       transform-origin: center top;
-    }
-
-    body.workbench-materializing .codex-session {
-      animation: contentSlideUp 0.36s var(--sao-easing-out) 0.08s both;
     }
 
     body.workbench-materializing .codex-panel {
@@ -3760,12 +3765,6 @@
     body.operational .codex-panel,
     body.operational .analysis-dossier {
       filter: none !important;
-    }
-
-    body.operational .codex-session {
-      opacity: 1;
-      visibility: visible;
-      transform: none;
     }
 
     body.operational .operational-deck textarea,
@@ -4103,17 +4102,6 @@
         grid-template-rows: none;
       }
 
-      .codex-session {
-        position: relative;
-        top: auto;
-        left: auto;
-        right: auto;
-        bottom: auto;
-        width: 100%;
-        margin: 0 auto 6px;
-        grid-template-columns: minmax(0, 1fr) auto;
-      }
-
       .account-chip {
         min-width: 178px;
       }
@@ -4195,51 +4183,6 @@
       .secondary-btn:not(.sao-btn),
       .ghost-btn:not(.sao-btn) {
         min-height: 48px;
-      }
-
-      .codex-session {
-        grid-template-columns: 1fr;
-        gap: 7px;
-        padding: 7px;
-      }
-
-      .workbench-nav-title {
-        display: none;
-      }
-
-      .workbench-nav-actions {
-        display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        width: 100%;
-      }
-
-      .workbench-nav-actions > button {
-        min-height: 52px;
-        font-size: var(--fs-body);
-        padding-inline: 10px;
-      }
-
-      .codex-session .history-chip {
-        justify-content: center;
-      }
-
-      .account-chip {
-        gap: 8px;
-        min-width: 0;
-        width: auto;
-      }
-
-      .account-nav-label {
-        display: inline;
-      }
-
-      .account-meta {
-        position: absolute;
-        width: 1px;
-        height: 1px;
-        clip: rect(0 0 0 0);
-        clip-path: inset(50%);
-        white-space: nowrap;
       }
 
       .account-menu,
@@ -4468,7 +4411,7 @@
     }
 
     .sao-btn,
-    .workbench-nav-actions > button.sao-btn,
+    .app-navbar-actions > button.sao-btn,
     .account-menu button.sao-btn,
     .history-delete.sao-btn {
       overflow: visible;
@@ -4480,7 +4423,7 @@
       box-shadow: none;
     }
 
-    .workbench-nav-actions > button.sao-btn,
+    .app-navbar-actions > button.sao-btn,
     .account-menu button.sao-btn,
     .history-head button.sao-btn,
     .dossier-actions button.sao-btn,
@@ -4491,7 +4434,7 @@
     }
 
     .sao-btn::before,
-    .workbench-nav-actions > button.sao-btn::before,
+    .app-navbar-actions > button.sao-btn::before,
     .account-menu button.sao-btn::before,
     .history-delete.sao-btn::before {
       inset: 0;
@@ -4509,7 +4452,7 @@
     }
 
     .sao-btn::after,
-    .workbench-nav-actions > button.sao-btn::after,
+    .app-navbar-actions > button.sao-btn::after,
     .account-menu button.sao-btn::after,
     .history-delete.sao-btn::after {
       inset: 0;
@@ -4536,8 +4479,8 @@
 
     .sao-btn:hover:not(:disabled)::after,
     .sao-btn:focus-visible::after,
-    .workbench-nav-actions > button.sao-btn:hover::after,
-    .workbench-nav-actions > button.sao-btn:focus-visible::after,
+    .app-navbar-actions > button.sao-btn:hover::after,
+    .app-navbar-actions > button.sao-btn:focus-visible::after,
     .account-menu button.sao-btn:hover::after,
     .account-menu button.sao-btn:focus-visible::after,
     .history-delete.sao-btn:hover::after,
@@ -4551,8 +4494,8 @@
 
     .sao-btn:hover:not(:disabled)::before,
     .sao-btn:focus-visible::before,
-    .workbench-nav-actions > button.sao-btn:hover::before,
-    .workbench-nav-actions > button.sao-btn:focus-visible::before,
+    .app-navbar-actions > button.sao-btn:hover::before,
+    .app-navbar-actions > button.sao-btn:focus-visible::before,
     .account-menu button.sao-btn:hover::before,
     .account-menu button.sao-btn:focus-visible::before,
     .history-delete.sao-btn:hover::before,
@@ -4566,17 +4509,7 @@
       display: none;
     }
 
-    .history-chip .nav-glyph,
-    .account-chip .account-avatar {
-      display: none !important;
-    }
-
-    .history-chip,
-    .account-chip {
-      gap: 0;
-    }
-
-    .workbench-nav-actions > button.sao-btn .sao-btn-tag,
+    .app-navbar-actions > button.sao-btn .sao-btn-tag,
     .account-menu button.sao-btn .sao-btn-tag,
     .history-head button.sao-btn .sao-btn-tag,
     .dossier-actions button.sao-btn .sao-btn-tag,
@@ -4599,42 +4532,6 @@
       100% {
         opacity: 0;
         transform: scaleX(0.02) scaleY(0.02);
-        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
-      }
-    }
-
-    @keyframes saoSystemMenuDissolve {
-      0% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(1);
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      }
-      55% {
-        opacity: 1;
-        transform: scaleX(1) scaleY(0.04);
-        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
-      }
-      100% {
-        opacity: 0;
-        transform: scaleX(0.02) scaleY(0.02);
-        clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
-      }
-    }
-
-    @keyframes saoSystemMenuDissolveMobile {
-      0% {
-        opacity: 1;
-        transform: translateX(-50%) scaleX(1) scaleY(1);
-        clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
-      }
-      55% {
-        opacity: 1;
-        transform: translateX(-50%) scaleX(1) scaleY(0.04);
-        clip-path: polygon(0 46%, 100% 46%, 100% 54%, 0 54%);
-      }
-      100% {
-        opacity: 0;
-        transform: translateX(-50%) scaleX(0.04) scaleY(0.02);
         clip-path: polygon(48% 49%, 52% 49%, 52% 51%, 48% 51%);
       }
     }
@@ -4675,7 +4572,7 @@
     }
 
     .sao-btn::before,
-    .workbench-nav-actions > button.sao-btn::before,
+    .app-navbar-actions > button.sao-btn::before,
     .account-menu button.sao-btn::before,
     .history-head button.sao-btn::before,
     .dossier-actions button.sao-btn::before,
@@ -4781,8 +4678,8 @@
 
     .sao-btn:hover:not(:disabled)::before,
     .sao-btn:focus-visible::before,
-    .workbench-nav-actions > button.sao-btn:hover::before,
-    .workbench-nav-actions > button.sao-btn:focus-visible::before,
+    .app-navbar-actions > button.sao-btn:hover::before,
+    .app-navbar-actions > button.sao-btn:focus-visible::before,
     .account-menu button.sao-btn:hover::before,
     .account-menu button.sao-btn:focus-visible::before,
     .history-head button.sao-btn:hover::before,
@@ -4895,117 +4792,6 @@
       }
     }
 
-    .sao-system-menu {
-      position: fixed;
-      /* S21：桌面置中——原本 right:clamp(16px,5vw,72px) 把面板釘在容器塊（760px deck，
-         因 deck 有 clip-path 成為 fixed 的容器塊）右上角，桌面看起來「飄右邊沒置中」。
-         改用 left/right:0 + margin-inline:auto 水平置中（不碰 transform，避開 contentSlideUp
-         動畫衝突）；無論容器塊是 deck 或 viewport 都落在螢幕水平中央。 */
-      top: clamp(172px, 24dvh, 210px);
-      left: 0;
-      right: 0;
-      margin-inline: auto;
-      z-index: var(--z-menu);
-      display: grid;
-      width: min(360px, calc(100vw - 32px));
-      max-height: min(76dvh, 620px);
-      gap: 12px;
-      overflow: visible;
-      padding: 20px 24px 24px 20px;
-      pointer-events: auto;
-      border: 1px solid rgba(214, 166, 77, 0.38);
-      clip-path: polygon(18px 0, 100% 0, 100% calc(100% - 18px), calc(100% - 18px) 100%, 0 100%, 0 18px);
-      background:
-        linear-gradient(90deg, rgba(214, 166, 77, 0.1), transparent 22%, rgba(214, 166, 77, 0.07) 74%, transparent),
-        linear-gradient(180deg, rgba(9, 4, 1, 0.96), rgba(18, 7, 2, 0.98));
-      box-shadow:
-        0 28px 80px rgba(0, 0, 0, 0.76),
-        inset 0 0 0 1px rgba(255, 226, 160, 0.1),
-        inset 0 -28px 56px rgba(0, 0, 0, 0.44);
-      transform-origin: top center;
-    }
-
-    .sao-system-menu:not([hidden]):not(.is-closing) {
-      animation: contentSlideUp 0.32s cubic-bezier(0.18, 0.92, 0.2, 1) both;
-    }
-
-    .sao-system-menu::before {
-      content: "";
-      position: absolute;
-      inset: -35% 0;
-      pointer-events: none;
-      background:
-        linear-gradient(180deg, transparent, rgba(255, 226, 160, 0.34), transparent),
-        repeating-linear-gradient(90deg, rgba(214, 166, 77, 0.08) 0 1px, transparent 1px 14px);
-      opacity: 0;
-      transform: translateY(-112%);
-    }
-
-    .sao-system-menu::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      clip-path: inherit;
-      background:
-        linear-gradient(90deg, transparent 0 12%, rgba(68, 255, 238, 0.14) 12% 18%, transparent 18% 100%),
-        linear-gradient(180deg, transparent 0 38%, rgba(255, 226, 160, 0.2) 38% 42%, transparent 42% 100%),
-        repeating-linear-gradient(0deg, transparent 0 10px, rgba(255, 226, 160, 0.08) 10px 11px, transparent 11px 18px);
-      opacity: 0;
-      transform: translateX(-18px);
-    }
-
-    .sao-system-menu .sao-btn {
-      display: inline-flex;
-      align-items: center;
-      width: 100%;
-      min-height: 52px;
-      justify-content: center;
-    }
-
-    .sao-system-menu .history-chip,
-    .sao-system-menu .account-chip,
-    .sao-system-menu .system-menu-item {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      min-width: 0;
-      text-align: center;
-    }
-
-    .sao-system-menu .account-meta {
-      display: grid;
-      justify-items: center;
-      gap: 2px;
-    }
-
-    .sao-system-menu:not([hidden]) .sao-btn {
-      animation: contentSlideUp 0.28s cubic-bezier(0.2, 0.86, 0.18, 1) both;
-      animation-delay: 0.06s;
-    }
-
-    .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(2) {
-      animation-delay: 0.12s;
-    }
-
-    .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(3) {
-      animation-delay: 0.18s;
-    }
-
-    .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(4) {
-      animation-delay: 0.24s;
-    }
-
-    .sao-system-menu:not([hidden]) .sao-btn:nth-of-type(5) {
-      animation-delay: 0.3s;
-    }
-
-    .sao-system-menu.is-closing {
-      pointer-events: none;
-      animation: saoSystemMenuDissolve 0.34s cubic-bezier(0.6, 0, 0.4, 1) both;
-    }
-
     .account-menu.is-closing,
     .history-drawer.is-closing {
       pointer-events: none;
@@ -5048,22 +4834,11 @@
     }
 
     @media (max-width: 620px) {
-      .workbench-nav {
-        gap: 10px;
-        padding: 14px 12px;
-      }
-
-      .workbench-nav-title {
-        gap: 4px;
-      }
-
-      .workbench-nav-title b,
       #operationalTitle {
         font-size: clamp(1.5rem, 1.14rem + 1.56vw, 1.9rem);
         line-height: 1.22;
       }
 
-      .workbench-nav-title span,
       .draft-field-help,
       .ritual-status,
       .analysis-empty,
@@ -5078,30 +4853,6 @@
         font-size: clamp(1.375rem, 1.2rem + 1.9vw, 1.75rem);
         line-height: 2;
         color: rgba(250, 244, 226, 1);
-      }
-
-      .sao-system-menu {
-        top: max(82px, calc(env(safe-area-inset-top) + 66px));
-        left: max(10px, env(safe-area-inset-left));
-        right: max(10px, env(safe-area-inset-right));
-        width: auto;
-        max-width: none;
-        max-height: calc(100dvh - 100px - env(safe-area-inset-bottom));
-        box-sizing: border-box;
-        padding: 14px;
-        transform: none;
-        transform-origin: top center;
-        overscroll-behavior: contain;
-        overflow-x: hidden;
-      }
-
-      .sao-system-menu.is-closing {
-        animation-name: saoSystemMenuDissolveMobile;
-      }
-
-      .sao-system-menu .sao-btn {
-        min-height: 50px;
-        width: 100%;
       }
 
       .account-menu,
@@ -5209,10 +4960,10 @@
 
     /* ═══ S20：帳號中樞 / 歷史紀錄 = 完整複製登出彈窗（override-window）配方 ═══
        這兩個面板已移到 body 直接子層（脫離 operational-deck 的 clip-path 裁切）。
-       此前在「舊 deck-based CSS（:not([hidden]) + playPanelOpen WAAPI）」上疊加 body 覆寫，
+       此前在「舊 deck-based CSS（:not([hidden]) + WAAPI 開關）」上疊加 body 覆寫，
        兩套打架 → 看不到 / 閃一下 / 不置中。改為：完全照搬登出彈窗那套「display:none →
        [aria-hidden=false] display:block + CSS animation」，用 !important 壓過所有舊規則，
-       JS 改用 SaoWindowController（純 aria-hidden 控制，不再用 playPanelOpen）。 */
+       JS 改用純 aria-hidden 控制。 */
     body > #accountMenu,
     body > #historyDrawer {
       position: fixed !important;
@@ -5349,6 +5100,29 @@
     </div>
   </div>
 
+  <header class="app-navbar" data-app-navbar aria-label="主導航">
+    <div class="app-navbar-inner">
+      <span class="app-navbar-brand">GREAT SAGE</span>
+      <nav class="app-navbar-actions" role="toolbar" aria-label="工作區操作">
+        <button class="history-chip sao-btn" type="button" id="historyToggle" aria-label="開啟鑑定紀錄" title="鑑定紀錄" aria-expanded="false" aria-controls="historyDrawer">
+          <span class="nav-glyph" aria-hidden="true">歷</span>
+          <span class="nav-label">鑑定紀錄</span>
+        </button>
+        <button class="account-chip sao-btn" type="button" id="accountToggle" aria-label="開啟帳號中樞" title="帳號中樞" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
+          <span class="account-avatar" id="accountAvatar" aria-hidden="true">
+            <img id="accountAvatarImg" alt="" />
+            <span id="accountAvatarText">編</span>
+          </span>
+          <span class="nav-label account-nav-label">帳號中樞</span>
+          <span class="account-meta">
+            <b class="session-badge" id="sessionBadge">待命</b>
+            <small id="sessionSyncState">草稿記憶待命中</small>
+          </span>
+        </button>
+      </nav>
+    </div>
+  </header>
+
   <main class="interface" aria-label="西方奇幻小說 AI 編修系統登入介面">
     <header class="top-hud" aria-hidden="true">
       <div class="hud-code">SYSTEM COORDINATES<br />N 45.291 // W 12.082<br />SECTOR XIII</div>
@@ -5403,30 +5177,6 @@
         </div>
       </div>
 
-      <nav class="codex-session workbench-nav" aria-label="工作區導航">
-        <div class="workbench-nav-title">
-          <b>工作區中樞</b>
-          <span>Archives / Account / Session</span>
-        </div>
-        <div class="workbench-nav-actions" role="toolbar" aria-label="編修核心操作">
-          <button class="history-chip sao-btn" type="button" id="historyToggle" aria-label="開啟鑑定紀錄" title="鑑定紀錄" aria-expanded="false" aria-controls="historyDrawer">
-            <span class="nav-glyph" aria-hidden="true">歷</span>
-            <span class="nav-label">鑑定紀錄</span>
-          </button>
-          <button class="account-chip sao-btn" type="button" id="accountToggle" aria-label="開啟帳號中樞" title="帳號中樞" aria-haspopup="menu" aria-expanded="false" aria-controls="accountMenu">
-            <span class="account-avatar" id="accountAvatar" aria-hidden="true">
-              <img id="accountAvatarImg" alt="" />
-              <span id="accountAvatarText">編</span>
-            </span>
-            <span class="nav-label account-nav-label" aria-hidden="true">帳號中樞</span>
-            <span class="account-meta">
-              <b class="session-badge" id="sessionBadge">待命</b>
-              <small id="sessionSyncState">草稿記憶待命中</small>
-            </span>
-          </button>
-        </div>
-      </nav>
-
       <div class="codex-panel sao-window" id="codexPanel">
         <h2 id="operationalTitle">大賢者手稿鑑定核心待命</h2>
         <p>並列演算核心已穩定運轉。貼上手稿後，系統將以冷光鑑定模式解析文風、角色與世界觀脈絡。</p>
@@ -5451,6 +5201,7 @@
             <span class="btn-label">啟動手稿鑑定引擎</span>
             <span class="btn-loading" aria-hidden="true" hidden>演算校準中…</span>
           </button>
+          <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton"><span class="sao-btn-symbol" aria-hidden="true">⌫</span><span class="sao-btn-label">清除手稿</span></button>
         </div>
         <div class="ritual-status" id="operationalStatus" role="status" aria-live="polite">鑑定書庫待命，準備解析手稿</div>
         <div class="analysis-dossier sao-window" id="analysisDossier" aria-live="polite">
@@ -5459,7 +5210,6 @@
             <div class="dossier-actions">
               <button type="button" class="dossier-copy sao-btn" id="copyAllButton"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製鑑定卷宗</span></button>
               <button type="button" class="ghost-btn dossier-action sao-btn" id="reanalyzeButton" hidden><span class="sao-btn-symbol" aria-hidden="true">↻</span><span class="sao-btn-label">重新鑑定</span></button>
-              <button type="button" class="ghost-btn dossier-action sao-btn is-danger" id="clearDraftButton"><span class="sao-btn-symbol" aria-hidden="true">⌫</span><span class="sao-btn-label">清除手稿</span></button>
             </div>
           </div>
           <div id="analysisResult" class="analysis-result">

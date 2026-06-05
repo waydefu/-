@@ -40,18 +40,19 @@ test.describe("Worldforge visual baseline", () => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await waitForLoginReady(page);
     await enterOperationalWorkbench(page);
-    await expect(page.locator("#systemMenuPanel #accountToggle")).toHaveCount(1);
+    await expect(page.locator(".app-navbar-actions #accountToggle")).toHaveCount(1);
     await openAccountMenu(page);
     await expect(page.locator("#accountMenu")).toBeVisible();
     await expect(page).toHaveScreenshot("account-menu-1366.png", { animations: "disabled", caret: "hide" });
   });
 
-  test("SYSTEM menu exposes account center", async ({ page }) => {
+  test("navbar exposes account center", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForLoginReady(page);
     await enterOperationalWorkbench(page);
-    await expect(page.locator("#systemMenuToggle")).toHaveAttribute("aria-label", "工作區選單");
-    await expect(page.locator("#systemMenuPanel #accountToggle")).toHaveCount(1);
+    await expect(page.locator(".app-navbar-actions .sao-btn")).toHaveCount(2);
+    await expect(page.locator(".app-navbar-actions #accountToggle")).toHaveAttribute("aria-label", "開啟帳號中樞");
+    await expect(page.locator(".app-navbar-actions #historyToggle")).toHaveAttribute("aria-label", "開啟鑑定紀錄");
   });
 
   test("visible buttons keep 44px target size", async ({ page }) => {

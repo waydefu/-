@@ -113,48 +113,31 @@ export async function hydrateStaticSaoButtons(page: Page) {
   });
 }
 
-export async function applyStaticSystemMenu(page: Page) {
+export async function applyStaticNavbar(page: Page) {
   await page.evaluate(() => {
-    const navActions = document.querySelector<HTMLElement>(".workbench-nav-actions");
-    if (!navActions) return;
+    const navActions = document.querySelector<HTMLElement>(".app-navbar-actions");
+    if (!navActions) throw new Error("app navbar actions not found");
     const historyToggle = document.getElementById("historyToggle");
     const accountToggle = document.getElementById("accountToggle");
     const reanalyzeButton = document.getElementById("reanalyzeButton");
     const clearDraftButton = document.getElementById("clearDraftButton");
-    const logoutButton = document.getElementById("logoutButton");
 
-    let toggle = document.getElementById("systemMenuToggle") as HTMLButtonElement | null;
-    if (!toggle) {
-      toggle = document.createElement("button");
-      toggle.className = "system-menu-toggle sao-btn";
-      toggle.id = "systemMenuToggle";
-      toggle.type = "button";
-      toggle.title = "工作區選單";
-      toggle.setAttribute("aria-label", "工作區選單");
-      toggle.setAttribute("aria-haspopup", "menu");
-      toggle.setAttribute("aria-expanded", "false");
-      toggle.setAttribute("aria-controls", "systemMenuPanel");
-      toggle.innerHTML = `<span class="sao-btn-symbol" aria-hidden="true">SYS</span><span class="sao-btn-label">工作區選單</span>`;
-    }
-    navActions.replaceChildren(toggle);
-
-    let panel = document.getElementById("systemMenuPanel") as HTMLDivElement | null;
-    if (!panel) {
-      panel = document.createElement("div");
-      panel.className = "sao-system-menu";
-      panel.id = "systemMenuPanel";
-      panel.setAttribute("role", "menu");
-      panel.setAttribute("aria-label", "SAO system menu");
-      panel.hidden = true;
-      navActions.after(panel);
-    }
-    [historyToggle, accountToggle, clearDraftButton, reanalyzeButton, logoutButton]
+    [historyToggle, accountToggle]
       .filter((button): button is HTMLElement => button instanceof HTMLElement)
       .forEach((button) => {
-        button.classList.add("system-menu-item");
-        button.setAttribute("role", "menuitem");
-        panel?.appendChild(button);
+        if (button.getAttribute("role") === "menuitem") button.removeAttribute("role");
+        if (button.parentElement !== navActions) navActions.appendChild(button);
       });
+
+    const operationalActions = document.querySelector<HTMLElement>(".operational-actions");
+    if (operationalActions && clearDraftButton instanceof HTMLElement && clearDraftButton.parentElement !== operationalActions) {
+      operationalActions.appendChild(clearDraftButton);
+    }
+
+    const dossierActions = document.querySelector<HTMLElement>(".dossier-actions");
+    if (dossierActions && reanalyzeButton instanceof HTMLElement && reanalyzeButton.parentElement !== dossierActions) {
+      dossierActions.appendChild(reanalyzeButton);
+    }
   });
   await hydrateStaticSaoButtons(page);
 }
@@ -236,7 +219,7 @@ export async function enterOperationalWorkbench(page: Page) {
       `;
     }
   });
-  await applyStaticSystemMenu(page);
+  await applyStaticNavbar(page);
   await hydrateStaticSaoButtons(page);
 }
 
@@ -266,13 +249,11 @@ export async function openHistoryDrawer(page: Page) {
 
 export async function openAccountMenu(page: Page) {
   await page.evaluate(() => {
-    const panel = document.getElementById("systemMenuPanel");
+    const navActions = document.querySelector(".app-navbar-actions");
     const toggle = document.getElementById("accountToggle");
-    if (!(panel instanceof HTMLElement) || !(toggle instanceof HTMLElement) || !panel.contains(toggle)) {
-      throw new Error("account center is not reachable from the system menu");
+    if (!(navActions instanceof HTMLElement) || !(toggle instanceof HTMLElement) || !navActions.contains(toggle)) {
+      throw new Error("account center is not reachable from the navbar");
     }
-    document.getElementById("systemMenuToggle")?.setAttribute("aria-expanded", "false");
-    panel.hidden = true;
     toggle?.setAttribute("aria-expanded", "true");
     const menu = document.getElementById("accountMenu");
     menu?.removeAttribute("hidden");
