@@ -14,19 +14,14 @@ const fetchText = async (url, init) => {
 };
 
 const main = async () => {
-  const home = await fetchText(HOSTING_URL);
+  const smokeId = Date.now();
+  const home = await fetchText(`${HOSTING_URL}/?smoke=${smokeId}`, {
+    headers: { "cache-control": "no-cache", "pragma": "no-cache" },
+  });
   assert.equal(home.res.status, 200, "Hosting home should return 200");
   assert.match(home.text, /GREAT SAGE MANUSCRIPT SYSTEM/, "Home should load the Raphael inline shell");
-  assert.match(home.text, /class CoreEngine/, "Home should include CoreEngine");
-  assert.match(home.text, /class RuneSystem/, "Home should include RuneSystem");
-  assert.match(home.text, /class ParticleSystem/, "Home should include ParticleSystem");
-  assert.match(home.text, /class PostProcessingPipeline/, "Home should include PostProcessingPipeline");
-  assert.match(home.text, /class LoginController/, "Home should include LoginController");
-  assert.match(home.text, /class OperationalModeController/, "Home should include OperationalModeController");
+  assert.match(home.text, /\/js\/main\.js/, "Home should load the operational runtime bundle");
   assert.match(home.text, /arcane-lens/, "Home should include the Arcane Sage lens layer");
-  assert.match(home.text, /createScanBands/, "Home should include Arcane Sage scan bands");
-  assert.match(home.text, /createIngestionStreams/, "Home should include manuscript ingestion streams");
-  assert.match(home.text, /dataset\.runeLayers/, "Home should expose login FX metrics for browser validation");
   assert.match(home.text, /id="webgl-container"/, "Home should include the persistent WebGL container");
   assert.match(home.text, /<dialog class="ritual-stack"[^>]+id="ritualStack"/, "Home should expose the login modal as a native dialog");
   assert.match(home.text, /id="openRitualBtn"[^>]*>[\s\S]*?使用 Google 登入[\s\S]*?<\/button>/, "Home should expose the single Google login CTA");
@@ -41,6 +36,23 @@ const main = async () => {
   assert.match(home.text, /西方奇幻小說 AI 重寫與審稿系統/, "Home should include S10.7 Worldforge editorial copy");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
   ok("hosting Worldforge inline shell, Google-only modal, and App Check SDK");
+
+  const mainBundle = await fetchText(`${HOSTING_URL}/js/main.js?smoke=${smokeId}`, {
+    headers: { "cache-control": "no-cache", "pragma": "no-cache" },
+  });
+  assert.equal(mainBundle.res.status, 200, "js/main.js should return 200");
+  assert.match(mainBundle.text, /class CoreEngine/, "main.js should include CoreEngine");
+  assert.match(mainBundle.text, /class RuneSystem/, "main.js should include RuneSystem");
+  assert.match(mainBundle.text, /class ParticleSystem/, "main.js should include ParticleSystem");
+  assert.match(mainBundle.text, /class PostProcessingPipeline/, "main.js should include PostProcessingPipeline");
+  assert.match(mainBundle.text, /class LoginController/, "main.js should include LoginController");
+  assert.match(mainBundle.text, /class OperationalModeController/, "main.js should include OperationalModeController");
+  assert.match(mainBundle.text, /createScanBands/, "main.js should include Arcane Sage scan bands");
+  assert.match(mainBundle.text, /createIngestionStreams/, "main.js should include manuscript ingestion streams");
+  assert.match(mainBundle.text, /dataset\.runeLayers/, "main.js should expose login FX metrics for browser validation");
+  assert.match(mainBundle.text, /ensureNavbar/, "main.js should include the S21 navbar wiring");
+  assert.doesNotMatch(mainBundle.text, /ensureSystemMenu|toggleSystemMenu/, "main.js should not include the retired SYS menu wiring");
+  ok("main runtime bundle exposes WebGL systems and S21 navbar wiring");
 
   const config = await fetchText(`${HOSTING_URL}/js/core/config.js`);
   assert.equal(config.res.status, 200, "core/config.js should return 200");

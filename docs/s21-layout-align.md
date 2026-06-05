@@ -35,5 +35,9 @@
 
 - 實作面：S21 A/B/C/D 已收斂；C 按既定取捨跳過，保留 S20 輸出大字。
 - 本機驗收：S21-A 已跑 `sync:login-mother`、`check`、`test`、`test:a11y`、`test:visual`，皆通過；visual snapshots 已在人工確認後更新。
-- 待使用者同意後執行：Firebase Hosting deploy。
-- 部署後驗收：用線上站 computed 數值與 Playwright 驗 navbar/760/footer；preview 與手機快取重，手機動效/RWD 手感仍待無痕實機確認。
+- 2026-06-06 已部署 Firebase Hosting：`https://project-7276420283723642146.web.app`。
+- 部署後驗收：
+  - `npm run smoke:hosting` 通過；smoke 已改為檢查首頁載入 `/js/main.js`，runtime 類別與 S21 navbar wiring 改驗線上 `main.js`。
+  - 線上 Playwright computed：桌面 navbar inner 760×56、deck 760、footer 在內容流；手機歷史/帳號 44×44、label visually clipped、水平溢出 0；modal z-index 120 > navbar 110；retired SYS DOM count 0。
+  - 線上 DOM click 採樣：歷史與帳號按鈕點擊後皆 `aria-expanded=true`，對應彈窗 `hidden=false` / `aria-hidden=false`。
+- 待無痕實機確認：手機動效/RWD 手感與裝置快取清除後狀態。
