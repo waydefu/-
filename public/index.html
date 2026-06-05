@@ -1891,6 +1891,33 @@
       transition: filter 0.4s ease, color 0.4s ease;
     }
 
+    /* S21：底部 footer（SAO 金黑、低調小字、隨內容捲動） */
+    .app-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 6px 16px;
+      margin-top: 18px;
+      padding: 14px 12px calc(14px + env(safe-area-inset-bottom, 0px));
+      border-top: 1px solid rgba(214, 166, 77, 0.16);
+      color: rgba(241, 222, 194, 0.5);
+      font: 400 var(--fs-caption, 0.8125rem)/1.5 var(--font-mono, monospace);
+      letter-spacing: 0.04em;
+      text-align: center;
+    }
+    .app-footer-mail {
+      color: rgba(255, 226, 160, 0.66);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(214, 166, 77, 0.24);
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+    .app-footer-mail:hover,
+    .app-footer-mail:focus-visible {
+      color: rgba(255, 240, 200, 0.95);
+      border-color: rgba(255, 226, 160, 0.6);
+    }
+
     .ritual-status::before,
     #operationalStatus::before,
     #sessionSyncState::before {
@@ -1921,7 +1948,8 @@
       align-self: start;
       justify-self: center;
       pointer-events: auto;
-      width: min(1480px, calc(100vw - 44px));
+      /* S21：對齊舊版主內容寬度 760px 單欄（原 1480px 寬版）。 */
+      width: min(760px, calc(100vw - 32px));
       max-height: none;
       margin: clamp(6px, 1.5dvh, 18px) auto clamp(54px, 7dvh, 88px);
       padding: clamp(14px, 1.6vw, 20px);
@@ -5448,6 +5476,12 @@
           <p>啟動 AI Rewrite、世界觀設定檢查與長篇手稿結構鑑定。</p>
         </div>
       </div>
+
+      <!-- S21：底部 footer（對齊舊版佈局，隨工作區內容捲動） -->
+      <footer class="app-footer" aria-label="頁尾資訊">
+        <span class="app-footer-copy">© 大賢者手稿鑑定核心 · 西方奇幻 AI 編修</span>
+        <a class="app-footer-mail" href="mailto:wayde.fu@gmail.com">wayde.fu@gmail.com</a>
+      </footer>
     </section>
 
   </main>
