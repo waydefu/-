@@ -4897,8 +4897,14 @@
 
     .sao-system-menu {
       position: fixed;
+      /* S21：桌面置中——原本 right:clamp(16px,5vw,72px) 把面板釘在容器塊（760px deck，
+         因 deck 有 clip-path 成為 fixed 的容器塊）右上角，桌面看起來「飄右邊沒置中」。
+         改用 left/right:0 + margin-inline:auto 水平置中（不碰 transform，避開 contentSlideUp
+         動畫衝突）；無論容器塊是 deck 或 viewport 都落在螢幕水平中央。 */
       top: clamp(172px, 24dvh, 210px);
-      right: clamp(16px, 5vw, 72px);
+      left: 0;
+      right: 0;
+      margin-inline: auto;
       z-index: var(--z-menu);
       display: grid;
       width: min(360px, calc(100vw - 32px));
@@ -4916,7 +4922,7 @@
         0 28px 80px rgba(0, 0, 0, 0.76),
         inset 0 0 0 1px rgba(255, 226, 160, 0.1),
         inset 0 -28px 56px rgba(0, 0, 0, 0.44);
-      transform-origin: top right;
+      transform-origin: top center;
     }
 
     .sao-system-menu:not([hidden]):not(.is-closing) {
