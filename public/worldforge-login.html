@@ -5171,10 +5171,12 @@
       margin: 0 !important;
       grid-column: auto !important;
       z-index: var(--z-modal-critical) !important;
-      transform: translate(-50%, -50%) scaleX(0) scaleY(0.02) !important;
-      transform-origin: center center !important;
+      /* transform 不可加 !important：CSS animation 無法覆蓋 !important，會把面板鎖在
+         scaleX(0) 起始幀（先前「看不到 / 只有一條線」的真因）。登出彈窗 base 也無 !important。 */
+      transform: translate(-50%, -50%) scaleX(0) scaleY(0.02);
+      transform-origin: center center;
       display: none !important;
-      opacity: 0 !important;
+      opacity: 0;
       overflow: auto !important;
       overscroll-behavior: contain;
       isolation: isolate;
@@ -5195,14 +5197,12 @@
     body > #accountMenu[aria-hidden="false"],
     body > #historyDrawer[aria-hidden="false"] {
       display: block !important;
-      opacity: 1 !important;
       animation: overrideMaterialize 0.6s var(--sao-easing-back) both !important;
     }
     /* 關閉：照搬 overrideDissolve（data-closing 期間仍需 display:block 才看得到退場） */
     body > #accountMenu[data-closing="true"],
     body > #historyDrawer[data-closing="true"] {
       display: block !important;
-      opacity: 1 !important;
       pointer-events: none !important;
       animation: overrideDissolve 0.34s var(--sao-easing-out) both !important;
     }

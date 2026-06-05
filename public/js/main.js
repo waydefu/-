@@ -3570,7 +3570,10 @@
           panel.hidden = true;
           this.navActions.after(panel);
         }
-        [this.historyToggle, this.accountToggle, this.clearDraftButton, this.reanalyzeButton, this.logoutButton]
+        // S20/S21：logoutButton 不再搬進 SYS 選單——它必須留在 account-menu 內，否則
+        // account-menu 變空殼，點帳號中樞只剩一條細線。history/account toggle 仍作為
+        // SYS 選單的入口（S21 會移到 navbar）。
+        [this.historyToggle, this.accountToggle, this.clearDraftButton, this.reanalyzeButton]
           .filter((button) => button instanceof HTMLElement)
           .forEach((button) => {
             button.classList.add("system-menu-item");
@@ -3620,14 +3623,15 @@
       bindControls() {
         this.systemMenuToggle?.addEventListener("click", () => this.toggleSystemMenu());
         this.historyToggle?.addEventListener("click", () => {
-          this.toggleHistory();
+          // 先瞬間關 SYS（toggle 在 SYS 內，避免邊消失邊開新窗的閃），再開歷史
+          this.toggleSystemMenu(false, true);
           this.toggleAccount(false);
-          this.toggleSystemMenu(false);
+          this.toggleHistory();
         });
         this.accountToggle?.addEventListener("click", () => {
-          this.toggleAccount();
+          this.toggleSystemMenu(false, true);
           this.toggleHistory(false);
-          this.toggleSystemMenu(false);
+          this.toggleAccount();
         });
         this.historyClose?.addEventListener("click", () => this.toggleHistory(false));
         this.historyClear?.addEventListener("click", () => this.clearHistory());
@@ -3667,7 +3671,7 @@
         }
       }
 
-      toggleSystemMenu(force) {
+      toggleSystemMenu(force, instant = false) {
         if (!this.systemMenuPanel) return;
         const shouldOpen = typeof force === "boolean" ? force : this.systemMenuPanel.hidden;
         this.systemMenuToggle?.setAttribute("aria-expanded", String(shouldOpen));
@@ -3675,6 +3679,13 @@
           this.cancelPanelClose(this.systemMenuPanel);
           this.systemMenuPanel.hidden = false;
           this.playPanelOpen(this.systemMenuPanel, "system");
+        } else if (instant) {
+          // 從 SYS 選單內點 account/history toggle 時，SYS 必須「瞬間」隱藏（不跑
+          // 340ms dissolve），否則「按鈕邊消失邊開新彈窗」會視覺閃爍。
+          this.cancelPanelClose(this.systemMenuPanel);
+          this.systemMenuPanel.getAnimations().forEach((a) => { try { a.cancel(); } catch (_) {} });
+          this.systemMenuPanel.hidden = true;
+          this.systemMenuPanel.classList.remove("is-closing");
         } else {
           this.closePanel(this.systemMenuPanel, 340);
         }
