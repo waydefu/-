@@ -5,7 +5,7 @@ let timer = 0;
 export function playLinkStart() {
   const el = document.getElementById("linkStart");
   if (!el) return;
-  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  // reduced-motion 仍照播（使用者明確要看到轉場；CSS 已對 .link-start 開例外）。
   el.classList.remove("is-playing");
   void el.offsetWidth;          // reflow → 確保重新播放
   el.classList.add("is-playing");

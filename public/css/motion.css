@@ -104,4 +104,12 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
     scroll-behavior: auto !important;
   }
   .bg-aura { animation: none !important; opacity: 0.4 !important; }
+
+  /* 使用者要求「不擋、要看到」：入場編舞 + LINK START 轉場即使在 reduced-motion 也照播
+     （class 選擇器 + !important 蓋過上面的 * 熔斷；其餘動畫仍維持熔斷尊重少動）。 */
+  body.is-authed .workspace > .col-stack { animation-duration: var(--t-slow) !important; }
+  .link-start.is-playing { animation-duration: 2.6s !important; }
+  .link-start.is-playing .ls-tunnel { animation-duration: 2.6s !important; }
+  .link-start.is-playing .ls-tunnel i { animation-duration: 1.5s !important; animation-iteration-count: infinite !important; }
+  .link-start.is-playing .ls-title b { animation-duration: 0.55s !important; }
 }
