@@ -31,11 +31,11 @@
   .panel, .result-section { transition: transform var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease-out); }
 }
 
-/* ═══ Stage 3-A：進工作區時三欄逐欄上浮入場（reuse riseIn；reduced-motion 自動熔斷） ═══ */
-body.is-authed .workspace > * { animation: riseIn var(--t-slow) var(--ease-out) both; }
-body.is-authed .workspace > :nth-child(1) { animation-delay: 0.05s; }
-body.is-authed .workspace > :nth-child(2) { animation-delay: 0.15s; }
-body.is-authed .workspace > :nth-child(3) { animation-delay: 0.25s; }
+/* ═══ Stage 3-A：進工作區時逐欄上浮入場（reuse riseIn；reduced-motion 自動熔斷） ═══
+   ⚠️ 排除 .history-panel：它在手機是 fixed bottom sheet，用 transform:translateY 收合/展開；
+   若被 riseIn 的 both-fill 鎖住 transform，會「顯示但無法觸控」（sheet 卡在開啟位置卻是關閉態）。 */
+body.is-authed .workspace > .col-stack { animation: riseIn var(--t-slow) var(--ease-out) both; }
+body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
 
 /* ═══ Stage 3-A：LINK START 潛行隧道轉場（登入→工作區；3D 透視，純 transform/opacity → 零閃） ═══ */
 .link-start {
