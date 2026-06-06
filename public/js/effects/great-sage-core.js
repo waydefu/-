@@ -22,11 +22,17 @@ export class GreatSageCore {
     this._onResize = this.resize.bind(this);
     this._onLost = (e) => { e.preventDefault(); this.stop(); };
     this._onRestored = () => { if (!this.disposed) this.start(); };
+    // Stage 3-D：指標景深視差（整個 group 隨指標微傾，桌面滑鼠 + 手機觸控拖移都吃）
+    this.px = 0; this.py = 0; this.pxT = 0; this.pyT = 0;
+    this._onPointer = (ev) => {
+      this.pxT = ((ev.clientX / window.innerWidth) - 0.5) * 0.5;
+      this.pyT = ((ev.clientY / window.innerHeight) - 0.5) * 0.5;
+    };
 
-    // 使用者要求：手機不降級 → 抗鋸齒、pixelRatio、粒子數 一律滿規（不分手機/桌面）。
+    // 一律最大效能：抗鋸齒、pixelRatio（上限 2.5）、滿規粒子（手機桌面同規）。
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: false });
     this.renderer.setClearColor(0x000000, 0); // 透明：CSS 電影背景透出
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2.5));
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
@@ -41,6 +47,7 @@ export class GreatSageCore {
     canvas.addEventListener("webglcontextlost", this._onLost, false);
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
     window.addEventListener("resize", this._onResize, { passive: true });
+    window.addEventListener("pointermove", this._onPointer, { passive: true });
   }
 
   _build() {
@@ -71,8 +78,24 @@ export class GreatSageCore {
       this._disposables.push(rGeo, rMat);
     }
 
-    // 低密度粒子（金色資料流，additive，緩慢漂移）
-    const count = 620;   // 手機不降級，滿規粒子
+    // Stage 3-D：符文刻環（64 道放射短刻線，緩轉，增加儀式密度）
+    const tickN = 64, rIn = 3.9, rOut = 4.18;
+    const tickPos = new Float32Array(tickN * 2 * 3);
+    for (let i = 0; i < tickN; i++) {
+      const a = (i / tickN) * Math.PI * 2, cx = Math.cos(a), cz = Math.sin(a);
+      tickPos[i * 6] = cx * rIn; tickPos[i * 6 + 2] = cz * rIn;
+      tickPos[i * 6 + 3] = cx * rOut; tickPos[i * 6 + 5] = cz * rOut;
+    }
+    const tickGeo = new THREE.BufferGeometry();
+    tickGeo.setAttribute("position", new THREE.BufferAttribute(tickPos, 3));
+    const tickMat = new THREE.LineBasicMaterial({ color: GOLD_HOT, transparent: true, opacity: 0.46 });
+    this.glyphRing = new THREE.LineSegments(tickGeo, tickMat);
+    this.glyphRing.rotation.x = 1.35;
+    this.group.add(this.glyphRing);
+    this._disposables.push(tickGeo, tickMat);
+
+    // 粒子（金色資料流，additive，緩慢漂移）— 滿規
+    const count = 1000;
     const pos = new Float32Array(count * 3);
     const spd = new Float32Array(count);
     for (let i = 0; i < count; i++) {
@@ -118,6 +141,12 @@ export class GreatSageCore {
       this.shell.rotation.y -= (0.0011 + e * 0.003) * m;
       this.rings[0].rotation.z += (0.0014 + e * 0.005) * m;
       this.rings[1].rotation.z -= (0.0010 + e * 0.004) * m;
+      this.glyphRing.rotation.z += (0.0009 + e * 0.004) * m;
+      // Stage 3-D：指標景深視差（整個 group 隨指標 lerp 微傾）
+      this.px += (this.pxT - this.px) * 0.045;
+      this.py += (this.pyT - this.py) * 0.045;
+      this.group.rotation.y = this.px;
+      this.group.rotation.x = this.py;
       const p = this.particles.geometry.attributes.position;
       for (let i = 0; i < this.pSpeed.length; i++) {
         let y = p.array[i * 3 + 1] + this.pSpeed[i] * (0.004 + e * 0.012) * m;
@@ -146,6 +175,7 @@ export class GreatSageCore {
     this.canvas.removeEventListener("webglcontextlost", this._onLost);
     this.canvas.removeEventListener("webglcontextrestored", this._onRestored);
     window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("pointermove", this._onPointer);
     (this._disposables || []).forEach((d) => d.dispose && d.dispose());
     this.renderer.dispose();
   }
