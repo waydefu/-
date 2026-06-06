@@ -1759,11 +1759,21 @@
 
     .override-window[aria-hidden="false"] {
       display: block;
+      /* S22：可見靜止態用 CSS 屬性寫死，不只靠動畫 both-fill。原本 base 是 opacity:0/scaleX(0)，
+         可見只靠動畫填充；重開時動畫不一定重播（open() 的 getAnimations().cancel + aria 切換邊界）
+         → 視窗有開但卡在 opacity:0 看不見＝使用者體感「關閉後無法再次開啟」。寫死即根治。 */
+      opacity: 1;
+      transform: translate(-50%, -50%) scaleX(1) scaleY(1);
       animation: overrideMaterialize 5.2s var(--sao-easing-back) both;
     }
 
     .sao-confirm-window[aria-hidden="false"] {
       animation: overrideMaterialize 0.72s var(--sao-easing-back) both;
+    }
+
+    /* S22：確認視窗收合加速（原繼承 override 的 2.2s 太慢，關閉像卡住）。 */
+    .sao-confirm-window[data-closing="true"] {
+      animation: overrideDissolve 0.42s var(--sao-easing-out) both !important;
     }
 
     .override-window[data-closing="true"] {
@@ -2045,12 +2055,12 @@
       min-height: calc(56px + env(safe-area-inset-top));
       padding-top: env(safe-area-inset-top);
       border-bottom: 1px solid rgba(214, 166, 77, 0.22);
+      /* S22：移除 backdrop-filter:blur——彈窗（歷史/帳號）開啟動畫經過 navbar 的模糊區時
+         Chrome 會重新取樣整塊 → navbar「一塊跟著頻閃」。改全實底，模糊只是裝飾、不值這代價。 */
       background:
-        linear-gradient(180deg, rgba(12, 6, 1, 0.96), rgba(9, 4, 1, 0.9)),
+        linear-gradient(180deg, rgba(13, 7, 2, 1), rgba(8, 4, 1, 1)),
         radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.12), transparent 58%);
       box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(18px);
-      -webkit-backdrop-filter: blur(18px);
       pointer-events: auto;
     }
 
@@ -5087,6 +5097,34 @@
       background: linear-gradient(180deg, rgba(58, 35, 12, 0.97), rgba(20, 10, 3, 1)) !important;
       border-color: rgba(255, 226, 160, 0.66) !important;
       box-shadow: 0 0 12px rgba(214, 166, 77, 0.26) !important;
+    }
+
+    /* 清除手稿鈕：同改乾淨實心（紅味）。根治「鑑定後按鈕消失、按下才出現」＝偽元素
+       ::before drop-shadow + contain 在結果渲染/捲動時 compositing 重繪把按鈕畫沒了。 */
+    #clearDraftButton.sao-btn {
+      background: linear-gradient(180deg, rgba(74, 26, 12, 0.94), rgba(28, 9, 4, 0.98)) !important;
+      border: 1px solid rgba(214, 120, 77, 0.5) !important;
+      clip-path: var(--sao-cyber-clip);
+      color: rgba(255, 222, 198, 0.95) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 190, 150, 0.16) !important;
+    }
+    #clearDraftButton.sao-btn::before,
+    #clearDraftButton.sao-btn::after,
+    #clearDraftButton.sao-btn .sao-btn-scan,
+    #clearDraftButton.sao-btn .sao-btn-tag {
+      display: none !important;
+    }
+    #clearDraftButton.sao-btn .sao-btn-symbol,
+    #clearDraftButton.sao-btn .sao-btn-label {
+      position: relative;
+      z-index: 1;
+    }
+    #clearDraftButton.sao-btn:hover,
+    #clearDraftButton.sao-btn:focus-visible,
+    #clearDraftButton.sao-btn:active {
+      background: linear-gradient(180deg, rgba(96, 36, 16, 0.97), rgba(34, 11, 5, 1)) !important;
+      border-color: rgba(255, 150, 100, 0.7) !important;
+      box-shadow: 0 0 12px rgba(185, 75, 25, 0.3) !important;
     }
 
   </style>

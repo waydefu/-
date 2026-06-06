@@ -594,6 +594,12 @@
         target.style.removeProperty("scale");
         target.style.removeProperty("filter");
         target.setAttribute("aria-hidden", "false");
+        // S22：強制重啟進場動畫。重開時若前次關閉的 finish 尚未跑完，aria-hidden 仍是 "false"，
+        // 切回 false 不會觸發 CSS 動畫重播 → 視窗卡在非可見填充態（「關閉後無法再次開啟」）。
+        // 清 animation → reflow → 移除，CSS animation 即重新套用並重播。
+        target.style.animation = "none";
+        void target.offsetWidth;
+        target.style.removeProperty("animation");
         showDialogSurface(target);
         const focusFirst = () => {
           const first = target.querySelector("button, [href], input, textarea, [tabindex]:not([tabindex='-1'])");
@@ -637,7 +643,11 @@
           hideDialogSurface({ restoreLogin: true });
         };
         const fallbackMs = Math.max(0, Math.round(duration * 1000));
-        const cssMs = target.classList.contains("override-window") ? 2200 : 1400;
+        // S22：確認視窗收合 0.42s（見 .sao-confirm-window[data-closing] CSS），finish 提早到 ~520ms
+        // 讓它真正關閉乾淨（hidden+aria-hidden 復位），重開才順。一般 override 維持 2.2s 戲劇收合。
+        const cssMs = target.classList.contains("sao-confirm-window")
+          ? 520
+          : target.classList.contains("override-window") ? 2200 : 1400;
         window.setTimeout(finish, prefersReducedMotion ? 0 : Math.max(cssMs, fallbackMs));
         return null;
       }
