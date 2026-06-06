@@ -31,6 +31,61 @@
   .panel, .result-section { transition: transform var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease-out); }
 }
 
+/* ═══ Stage 3-A：進工作區時三欄逐欄上浮入場（reuse riseIn；reduced-motion 自動熔斷） ═══ */
+body.is-authed .workspace > * { animation: riseIn var(--t-slow) var(--ease-out) both; }
+body.is-authed .workspace > :nth-child(1) { animation-delay: 0.05s; }
+body.is-authed .workspace > :nth-child(2) { animation-delay: 0.15s; }
+body.is-authed .workspace > :nth-child(3) { animation-delay: 0.25s; }
+
+/* ═══ Stage 3-A：LINK START 潛行隧道轉場（登入→工作區；3D 透視，純 transform/opacity → 零閃） ═══ */
+.link-start {
+  position: fixed; inset: 0; z-index: 90; display: grid; place-items: center;
+  pointer-events: none; opacity: 0; visibility: hidden; overflow: hidden;
+}
+.link-start::before {
+  content: ""; position: absolute; inset: 0;
+  background: radial-gradient(circle at 50% 50%, rgba(8, 5, 1, 0.72), rgba(2, 1, 0, 0.96) 70%);
+}
+.link-start.is-playing { visibility: visible; animation: lsFade 2.6s var(--ease-out) forwards; }
+@keyframes lsFade { 0% { opacity: 0; } 8% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.ls-tunnel {
+  position: relative; width: min(92vmin, 760px); aspect-ratio: 1;
+  display: grid; place-items: center; perspective: 460px; perspective-origin: 50% 50%;
+}
+.ls-tunnel i {
+  position: absolute; grid-area: 1 / 1; width: min(82vmin, 660px); aspect-ratio: 1; border-radius: 50%;
+  border: 2px solid rgba(255, 228, 165, 0.92); box-shadow: 0 0 22px rgba(214, 166, 77, 0.5);
+  opacity: 0; transform: translateZ(-2000px); will-change: transform, opacity;
+}
+.link-start.is-playing .ls-tunnel { animation: spin 2.6s linear; }   /* 順時鐘整條旋轉 */
+.link-start.is-playing .ls-tunnel i { animation: lsDive 1.5s linear infinite; }
+.link-start.is-playing .ls-tunnel i:nth-child(1)  { animation-delay: 0s; }
+.link-start.is-playing .ls-tunnel i:nth-child(2)  { animation-delay: -0.15s; }
+.link-start.is-playing .ls-tunnel i:nth-child(3)  { animation-delay: -0.30s; }
+.link-start.is-playing .ls-tunnel i:nth-child(4)  { animation-delay: -0.45s; }
+.link-start.is-playing .ls-tunnel i:nth-child(5)  { animation-delay: -0.60s; }
+.link-start.is-playing .ls-tunnel i:nth-child(6)  { animation-delay: -0.75s; }
+.link-start.is-playing .ls-tunnel i:nth-child(7)  { animation-delay: -0.90s; }
+.link-start.is-playing .ls-tunnel i:nth-child(8)  { animation-delay: -1.05s; }
+.link-start.is-playing .ls-tunnel i:nth-child(9)  { animation-delay: -1.20s; }
+.link-start.is-playing .ls-tunnel i:nth-child(10) { animation-delay: -1.35s; }
+@keyframes lsDive {
+  0%   { opacity: 0; transform: translateZ(-2000px); }
+  14%  { opacity: 1; }
+  86%  { opacity: 1; }
+  100% { opacity: 0; transform: translateZ(440px); }
+}
+.ls-title {
+  position: absolute; bottom: 15%; display: flex; gap: 0.5em;
+  font-family: var(--font-mono); font-weight: 900; letter-spacing: 0.42em;
+  font-size: clamp(1.3rem, 5vw, 2.6rem); color: rgba(255, 240, 200, 0.98);
+  text-shadow: 0 0 22px rgba(214, 166, 77, 0.6);
+}
+.ls-title b { opacity: 0; }
+.link-start.is-playing .ls-title b { animation: riseIn 0.55s var(--ease-out) both; }
+.link-start.is-playing .ls-title b:nth-child(1) { animation-delay: 0.85s; }
+.link-start.is-playing .ls-title b:nth-child(2) { animation-delay: 1s; }
+
 /* ═══ prefers-reduced-motion：全域熔斷（所有動畫近瞬時、結束於可見） ═══ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

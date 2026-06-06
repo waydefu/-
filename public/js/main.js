@@ -12,6 +12,7 @@ import {
 } from "./app/ui.js";
 import { initEffects } from "./effects/effects-manager.js";
 import { initButtonFx } from "./effects/interactions.js";
+import { playLinkStart } from "./effects/link-start.js";
 
 const $ = (id) => document.getElementById(id);
 const uid = () => AppState.get("currentUser")?.uid || "guest";
@@ -382,7 +383,7 @@ function bind() {
     const btn = e.currentTarget;
     btn.classList.add("is-loading"); btn.setAttribute("disabled", "true");
     setLine("authStatus", "Google 授權通道開啟中…");
-    try { await signInWithGoogle(); }
+    try { await signInWithGoogle(); playLinkStart(); }
     catch (err) {
       const closed = err?.code === "auth/popup-closed-by-user";
       setLine("authStatus", closed ? "已取消登入，請再試一次" : "Google 授權失敗，請稍後再試", { error: !closed });
