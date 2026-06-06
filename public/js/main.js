@@ -11,6 +11,7 @@ import {
   openHistory, closeHistory, bindScrim
 } from "./app/ui.js";
 import { initEffects } from "./effects/effects-manager.js";
+import { initButtonFx } from "./effects/interactions.js";
 
 const $ = (id) => document.getElementById(id);
 const uid = () => AppState.get("currentUser")?.uid || "guest";
@@ -439,6 +440,8 @@ function boot() {
   initAuth();
   // Stage 2：WebGL 奇觀層延後啟動（不阻塞首屏；失敗/不支援/低效能自動回 CSS 背景）。
   initEffects();
+  // Stage 3-B：按鈕 2026 微互動（漣漪 + 磁吸；互動才觸發、零閃零 vanish）。
+  initButtonFx();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
 else boot();
