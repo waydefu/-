@@ -215,6 +215,8 @@ button { font: inherit; color: inherit; }
 .result-section-eyebrow { font-family: var(--font-mono); font-size: var(--fs-nano); letter-spacing: 0.2em; color: var(--c-cyan); display: block; }
 .result-section-title { font-family: var(--font-display); font-size: var(--fs-h3); color: var(--c-gold-bright); }
 .result-section-copy { margin-left: auto; }
+/* Stage 3-C：複製成功綠態（暖綠金，1.4s 由 JS 還原） */
+.result-section-copy.is-copied { --btn-bd: var(--c-ok); --btn-fg: var(--c-ok); box-shadow: 0 0 14px rgba(203, 227, 154, 0.28); }
 .result-section-body { padding: var(--s-4) var(--s-5); font-family: var(--font-serif); font-size: var(--fs-read); line-height: 1.95; color: #f4eede; white-space: normal; word-break: break-word; }
 .result-section-body p { margin: 0 0 0.9em; white-space: pre-wrap; }
 .result-section-body p:last-child { margin-bottom: 0; }

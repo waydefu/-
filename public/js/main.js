@@ -358,11 +358,24 @@ async function copyText(text) {
     const ok = document.execCommand("copy"); ta.remove(); return ok;
   } catch { return false; }
 }
-async function copySection(kind) {
+async function copySection(kind, btn) {
   const sec = $("analysisResult")?.querySelector(`[data-section="${CSS.escape(kind)}"] .result-section-body`);
   const text = (sec?.innerText || sec?.textContent || "").trim();
   if (!text) { toast("此段尚無可複製內容"); return; }
-  toast((await copyText(text)) ? "已複製到剪貼簿" : "剪貼簿寫入失敗，請手動選取");
+  const ok = await copyText(text);
+  toast(ok ? "已複製到剪貼簿" : "剪貼簿寫入失敗，請手動選取");
+  // Stage 3-C：複製鈕回饋強化（成功→「已複製 ✓」綠態，1.4s 後還原）
+  if (ok && btn) {
+    const label = btn.querySelector(".btn-label");
+    const prev = label ? label.textContent : "";
+    btn.classList.add("is-copied");
+    if (label) label.textContent = "已複製 ✓";
+    window.clearTimeout(btn._copiedTimer);
+    btn._copiedTimer = window.setTimeout(() => {
+      btn.classList.remove("is-copied");
+      if (label) label.textContent = prev || "複製本段";
+    }, 1400);
+  }
 }
 
 /* ════════ 工具 ════════ */
@@ -406,7 +419,7 @@ function bind() {
   // 結果分段複製（事件委派）
   $("analysisResult")?.addEventListener("click", (e) => {
     const btn = e.target instanceof Element ? e.target.closest("[data-copy-section]") : null;
-    if (btn) copySection(btn.dataset.copySection || "all");
+    if (btn) copySection(btn.dataset.copySection || "all", btn);
   });
 
   // 歷史 sheet（手機）

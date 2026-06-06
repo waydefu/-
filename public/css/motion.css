@@ -26,6 +26,15 @@
 .result-section:nth-child(2) { animation-delay: 0.1s; }
 .result-section:nth-child(3) { animation-delay: 0.2s; }
 
+/* Stage 3-C：卷宗內文逐段浮現（reuse riseIn；基底 opacity:1，僅增強，reduced-motion 自動熔斷） */
+.result-section-body > * { animation: riseIn var(--t-mid) var(--ease-out) both; }
+.result-section-body > :nth-child(1) { animation-delay: 0.06s; }
+.result-section-body > :nth-child(2) { animation-delay: 0.12s; }
+.result-section-body > :nth-child(3) { animation-delay: 0.18s; }
+.result-section-body > :nth-child(4) { animation-delay: 0.24s; }
+.result-section-body > :nth-child(5) { animation-delay: 0.30s; }
+.result-section-body > :nth-child(n+6) { animation-delay: 0.36s; }
+
 /* 桌機 hover 微浮（互動才觸發，不影響靜止繪製） */
 @media (hover: hover) and (pointer: fine) {
   .panel, .result-section { transition: transform var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease-out); }
