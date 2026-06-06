@@ -179,10 +179,16 @@ button { font: inherit; color: inherit; }
 }
 @media (min-width: 1080px) {
   .workspace {
-    grid-template-columns: 300px minmax(0, 1fr) minmax(0, 1.05fr);
+    /* 排版優化：歷史側欄收窄；輸入適中；鑑定卷宗（主產出/主閱讀）給最大欄寬 + 加大欄距 */
+    grid-template-columns: 280px minmax(0, 0.92fr) minmax(0, 1.32fr);
+    gap: var(--s-6);
     align-items: start;
   }
   .col-aside { position: sticky; top: calc(var(--shell-header-h) + var(--s-5)); }
+}
+/* 超寬螢幕：再放大可用寬，讓卷宗有更舒適的閱讀寬度 */
+@media (min-width: 1600px) {
+  .workspace { grid-template-columns: 300px minmax(0, 0.9fr) minmax(0, 1.4fr); }
 }
 .col-stack { display: grid; gap: var(--s-5); min-width: 0; }
 
@@ -272,13 +278,15 @@ button { font: inherit; color: inherit; }
 .modal[hidden] { display: none; }
 .modal {
   position: fixed; left: 50%; top: 50%; z-index: var(--z-modal);
-  width: min(440px, calc(100vw - 32px)); transform: translate(-50%, -50%) scale(0.96);
+  width: min(440px, calc(100vw - 32px));
+  /* SAO 式開合的靜止態＝收成水平細線（scaleX0 scaleY0.02）；動畫負責展開/收合 */
+  transform: translate(-50%, -50%) scaleX(0) scaleY(0.02); transform-origin: center center;
   opacity: 0; pointer-events: none;
   background: var(--panel-bg-strong); border: var(--panel-border); border-radius: var(--r-lg);
   box-shadow: var(--sh-lg); padding: var(--s-6); text-align: center;
-  transition: opacity var(--t-mid) var(--ease-out), transform var(--t-mid) var(--ease-back);
 }
-.modal.is-open { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+.modal.is-open { pointer-events: auto; animation: modalIn 0.42s var(--ease-out) forwards; }
+.modal.is-closing { animation: modalOut 0.34s var(--ease-out) forwards; }
 .modal-title { font-family: var(--font-display); font-size: var(--fs-h2); color: var(--c-gold-bright); margin-bottom: var(--s-3); }
 .modal-copy { color: var(--c-text-soft); margin-bottom: var(--s-5); }
 .modal-actions { display: flex; gap: var(--s-3); }

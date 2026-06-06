@@ -95,6 +95,18 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
 .link-start.is-playing .ls-title b:nth-child(1) { animation-delay: 0.85s; }
 .link-start.is-playing .ls-title b:nth-child(2) { animation-delay: 1s; }
 
+/* 彈窗 SAO 式開合：開＝水平展開→垂直展開；關＝垂直收→水平收（純 transform scale，零閃、穩定） */
+@keyframes modalIn {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scaleX(0) scaleY(0.02); }
+  45%  { opacity: 1; transform: translate(-50%, -50%) scaleX(1) scaleY(0.02); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scaleX(1) scaleY(1); }
+}
+@keyframes modalOut {
+  0%   { opacity: 1; transform: translate(-50%, -50%) scaleX(1) scaleY(1); }
+  55%  { opacity: 1; transform: translate(-50%, -50%) scaleX(1) scaleY(0.02); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scaleX(0) scaleY(0.02); }
+}
+
 /* ═══ prefers-reduced-motion：全域熔斷（所有動畫近瞬時、結束於可見） ═══ */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -112,4 +124,6 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
   .link-start.is-playing .ls-tunnel { animation-duration: 2.6s !important; }
   .link-start.is-playing .ls-tunnel i { animation-duration: 1.5s !important; animation-iteration-count: infinite !important; }
   .link-start.is-playing .ls-title b { animation-duration: 0.55s !important; }
+  .modal.is-open { animation-duration: 0.42s !important; }
+  .modal.is-closing { animation-duration: 0.34s !important; }
 }

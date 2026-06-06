@@ -44,21 +44,25 @@ function hideScrim() {
 export function openLogoutModal() {
   const m = $("logoutModal");
   if (!m) return;
+  window.clearTimeout(m._closeTimer);
+  m.classList.remove("is-closing");
   m.hidden = false;
-  // 強制 reflow 後加 is-open，確保進場 transition 觸發
+  // 強制 reflow 後加 is-open，確保 SAO 開合動畫重新觸發
   void m.offsetWidth;
   m.classList.add("is-open");
   showScrim("modal");
   $("logoutCancelBtn")?.focus();
 }
 
-/** 關閉登出確認彈窗。 */
+/** 關閉登出確認彈窗（SAO 式收合：垂直收→水平收，動畫結束才 hidden）。 */
 export function closeLogoutModal() {
   const m = $("logoutModal");
   if (!m) return;
   m.classList.remove("is-open");
+  m.classList.add("is-closing");
   hideScrim();
-  window.setTimeout(() => { if (!m.classList.contains("is-open")) m.hidden = true; }, 280);
+  window.clearTimeout(m._closeTimer);
+  m._closeTimer = window.setTimeout(() => { m.classList.remove("is-closing"); m.hidden = true; }, 360);
 }
 
 /** 開啟手機歷史 sheet（桌機側欄常駐，不需此）。 */
