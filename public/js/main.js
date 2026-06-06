@@ -4462,15 +4462,6 @@
         pauseWebglRuntime("context-lost");
         return;
       }
-      // S25 Phase2：手機登入頁維持暫停（除非明確「進工作區」），讓 visibilitychange 等
-      // 一般 resume 不會在登入頁把 WebGL 喚醒。
-      if (reason !== "operational" && mobileQuery.matches && !document.body.classList.contains("operational")) {
-        webglRuntimePaused = true;
-        webglPauseReason = "mobile-login";
-        cancelWebglFrame();
-        updateWebglRuntimeState();
-        return;
-      }
       webglRuntimePaused = false;
       webglPauseReason = "";
       manager.clock.getDelta();
@@ -4602,8 +4593,5 @@
 
     updateWebglRuntimeState();
     scheduleWebglFrame();
-    // S25 Phase2：手機登入頁近乎無特效——啟動後若是手機且尚未進工作區，暫停 WebGL 跑圈
-    // （真正省電 + 乾淨；CSS 也會隱藏畫布與重裝飾層）。進工作區時由 enterOperationalMode 恢復。
-    if (mobileQuery.matches && !document.body.classList.contains("operational")) {
-      pauseWebglRuntime("mobile-login");
-    }
+    // S25+：手機登入頁改為「直上 WebGL」（使用者要 spectacle）。先前 Phase2 的 mobile-login
+    // 暫停已移除；WebGL 在手機登入頁照常運行（reduced-motion / 切背景 仍會自動停）。

@@ -5287,18 +5287,33 @@
       .lsc-tunnel i:nth-child(n+9) { display: none; }   /* 手機只留 8 環 */
     }
 
-    /* ═══════════ S25 Phase2：手機登入頁近乎無特效 ═══════════
-       手機 + 未進工作區時隱藏 WebGL 畫布與所有重裝飾層（WebGL RAF 也由 JS 暫停），
-       只留靜態氛圍底 + 登入框。進工作區（body.operational）後全部恢復。 */
+    /* S25+：手機登入頁改「直上 WebGL」（移除先前的 WebGL 隱藏）。僅隱藏會在小螢幕與登入框
+       重疊、造成雜亂的裝飾字幕。 */
     @media (max-width: 820px) {
-      body:not(.operational) #webgl-container,
-      body:not(.operational) #linkStartFX,
-      body:not(.operational) .leyline-rain,
-      body:not(.operational) .core-pulse,
-      body:not(.operational) .shockwave,
       body:not(.operational) .reference-side-fill,
       body:not(.operational) .center-caption {
         display: none !important;
+      }
+    }
+
+    /* ═══════════ S25+：桌面面板透明化，凸顯背景 WebGL 奇觀 ═══════════
+       桌面面板原本 ~0.86-0.9 不透明把 WebGL 蓋掉。降到半透明讓 WebGL 透出（手機不套用——
+       手機背景被全螢幕面板蓋住，靠前景特效）。文字區（result-section/textarea）保留自身底色
+       維持可讀；--panel-alpha 一處可調。 */
+    @media (min-width: 821px) {
+      :root { --panel-alpha: 0.5; --dossier-alpha: 0.56; }
+      .codex-panel.sao-window {
+        background:
+          radial-gradient(ellipse at 50% 0%, rgba(214, 166, 77, 0.08), transparent 40%),
+          linear-gradient(180deg, rgba(2, 1, 1, var(--panel-alpha)), rgba(10, 5, 2, calc(var(--panel-alpha) + 0.06))),
+          repeating-linear-gradient(0deg, rgba(255, 226, 160, 0.02) 0 1px, transparent 1px 26px);
+      }
+      .analysis-dossier { background: rgba(6, 4, 10, var(--dossier-alpha)); }
+      .result-section { background: rgba(0, 0, 0, 0.46); }
+      .auth-panel.is-google-only {
+        background:
+          radial-gradient(circle at 50% 0%, rgba(214, 166, 77, 0.1), transparent 42%),
+          linear-gradient(180deg, rgba(3, 2, 1, 0.52), rgba(10, 5, 2, 0.6));
       }
     }
 
