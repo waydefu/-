@@ -10,6 +10,7 @@ import {
   toast, setLine, openLogoutModal, closeLogoutModal,
   openHistory, closeHistory, bindScrim
 } from "./app/ui.js";
+import { initEffects } from "./effects/effects-manager.js";
 
 const $ = (id) => document.getElementById(id);
 const uid = () => AppState.get("currentUser")?.uid || "guest";
@@ -273,6 +274,7 @@ async function runAnalysis() {
   if (draft.length > LIMITS.MAX_INPUT_CHARS) { setLine("resultStatusText", `手稿超過 ${LIMITS.MAX_INPUT_CHARS.toLocaleString("zh-TW")} 字，請縮短段落`, { error: true }); toast("手稿超出核心承載上限"); return; }
 
   state.analyzing = true;
+  window.dispatchEvent(new CustomEvent("worldforge:analysis-start"));
   btn?.classList.add("is-loading");
   btn?.setAttribute("disabled", "true");
   const reqId = (AppState.get("currentReqId") || 0) + 1;
@@ -300,6 +302,7 @@ async function runAnalysis() {
     progress.dispose();
     window.clearTimeout(timeout);
     state.analyzing = false;
+    window.dispatchEvent(new CustomEvent("worldforge:analysis-complete"));
     btn?.classList.remove("is-loading");
     btn?.removeAttribute("disabled");
   }
@@ -398,6 +401,8 @@ function boot() {
   restoreDraft();
   // 認證狀態統一走 worldforge:auth-changed 事件（bind 已掛 listener），避免雙重觸發。
   initAuth();
+  // Stage 2：WebGL 奇觀層延後啟動（不阻塞首屏；失敗/不支援/低效能自動回 CSS 背景）。
+  initEffects();
 }
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", boot, { once: true });
 else boot();
