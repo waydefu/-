@@ -5329,6 +5329,21 @@
       box-shadow: 0 0 0 1px rgba(255, 226, 160, 0.3), 0 0 22px rgba(214, 166, 77, 0.18);
     }
 
+    /* ═══════════ S25 Phase4：置中彈窗電影暗場 scrim ═══════════
+       帳號/歷史/登出彈窗開啟時，背後淡入暗場聚焦。只動 opacity（零閃）；pointer-events:none
+       → 即使狀態殘留也永遠不會擋住任何操作。z 介於內容與彈窗之間（彈窗仍在最上）。 */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: calc(var(--z-modal-critical) - 1);
+      background: radial-gradient(circle at 50% 42%, rgba(3, 1, 0, 0.5), rgba(0, 0, 0, 0.74));
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    body.dialog-scrim-on::before { opacity: 1; }
+
   </style>
 </head>
 <body class="is-booting">

@@ -3668,10 +3668,12 @@
         panel.removeAttribute("data-closing");
         panel.hidden = false;
         panel.setAttribute("aria-hidden", "false");
+        document.body.classList.add("dialog-scrim-on");   // S25 Phase4：電影暗場
       }
 
       closeOverlayPanel(panel) {
         if (!(panel instanceof HTMLElement) || panel.hidden) return;
+        document.body.classList.remove("dialog-scrim-on"); // S25 Phase4
         window.clearTimeout(panel.__overlayCloseTimer);
         if (prefersReducedMotion) {
           panel.setAttribute("aria-hidden", "true");
@@ -3690,6 +3692,7 @@
       openLogoutConfirm() {
         if (!this.logoutConfirmWindow) return;
         this.toggleAccount(false);
+        document.body.classList.add("dialog-scrim-on");   // S25 Phase4：電影暗場
         this.setStatus("請確認是否封存草稿並結束本次工作階段");
         this.hud.showNotice("登出確認視窗已開啟");
         this.logoutConfirmController.open(this.logoutConfirmWindow);
@@ -3697,6 +3700,7 @@
 
       closeLogoutConfirm() {
         if (!this.logoutConfirmWindow) return;
+        document.body.classList.remove("dialog-scrim-on"); // S25 Phase4
         this.logoutConfirmController.close(this.logoutConfirmWindow);
         this.setStatus("已取消登出，工作階段維持啟用");
         this.hud.showNotice("已返回鑑定核心");
@@ -4113,6 +4117,7 @@
       }
 
       async logout() {
+        document.body.classList.remove("dialog-scrim-on"); // S25 Phase4：登出時清暗場，避免登入頁殘留變暗
         const localDraftKey = this.draftKey();
         const localHistoryKey = this.historyKey();
         if (this.confirmLogoutButton) {
