@@ -23,9 +23,10 @@ export class GreatSageCore {
     this._onLost = (e) => { e.preventDefault(); this.stop(); };
     this._onRestored = () => { if (!this.disposed) this.start(); };
 
-    this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: !mobile, powerPreference: "high-performance", failIfMajorPerformanceCaveat: false });
+    // 使用者要求：手機不降級 → 抗鋸齒、pixelRatio、粒子數 一律滿規（不分手機/桌面）。
+    this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: false });
     this.renderer.setClearColor(0x000000, 0); // 透明：CSS 電影背景透出
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, mobile ? 1.6 : 2));
+    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
 
     this.scene = new THREE.Scene();
     this.camera = new THREE.PerspectiveCamera(46, 1, 0.1, 100);
@@ -71,7 +72,7 @@ export class GreatSageCore {
     }
 
     // 低密度粒子（金色資料流，additive，緩慢漂移）
-    const count = mobile ? 320 : 620;
+    const count = 620;   // 手機不降級，滿規粒子
     const pos = new Float32Array(count * 3);
     const spd = new Float32Array(count);
     for (let i = 0; i < count; i++) {

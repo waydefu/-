@@ -1,8 +1,8 @@
 // @ts-nocheck
 // 大賢者鑑定系統 — 特效總管（Stage 2）
-// 角色：延後（不阻塞首屏）、能力偵測、FPS 降級、context-lost/失敗 → 保留 CSS 背景（永不黑屏）。
+// 角色：延後（不阻塞首屏）、能力偵測、context-lost/失敗 → 保留 CSS 背景（永不黑屏）。
+// 使用者要求：手機一律不降級、不做 FPS 自動停用（移除效能 gating）。
 let core = null;
-let fpsRaf = 0;
 let calmMode = false;
 
 function webglSupported() {
@@ -13,27 +13,10 @@ function webglSupported() {
 }
 
 function disposeCore(reason) {
-  if (fpsRaf) cancelAnimationFrame(fpsRaf), (fpsRaf = 0);
   if (core) { try { core.dispose(); } catch {} core = null; }
   const canvas = document.getElementById("sageCanvas");
   if (canvas) canvas.style.opacity = "0"; // 回落到 CSS 電影背景
   if (reason) console.info("[FLG] WebGL 奇觀停用：" + reason + "（保留 CSS 背景）");
-}
-
-function monitorFps() {
-  let last = performance.now(), frames = 0, lowStreak = 0;
-  const tick = () => {
-    if (!core || core.disposed) return;
-    frames += 1;
-    const now = performance.now();
-    if (now - last >= 1000) {
-      const fps = frames; frames = 0; last = now;
-      lowStreak = fps < 30 ? lowStreak + 1 : 0;
-      if (lowStreak >= 5) { disposeCore("FPS 持續過低"); return; }   // 只在真的撐不住時降級
-    }
-    fpsRaf = requestAnimationFrame(tick);
-  };
-  fpsRaf = requestAnimationFrame(tick);
 }
 
 function bindLifecycle() {
@@ -56,7 +39,6 @@ async function load() {
     core.start();
     canvas.style.opacity = "1";   // 淡入（CSS transition）
     bindLifecycle();
-    monitorFps();
   } catch (error) {
     console.warn("[FLG] WebGL 奇觀層載入失敗，維持 CSS 背景：", error?.message || error);
     disposeCore("");
