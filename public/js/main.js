@@ -3089,7 +3089,6 @@
             }
           });
           renderAnalysisResult(resultBox, result || "分析完成，但核心尚未回傳文字。");
-          document.getElementById("reanalyzeButton")?.removeAttribute("hidden");
           progress?.complete();
           this.scrollWorkbenchToDossier(80);
           this.setOperationalStatus(fromCache ? "已讀取封存鑑定卷宗" : "魔導鑑定卷宗已完成");
@@ -3469,8 +3468,6 @@
         this.cancelLogoutButton = document.getElementById("cancelLogoutBtn");
         this.confirmLogoutButton = document.getElementById("confirmLogoutBtn");
         this.logoutConfirmController = new SaoWindowController({ lockDocument: true });
-        this.copyButton = document.getElementById("copyAllButton");
-        this.reanalyzeButton = document.getElementById("reanalyzeButton");
         this.clearDraftButton = document.getElementById("clearDraftButton");
         this.navbarActions = document.querySelector(".app-navbar-actions");
         this.ensureNavbar();
@@ -3537,7 +3534,7 @@
       ensureNavbar() {
         if (!(this.navbarActions instanceof HTMLElement)) return;
 
-        [this.historyToggle, this.accountToggle, this.clearDraftButton, this.reanalyzeButton]
+        [this.historyToggle, this.accountToggle, this.clearDraftButton]
           .filter((button) => button instanceof HTMLElement)
           .forEach((button) => {
             if (button.getAttribute("role") === "menuitem") button.removeAttribute("role");
@@ -3554,11 +3551,6 @@
           operationalActions.appendChild(this.clearDraftButton);
         }
 
-        const dossierActions = document.querySelector(".dossier-actions");
-        if (dossierActions instanceof HTMLElement && this.reanalyzeButton instanceof HTMLElement && this.reanalyzeButton.parentElement !== dossierActions) {
-          dossierActions.appendChild(this.reanalyzeButton);
-        }
-
         hydrateAllSaoButtons(this.navbarActions);
       }
 
@@ -3567,19 +3559,16 @@
           this.toggleAccount(false);
           this.toggleHistory();
         });
+        // 帳號鈕：帳號中樞只剩登出，直接開「確認封存並登出」彈窗（跳過中間那層空殼選單）。
         this.accountToggle?.addEventListener("click", () => {
           this.toggleHistory(false);
-          this.toggleAccount();
+          this.openLogoutConfirm();
         });
         this.historyClose?.addEventListener("click", () => this.toggleHistory(false));
         this.historyClear?.addEventListener("click", () => this.clearHistory());
         this.logoutButton?.addEventListener("click", () => this.openLogoutConfirm());
         this.cancelLogoutButton?.addEventListener("click", () => this.closeLogoutConfirm());
         this.confirmLogoutButton?.addEventListener("click", () => this.logout());
-        this.copyButton?.addEventListener("click", () => this.copyDossier());
-        this.reanalyzeButton?.addEventListener("click", () => {
-          this.loginController.runBusinessAnalysis();
-        });
         this.clearDraftButton?.addEventListener("click", () => {
           this.clearDraft();
         });
@@ -3702,29 +3691,7 @@
         return ok;
       }
 
-      async copyDossier() {
-        const text = this.resultBox?.innerText?.trim() || this.resultBox?.textContent?.trim() || "";
-        if (!text || text.includes("鑑定卷宗尚未展開")) {
-          this.hud.showNotice("尚無可複製的鑑定卷宗");
-          return;
-        }
-        try {
-          const ok = await this.copyPlainText(text);
-          if (!ok) throw new Error("clipboard-failed");
-          const original = getButtonLabel(this.copyButton, "複製鑑定卷宗");
-          setButtonLabel(this.copyButton, "已複製");
-          flashButtonFeedback(this.copyButton, "success", 980);
-          this.setStatus("鑑定卷宗已寫入剪貼簿");
-          this.hud.showNotice("鑑定卷宗已複製");
-          window.setTimeout(() => {
-            setButtonLabel(this.copyButton, original);
-          }, 1600);
-        } catch (error) {
-          flashButtonFeedback(this.copyButton, "error", 760);
-          this.setStatus("剪貼簿寫入失敗，請手動選取卷宗", true);
-          this.hud.showNotice("剪貼簿寫入失敗");
-        }
-      }
+      // S22：copyDossier（全文複製）已移除——每段卷宗各有「複製本段」鈕，全文複製重複。
 
       async loadForbiddenWords() {
         if (!this.spellWarn || !this.spellList) return;
@@ -4086,7 +4053,6 @@
         this.setStatus("手稿內容已清除");
         this.hud.showNotice("手稿內容已清除");
         flashButtonFeedback(this.clearDraftButton, "success", 980);
-        this.reanalyzeButton.hidden = true;
         this.syncHudState();
         this.draftField.focus();
       }
