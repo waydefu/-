@@ -1416,12 +1416,12 @@
         1px 1px rgba(41, 15, 3, 0.38);
       touch-action: manipulation;
       -webkit-tap-highlight-color: transparent;
-      transform: translateZ(0);
+      /* S24+：移除 transform:translateZ(0) 強制合成層——它是「按鈕靜止不繪、按下才出現」的根
+         （被上層 overlay 蓋過後該獨立層不重繪）。transition 不含 filter（手機畫黑塊源）。 */
       transition:
         transform var(--sao-dur-fast) var(--sao-easing-out),
         box-shadow var(--sao-dur-mid) var(--sao-easing-out),
-        border-color var(--sao-dur-mid) var(--sao-easing-out),
-        filter var(--sao-dur-mid) var(--sao-easing-out);
+        border-color var(--sao-dur-mid) var(--sao-easing-out);
       box-shadow: none;
     }
 
@@ -5170,10 +5170,11 @@
        重新光柵化 → 全頁閃黑塊。修法：spotlight 只留安全容器的主鈕 + navbar icon，
        其餘鈕關閉 ::before（回純 :active 變色，transform/opacity 零閃）；按鈕全域禁 filter。 */
     .sao-btn { filter: none !important; }
+    /* S24+：spotlight ::before 全面停用。它（帶 clip-path + 漸層）會製造一個「靜止時不繪、
+       按下才重繪」的合成圖層 → 按鈕消失、按下才出現（歷史鍵、清除鈕都中過此招）。
+       按鈕本體已是實心、永遠會繪，毋須這層。主鈕仍保留 hover 掃光（::after，靜止 opacity:0，
+       不影響本體繪製）。0 issue 優先於 spotlight。 */
     .sao-btn::before { display: none !important; }
-    .primary-btn.sao-btn::before,
-    .analyze-ritual-btn.sao-btn::before,
-    .app-navbar-actions > button.sao-btn::before { display: block !important; }
 
     /* ═══════════ S24：LINK START 電影級入場（純 opacity + 獨立 transform 屬性 → 零閃）═══════════
        只動 opacity / scale / rotate / translate（個別屬性，可正確疊加且走 compositor）。
