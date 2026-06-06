@@ -1882,7 +1882,7 @@
       createFragments() {
         this.fragmentGroup = new THREE.Group();
         this.group.add(this.fragmentGroup);
-        const count = mobileQuery.matches ? 34 : 72;
+        const count = mobileQuery.matches ? 34 : 92;   // S25 Phase5：桌面碎片拉滿（手機不動）
         const materials = [
           new THREE.MeshBasicMaterial({
             color: 0xb97822,
@@ -2200,7 +2200,7 @@
       }
 
       createParticles() {
-        this.count = mobileQuery.matches ? 300 : 800;
+        this.count = mobileQuery.matches ? 300 : 1000;   // S25 Phase5：桌面粒子拉滿（手機不動）
         const positions = new Float32Array(this.count * 3);
         const seeds = new Float32Array(this.count);
         const sizes = new Float32Array(this.count);
@@ -2246,7 +2246,7 @@
       }
 
       createIngestionStreams() {
-        this.streamCount = mobileQuery.matches ? 72 : 180;
+        this.streamCount = mobileQuery.matches ? 72 : 240;   // S25 Phase5：桌面光流拉滿（手機不動）
         const positions = new Float32Array(this.streamCount * 2 * 3);
         this.streamGeometry = new THREE.BufferGeometry();
         this.streamGeometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
