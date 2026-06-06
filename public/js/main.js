@@ -2699,7 +2699,31 @@
         const started = window.__FLG_LINK_START__?.start?.(duration, startedAt) || 0;
         this._authHandoffStartAt = started ? startedAt : 0;
         this.post.triggerChromaticAberration(0.014, uiMotion.authHandoff);
+        this.playLinkStartCinematic();
         return started;
+      }
+
+      // S24：LINK START 電影級序列（純 CSS transform/opacity/rotate 編舞，疊在穩定的
+      // login→operational 轉場之上；舊 WebGL FX 藏於其下）。先天零閃，手機自動降規。
+      playLinkStartCinematic() {
+        const el = document.getElementById("linkStartCinematic");
+        if (!el || prefersReducedMotion) return;
+        el.hidden = false;
+        el.removeAttribute("inert");
+        el.classList.remove("is-playing", "is-ending");
+        void el.offsetWidth;
+        el.classList.add("is-playing");
+        window.clearTimeout(this._lscPlayTimer);
+        window.clearTimeout(this._lscHideTimer);
+        this._lscPlayTimer = window.setTimeout(() => {
+          el.classList.remove("is-playing");
+          el.classList.add("is-ending");
+          this._lscHideTimer = window.setTimeout(() => {
+            el.classList.remove("is-ending");
+            el.hidden = true;
+            el.setAttribute("inert", "");
+          }, 520);
+        }, 2700);
       }
 
       async beginAuthentication(initialMessage, options = {}) {

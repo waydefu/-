@@ -5164,6 +5164,108 @@
       display: block;
     }
 
+    /* ═══════════ S24：LINK START 電影級入場（純 opacity + 獨立 transform 屬性 → 零閃）═══════════
+       只動 opacity / scale / rotate / translate（個別屬性，可正確疊加且走 compositor）。
+       無 backdrop-filter、無 animated filter、無 blend → 先天不可能頻閃。手機自動降規。 */
+    .link-start-cinematic {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483000;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .link-start-cinematic[hidden] { display: none; }
+
+    .lsc-veil {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(8,4,1,0.62) 0%, rgba(4,2,0,0.95) 60%, rgba(2,1,0,1) 100%);
+      opacity: 0; will-change: opacity;
+    }
+    .lsc-bloom {
+      position: absolute; width: min(120vw, 1100px); aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,228,160,0.92) 0%, rgba(214,150,60,0.42) 26%, transparent 62%);
+      opacity: 0; scale: 0.2; will-change: opacity, scale;
+    }
+    .lsc-grid {
+      position: absolute; inset: -25%;
+      background:
+        repeating-linear-gradient(0deg, rgba(214,166,77,0.09) 0 1px, transparent 1px 46px),
+        repeating-linear-gradient(90deg, rgba(214,166,77,0.09) 0 1px, transparent 1px 46px);
+      opacity: 0; rotate: 0deg; scale: 1.35; will-change: opacity, rotate, scale;
+    }
+    .lsc-stage { position: relative; width: min(80vmin, 540px); aspect-ratio: 1; display: grid; place-items: center; }
+    .lsc-stage > * { position: absolute; }
+    .lsc-ring {
+      inset: 0; border-radius: 50%;
+      background: conic-gradient(from 0deg,
+        transparent 0 8%, rgba(255,226,160,0.95) 11% 16%, transparent 20% 33%,
+        rgba(214,166,77,0.75) 35% 40%, transparent 44% 66%,
+        rgba(255,226,160,0.95) 69% 74%, transparent 78% 100%);
+      -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px) 50%, transparent 50%);
+              mask: radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px) 50%, transparent 50%);
+      opacity: 0; scale: 0.4; rotate: 0deg; will-change: opacity, scale, rotate;
+    }
+    .lsc-ring-2 { inset: 13%; }
+    .lsc-ring-3 { inset: 27%; }
+    .lsc-sigil {
+      width: 34%; aspect-ratio: 1;
+      background: conic-gradient(from 45deg, rgba(255,236,180,0.96), rgba(214,150,60,0.55), rgba(255,236,180,0.96));
+      clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
+      opacity: 0; scale: 0.3; rotate: 0deg; will-change: opacity, scale, rotate;
+    }
+    .lsc-core {
+      width: 8%; aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, rgba(255,228,160,0.92) 40%, transparent 75%);
+      opacity: 0; scale: 0; will-change: opacity, scale;
+    }
+    .lsc-sweep {
+      inset: 0;
+      background: linear-gradient(115deg, transparent 44%, rgba(255,248,210,0.68) 50%, transparent 56%);
+      opacity: 0; translate: -120% 0; will-change: opacity, translate;
+    }
+    .lsc-title {
+      position: absolute; bottom: 15%; display: flex; gap: 0.6em;
+      font-family: var(--font-cyber, "Orbitron", sans-serif);
+      font-weight: 900; letter-spacing: 0.4em;
+      font-size: clamp(1.3rem, 5.4vw, 2.9rem);
+      color: rgba(255,240,200,0.98); text-shadow: 0 0 24px rgba(214,166,77,0.6);
+    }
+    .lsc-title b { opacity: 0; translate: 0 18px; will-change: opacity, translate; }
+
+    .link-start-cinematic.is-playing .lsc-veil { animation: lscVeil 3s ease both; }
+    .link-start-cinematic.is-playing .lsc-bloom { animation: lscBloom 3s cubic-bezier(0.2,0.7,0.2,1) both; }
+    .link-start-cinematic.is-playing .lsc-grid { animation: lscGrid 3s ease-out both; }
+    .link-start-cinematic.is-playing .lsc-ring-1 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) both, lscSpin 4s linear 0.5s infinite; }
+    .link-start-cinematic.is-playing .lsc-ring-2 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) 0.12s both, lscSpin 3s linear 0.5s infinite; }
+    .link-start-cinematic.is-playing .lsc-ring-3 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) 0.24s both, lscSpinR 2.2s linear 0.5s infinite; }
+    .link-start-cinematic.is-playing .lsc-sigil { animation: lscSigilIn 0.8s cubic-bezier(0.2,0.8,0.2,1) 0.3s both, lscSpin 6s linear 0.6s infinite; }
+    .link-start-cinematic.is-playing .lsc-core { animation: lscCore 3s ease-out 0.4s both; }
+    .link-start-cinematic.is-playing .lsc-sweep { animation: lscSweep 1.5s ease-in-out 0.8s both; }
+    .link-start-cinematic.is-playing .lsc-title b { animation: lscTitle 0.6s cubic-bezier(0.2,0.8,0.2,1) both; }
+    .link-start-cinematic.is-playing .lsc-title b:nth-child(1) { animation-delay: 0.95s; }
+    .link-start-cinematic.is-playing .lsc-title b:nth-child(2) { animation-delay: 1.12s; }
+    .link-start-cinematic.is-ending { animation: lscEnd 0.5s ease both; }
+
+    @keyframes lscVeil { 0%{opacity:0} 14%{opacity:1} 82%{opacity:1} 100%{opacity:0} }
+    @keyframes lscBloom { 0%{opacity:0;scale:0.2} 24%{opacity:0.92;scale:0.8} 70%{opacity:0.5;scale:1.12} 100%{opacity:0;scale:1.6} }
+    @keyframes lscGrid { 0%{opacity:0;rotate:0deg;scale:1.4} 30%{opacity:0.5} 100%{opacity:0;rotate:26deg;scale:1} }
+    @keyframes lscRingIn { 0%{opacity:0;scale:0.4} 100%{opacity:1;scale:1} }
+    @keyframes lscSpin { to { rotate: 360deg; } }
+    @keyframes lscSpinR { to { rotate: -360deg; } }
+    @keyframes lscSigilIn { 0%{opacity:0;scale:0.3} 100%{opacity:0.95;scale:1} }
+    @keyframes lscCore { 0%{opacity:0;scale:0} 30%{opacity:1;scale:1.2} 70%{opacity:0.9;scale:1} 100%{opacity:0;scale:2.4} }
+    @keyframes lscSweep { 0%{opacity:0;translate:-120% 0} 30%{opacity:1} 100%{opacity:0;translate:120% 0} }
+    @keyframes lscTitle { 0%{opacity:0;translate:0 18px} 100%{opacity:1;translate:0 0} }
+    @keyframes lscEnd { 0%{opacity:1} 100%{opacity:0} }
+
+    @media (max-width: 820px) {
+      /* 手機降規：留環+符印+字幕，移除大範圍金光/光網以省 GPU、避免任何風險 */
+      .lsc-bloom, .lsc-grid, .lsc-sweep { display: none; }
+      .lsc-stage { width: min(74vmin, 360px); }
+    }
+
   </style>
 </head>
 <body class="is-booting">
@@ -5393,6 +5495,25 @@
     </section>
 
   </main>
+
+  <!-- S24：LINK START 電影級入場序列（純 transform/opacity 編舞 → 先天零閃；蓋在穩定的
+       login→operational 轉場之上演奇觀，舊 WebGL FX 藏於其下）。手機自動降規（見 CSS media）。 -->
+  <div class="link-start-cinematic" id="linkStartCinematic" aria-hidden="true" inert>
+    <div class="lsc-veil" aria-hidden="true"></div>
+    <div class="lsc-bloom" aria-hidden="true"></div>
+    <div class="lsc-grid" aria-hidden="true"></div>
+    <div class="lsc-stage" aria-hidden="true">
+      <span class="lsc-ring lsc-ring-1"></span>
+      <span class="lsc-ring lsc-ring-2"></span>
+      <span class="lsc-ring lsc-ring-3"></span>
+      <span class="lsc-sigil"></span>
+      <span class="lsc-core"></span>
+      <span class="lsc-sweep"></span>
+    </div>
+    <div class="lsc-title" aria-hidden="true">
+      <b>LINK</b><b>START</b>
+    </div>
+  </div>
 
   <div class="notification-stack" aria-live="polite" aria-atomic="true">
     <div class="notice" id="notice" role="status">並列演算索引建立中</div>
