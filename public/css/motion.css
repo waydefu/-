@@ -46,54 +46,92 @@
 body.is-authed .workspace > .col-stack { animation: riseIn var(--t-slow) var(--ease-out) both; }
 body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
 
-/* ═══ Stage 3-A：LINK START 潛行隧道轉場（登入→工作區；3D 透視，純 transform/opacity → 零閃） ═══ */
+/* ═══ 通用 SAO 開合（水平展開→垂直展開 / 反向；無 translate，給 grid/flex 置中的彈窗用） ═══ */
+@keyframes saoIn  { 0%{opacity:0;transform:scaleX(0) scaleY(0.02)} 45%{opacity:1;transform:scaleX(1) scaleY(0.02)} 100%{opacity:1;transform:scaleX(1) scaleY(1)} }
+@keyframes saoOut { 0%{opacity:1;transform:scaleX(1) scaleY(1)} 55%{opacity:1;transform:scaleX(1) scaleY(0.02)} 100%{opacity:0;transform:scaleX(0) scaleY(0.02)} }
+.sao-pop { transform-origin: center center; animation: saoIn 0.5s var(--ease-out) both; }
+.sao-pop.is-closing { animation: saoOut 0.34s var(--ease-out) forwards; }
+
+/* ═══ Stage 3-A / 升級：LINK START 潛行隧道（光充滿版；發光厚環 + warp 光束 + 中央光核 + 收尾爆閃） ═══ */
 .link-start {
   position: fixed; inset: 0; z-index: 90; display: grid; place-items: center;
   pointer-events: none; opacity: 0; visibility: hidden; overflow: hidden;
 }
 .link-start::before {
   content: ""; position: absolute; inset: 0;
-  background: radial-gradient(circle at 50% 50%, rgba(8, 5, 1, 0.72), rgba(2, 1, 0, 0.96) 70%);
+  /* 暖色暗場（中央不純黑 → 不再像黑塊） */
+  background: radial-gradient(circle at 50% 50%, rgba(72, 42, 9, 0.5) 0%, rgba(12, 6, 1, 0.9) 52%, rgba(2, 1, 0, 0.97) 100%);
 }
-.link-start.is-playing { visibility: visible; animation: lsFade 2.6s var(--ease-out) forwards; }
-@keyframes lsFade { 0% { opacity: 0; } 8% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+.link-start.is-playing { visibility: visible; animation: lsFade 2.8s var(--ease-out) forwards; }
+@keyframes lsFade { 0% { opacity: 0; } 7% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+
+/* warp 放射光束（旋轉 + 擴張） */
+.ls-rays {
+  position: absolute; width: 200vmax; aspect-ratio: 1; border-radius: 50%;
+  background: repeating-conic-gradient(from 0deg, transparent 0 2.6deg, rgba(255, 226, 160, 0.16) 2.6deg 3.2deg);
+  -webkit-mask: radial-gradient(circle, transparent 0 8%, #000 22%, transparent 62%);
+          mask: radial-gradient(circle, transparent 0 8%, #000 22%, transparent 62%);
+  opacity: 0; will-change: transform, opacity;
+}
+.link-start.is-playing .ls-rays { animation: lsRays 2.8s ease-out forwards; }
+@keyframes lsRays { 0%{opacity:0;transform:rotate(0deg) scale(0.5)} 20%{opacity:0.9} 100%{opacity:0;transform:rotate(82deg) scale(1.5)} }
+
 .ls-tunnel {
   position: relative; width: min(92vmin, 760px); aspect-ratio: 1;
-  display: grid; place-items: center; perspective: 460px; perspective-origin: 50% 50%;
+  display: grid; place-items: center; perspective: 440px; perspective-origin: 50% 50%;
 }
 .ls-tunnel i {
   position: absolute; grid-area: 1 / 1; width: min(82vmin, 660px); aspect-ratio: 1; border-radius: 50%;
-  border: 2px solid rgba(255, 228, 165, 0.92); box-shadow: 0 0 22px rgba(214, 166, 77, 0.5);
-  opacity: 0; transform: translateZ(-2000px); will-change: transform, opacity;
+  border: 3px solid rgba(255, 236, 180, 0.95);
+  box-shadow: 0 0 40px rgba(255, 210, 120, 0.55), 0 0 14px rgba(255, 236, 180, 0.6), inset 0 0 26px rgba(255, 210, 120, 0.4);
+  opacity: 0; transform: translateZ(-2200px); will-change: transform, opacity;
 }
-.link-start.is-playing .ls-tunnel { animation: spin 2.6s linear; }   /* 順時鐘整條旋轉 */
-.link-start.is-playing .ls-tunnel i { animation: lsDive 1.5s linear infinite; }
+.link-start.is-playing .ls-tunnel { animation: spin 2.8s linear; }   /* 順時鐘整條旋轉 */
+.link-start.is-playing .ls-tunnel i { animation: lsDive 1.35s linear infinite; }
 .link-start.is-playing .ls-tunnel i:nth-child(1)  { animation-delay: 0s; }
-.link-start.is-playing .ls-tunnel i:nth-child(2)  { animation-delay: -0.15s; }
-.link-start.is-playing .ls-tunnel i:nth-child(3)  { animation-delay: -0.30s; }
-.link-start.is-playing .ls-tunnel i:nth-child(4)  { animation-delay: -0.45s; }
-.link-start.is-playing .ls-tunnel i:nth-child(5)  { animation-delay: -0.60s; }
-.link-start.is-playing .ls-tunnel i:nth-child(6)  { animation-delay: -0.75s; }
-.link-start.is-playing .ls-tunnel i:nth-child(7)  { animation-delay: -0.90s; }
-.link-start.is-playing .ls-tunnel i:nth-child(8)  { animation-delay: -1.05s; }
-.link-start.is-playing .ls-tunnel i:nth-child(9)  { animation-delay: -1.20s; }
-.link-start.is-playing .ls-tunnel i:nth-child(10) { animation-delay: -1.35s; }
+.link-start.is-playing .ls-tunnel i:nth-child(2)  { animation-delay: -0.112s; }
+.link-start.is-playing .ls-tunnel i:nth-child(3)  { animation-delay: -0.225s; }
+.link-start.is-playing .ls-tunnel i:nth-child(4)  { animation-delay: -0.337s; }
+.link-start.is-playing .ls-tunnel i:nth-child(5)  { animation-delay: -0.45s; }
+.link-start.is-playing .ls-tunnel i:nth-child(6)  { animation-delay: -0.562s; }
+.link-start.is-playing .ls-tunnel i:nth-child(7)  { animation-delay: -0.675s; }
+.link-start.is-playing .ls-tunnel i:nth-child(8)  { animation-delay: -0.787s; }
+.link-start.is-playing .ls-tunnel i:nth-child(9)  { animation-delay: -0.9s; }
+.link-start.is-playing .ls-tunnel i:nth-child(10) { animation-delay: -1.012s; }
+.link-start.is-playing .ls-tunnel i:nth-child(11) { animation-delay: -1.125s; }
+.link-start.is-playing .ls-tunnel i:nth-child(12) { animation-delay: -1.237s; }
 @keyframes lsDive {
-  0%   { opacity: 0; transform: translateZ(-2000px); }
-  14%  { opacity: 1; }
-  86%  { opacity: 1; }
-  100% { opacity: 0; transform: translateZ(440px); }
+  0%   { opacity: 0; transform: translateZ(-2200px); }
+  12%  { opacity: 1; }
+  82%  { opacity: 1; }
+  100% { opacity: 0; transform: translateZ(520px); }
 }
+
+/* 中央光核：脈動 + 收尾爆閃（填滿中央、收尾打光揭開工作區） */
+.ls-core {
+  position: absolute; width: 46vmin; max-width: 360px; aspect-ratio: 1; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 250, 235, 0.95) 0%, rgba(255, 210, 120, 0.6) 24%, rgba(214, 150, 60, 0.25) 46%, transparent 70%);
+  opacity: 0; will-change: transform, opacity;
+}
+.link-start.is-playing .ls-core { animation: lsCore 2.8s var(--ease-out) forwards; }
+@keyframes lsCore {
+  0%   { opacity: 0; transform: scale(0.2); }
+  18%  { opacity: 0.85; transform: scale(0.7); }
+  68%  { opacity: 0.5; transform: scale(1); }
+  86%  { opacity: 1; transform: scale(2.6); }
+  100% { opacity: 0; transform: scale(3.4); }
+}
+
 .ls-title {
   position: absolute; bottom: 15%; display: flex; gap: 0.5em;
   font-family: var(--font-mono); font-weight: 900; letter-spacing: 0.42em;
-  font-size: clamp(1.3rem, 5vw, 2.6rem); color: rgba(255, 240, 200, 0.98);
-  text-shadow: 0 0 22px rgba(214, 166, 77, 0.6);
+  font-size: clamp(1.3rem, 5vw, 2.6rem); color: rgba(255, 244, 214, 1);
+  text-shadow: 0 0 14px rgba(255, 236, 180, 0.8), 0 0 34px rgba(214, 166, 77, 0.6);
 }
 .ls-title b { opacity: 0; }
 .link-start.is-playing .ls-title b { animation: riseIn 0.55s var(--ease-out) both; }
-.link-start.is-playing .ls-title b:nth-child(1) { animation-delay: 0.85s; }
-.link-start.is-playing .ls-title b:nth-child(2) { animation-delay: 1s; }
+.link-start.is-playing .ls-title b:nth-child(1) { animation-delay: 0.8s; }
+.link-start.is-playing .ls-title b:nth-child(2) { animation-delay: 0.95s; }
 
 /* 彈窗 SAO 式開合：開＝水平展開→垂直展開；關＝垂直收→水平收（純 transform scale，零閃、穩定） */
 @keyframes modalIn {
@@ -120,10 +158,14 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
   /* 使用者要求「不擋、要看到」：入場編舞 + LINK START 轉場即使在 reduced-motion 也照播
      （class 選擇器 + !important 蓋過上面的 * 熔斷；其餘動畫仍維持熔斷尊重少動）。 */
   body.is-authed .workspace > .col-stack { animation-duration: var(--t-slow) !important; }
-  .link-start.is-playing { animation-duration: 2.6s !important; }
-  .link-start.is-playing .ls-tunnel { animation-duration: 2.6s !important; }
-  .link-start.is-playing .ls-tunnel i { animation-duration: 1.5s !important; animation-iteration-count: infinite !important; }
+  .link-start.is-playing { animation-duration: 2.8s !important; }
+  .link-start.is-playing .ls-rays { animation-duration: 2.8s !important; }
+  .link-start.is-playing .ls-tunnel { animation-duration: 2.8s !important; }
+  .link-start.is-playing .ls-tunnel i { animation-duration: 1.35s !important; animation-iteration-count: infinite !important; }
+  .link-start.is-playing .ls-core { animation-duration: 2.8s !important; }
   .link-start.is-playing .ls-title b { animation-duration: 0.55s !important; }
   .modal.is-open { animation-duration: 0.42s !important; }
   .modal.is-closing { animation-duration: 0.34s !important; }
+  .sao-pop { animation-duration: 0.5s !important; }
+  .sao-pop.is-closing { animation-duration: 0.34s !important; }
 }
