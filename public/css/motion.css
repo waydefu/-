@@ -1,0 +1,43 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   大賢者鑑定系統 — 動畫（keyframes 全為 transform/opacity；compositor 安全）
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes auraDrift {
+  0%   { transform: translate3d(-4%, 0, 0) scale(1); opacity: 0.42; }
+  50%  { transform: translate3d(5%, 3%, 0) scale(1.08); opacity: 0.6; }
+  100% { transform: translate3d(-4%, 0, 0) scale(1); opacity: 0.42; }
+}
+
+@keyframes toastIn  { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes toastOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(8px); } }
+
+/* 進場：基底已可見，動畫只是增強 → 不會卡隱形 */
+@keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+
+.enter-rise { animation: riseIn var(--t-slow) var(--ease-out) both; }
+.enter-rise-1 { animation: riseIn var(--t-slow) var(--ease-out) 0.06s both; }
+.enter-rise-2 { animation: riseIn var(--t-slow) var(--ease-out) 0.14s both; }
+.enter-rise-3 { animation: riseIn var(--t-slow) var(--ease-out) 0.22s both; }
+
+/* 結果分段 reveal（每段加 .reveal，基底 opacity:1，僅增強） */
+.result-section { animation: riseIn var(--t-slow) var(--ease-out) both; }
+.result-section:nth-child(2) { animation-delay: 0.1s; }
+.result-section:nth-child(3) { animation-delay: 0.2s; }
+
+/* 桌機 hover 微浮（互動才觸發，不影響靜止繪製） */
+@media (hover: hover) and (pointer: fine) {
+  .panel, .result-section { transition: transform var(--t-mid) var(--ease-out), border-color var(--t-mid) var(--ease-out); }
+}
+
+/* ═══ prefers-reduced-motion：全域熔斷（所有動畫近瞬時、結束於可見） ═══ */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .bg-aura { animation: none !important; opacity: 0.4 !important; }
+}

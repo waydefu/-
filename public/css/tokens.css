@@ -1,0 +1,105 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   大賢者鑑定系統 — 設計系統 Tokens（2026 重構）
+   單一真相源：色票 / 間距 / 字級 / 圓角 / 陰影 / 動畫 / 分層。
+   風格：dark fantasy arcane archive — obsidian + navy + silver-blue + pale-cyan
+        + holy-white + muted gold + controlled violet。零廉價霓虹、零過曝 glow。
+   ═══════════════════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: dark;
+
+  /* ── 表面（由深到淺） ── */
+  --c-void: #04060c;        /* 最底 */
+  --c-obsidian: #070a14;
+  --c-navy: #0b1124;
+  --c-surface: #0e1530;     /* 面板底 */
+  --c-surface-2: #131c3d;   /* 面板浮起 */
+  --c-line: #2a3a66;        /* 邊框 */
+  --c-line-soft: #1b2546;
+
+  /* ── 文字 ── */
+  --c-text: #eef3ff;        /* holy white（主文字） */
+  --c-text-soft: #c2cdec;   /* silver-blue */
+  --c-text-muted: #8492bc;  /* 次要 */
+  --c-text-faint: #6b78a0;  /* placeholder */
+
+  /* ── 主色 / 點綴 ── */
+  --c-gold: #d9c48c;        /* muted gold（主行動/標題重點） */
+  --c-gold-bright: #f0e3b6;
+  --c-cyan: #86e8ff;        /* pale cyan（資訊/連線） */
+  --c-silverblue: #7fb0ff;  /* silver blue（互動/連結） */
+  --c-violet: #9c8cff;      /* controlled violet（強調，少量） */
+  --c-danger: #ff8c8c;      /* 危險/刪除（柔和紅，不刺眼） */
+  --c-ok: #8ce6b0;          /* 成功 */
+
+  /* ── 主色透明變體（光暈/邊框用，皆克制） ── */
+  --glow-gold: rgba(217, 196, 140, 0.30);
+  --glow-cyan: rgba(134, 232, 255, 0.26);
+  --glow-violet: rgba(156, 140, 255, 0.24);
+
+  /* ── 玻璃面板（靜態半透明漸層，無 backdrop-filter） ── */
+  --panel-bg: linear-gradient(180deg, rgba(18, 26, 56, 0.92), rgba(9, 14, 32, 0.94));
+  --panel-bg-strong: linear-gradient(180deg, rgba(20, 29, 62, 0.97), rgba(10, 15, 34, 0.98));
+  --panel-border: 1px solid rgba(124, 156, 224, 0.20);
+  --panel-border-hover: 1px solid rgba(160, 192, 255, 0.42);
+
+  /* ── 圓角 ── */
+  --r-xs: 6px;
+  --r-sm: 10px;
+  --r-md: 14px;
+  --r-lg: 20px;
+  --r-pill: 999px;
+
+  /* ── 間距（4px 基準） ── */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* ── 字級（clamp 流體；行動優先） ── */
+  --font-sans: "Noto Sans TC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Noto Serif TC", Georgia, serif;
+  --font-display: "Cinzel", Georgia, serif;
+  --font-mono: "Share Tech Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+
+  --fs-nano: 0.6875rem;     /* 11px HUD 標記 */
+  --fs-caption: 0.8125rem;  /* 13px */
+  --fs-body: 0.9375rem;     /* 15px */
+  --fs-body-lg: 1.0625rem;  /* 17px */
+  --fs-h3: clamp(1.05rem, 0.98rem + 0.4vw, 1.25rem);
+  --fs-h2: clamp(1.3rem, 1.1rem + 1vw, 1.9rem);
+  --fs-h1: clamp(1.75rem, 1.4rem + 2.2vw, 2.9rem);
+  --fs-read: clamp(1.0625rem, 1rem + 0.5vw, 1.3125rem); /* 結果閱讀區 */
+
+  /* ── 陰影（克制；不動畫化） ── */
+  --sh-sm: 0 2px 10px rgba(0, 0, 0, 0.4);
+  --sh-md: 0 14px 40px rgba(0, 0, 0, 0.5);
+  --sh-lg: 0 28px 70px rgba(0, 0, 0, 0.62);
+  --ring-focus: 0 0 0 2px var(--c-void), 0 0 0 4px var(--c-silverblue);
+
+  /* ── 動畫時間 / 緩動 ── */
+  --t-fast: 0.14s;
+  --t-mid: 0.26s;
+  --t-slow: 0.5s;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── 分層系統（取代 z-index 地獄；語意化） ── */
+  --z-canvas: 0;     /* 背景 WebGL（pointer-events:none） */
+  --z-atmos: 1;      /* CSS 氛圍層 */
+  --z-shell: 10;     /* App Shell：header/nav/main */
+  --z-panel: 20;     /* 工作區面板 */
+  --z-drawer: 30;    /* 歷史抽屜 / 下拉 */
+  --z-modal: 40;     /* 彈窗 */
+  --z-toast: 50;     /* 通知 */
+  --z-cinematic: 60; /* 登入解鎖序列（短暫、pointer-events:none） */
+
+  /* ── 版面 ── */
+  --shell-header-h: 56px;
+  --content-max: 1320px;
+  --col-max: 760px;
+}
