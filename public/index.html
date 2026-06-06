@@ -5401,6 +5401,37 @@
       .window-sheen::before { animation-duration: 6.5s; }
     }
 
+    /* ═══════════ S26：2026 最強按鈕/UI 互動 ═══════════
+       全部「互動才觸發」（hover/active/press），靜止＝實心可見 → 先天零 vanish；
+       只用 transform/opacity/translate/scale → 零閃。手機點按一樣吃 :active + 漣漪。 */
+    .sao-btn {
+      translate: var(--mag-x, 0) var(--mag-y, 0);   /* 磁吸（JS 於桌面 hover 設定，靜止 0） */
+      transition: translate 0.18s ease, scale 0.12s ease, transform 0.16s ease,
+        border-color 0.18s ease, color 0.18s ease, box-shadow 0.22s ease, background 0.22s ease;
+    }
+    .sao-btn:active:not(:disabled) { scale: 0.96; }   /* 按下縮放（手機點按也觸發） */
+    .sao-btn:hover:not(:disabled) {
+      box-shadow: 0 0 18px rgba(214, 166, 77, 0.34), 0 8px 22px rgba(0, 0, 0, 0.42),
+        inset 0 0 0 1px rgba(255, 226, 160, 0.3) !important;
+    }
+    /* 按壓漣漪（JS 注入的 transient 子元素，被按鈕 overflow/clip 裁切） */
+    .sao-ripple {
+      position: absolute;
+      z-index: 0;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(255, 244, 208, 0.55), rgba(255, 226, 160, 0.18) 55%, transparent 72%);
+      transform: scale(0);
+      opacity: 0.85;
+      will-change: transform, opacity;
+      animation: saoRippleFx 0.62s cubic-bezier(0.2, 0.7, 0.2, 1) forwards;
+    }
+    @keyframes saoRippleFx { to { transform: scale(1); opacity: 0; } }
+    /* 輸入面板聚焦金光（focus-within，box-shadow 過渡，非持續動畫） */
+    .codex-panel:focus-within {
+      box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.72), 0 0 32px rgba(214, 166, 77, 0.2), 0 0 0 1px rgba(255, 226, 160, 0.2);
+    }
+
   </style>
 </head>
 <body class="is-booting">

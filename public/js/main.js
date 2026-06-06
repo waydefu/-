@@ -484,16 +484,46 @@
     function bindSaoButtonSpotlight() {
       if (__saoSpotlightBound) return;
       __saoSpotlightBound = true;
+      const fine = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
+      // S26：指標反應——一次量測同時餵 spotlight 與磁吸位移（互動才動，靜止為 0）。
       const place = (event) => {
         const btn = event.target instanceof Element ? event.target.closest(".sao-btn") : null;
         if (!btn) return;
         const rect = btn.getBoundingClientRect();
         if (!rect.width || !rect.height) return;
-        btn.style.setProperty("--mx", `${((event.clientX - rect.left) / rect.width) * 100}%`);
-        btn.style.setProperty("--my", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+        const rx = (event.clientX - rect.left) / rect.width;
+        const ry = (event.clientY - rect.top) / rect.height;
+        btn.style.setProperty("--mx", `${rx * 100}%`);
+        btn.style.setProperty("--my", `${ry * 100}%`);
+        if (fine && !prefersReducedMotion) {
+          btn.style.setProperty("--mag-x", `${((rx - 0.5) * 7).toFixed(2)}px`);
+          btn.style.setProperty("--mag-y", `${((ry - 0.5) * 7).toFixed(2)}px`);
+        }
+      };
+      const reset = (event) => {
+        const btn = event.target instanceof Element ? event.target.closest(".sao-btn") : null;
+        if (btn) { btn.style.removeProperty("--mag-x"); btn.style.removeProperty("--mag-y"); }
+      };
+      // S26：按壓漣漪——從點擊座標擴散（transient 子元素，transform/opacity 動畫＝compositor，
+      // 按完即移除；靜止無殘留 → 零 vanish/零閃）。
+      const ripple = (event) => {
+        const btn = event.target instanceof Element ? event.target.closest(".sao-btn") : null;
+        if (!btn || btn.disabled || prefersReducedMotion) return;
+        const rect = btn.getBoundingClientRect();
+        if (!rect.width) return;
+        const size = Math.max(rect.width, rect.height) * 1.7;
+        const r = document.createElement("span");
+        r.className = "sao-ripple";
+        r.style.width = r.style.height = `${size}px`;
+        r.style.left = `${event.clientX - rect.left - size / 2}px`;
+        r.style.top = `${event.clientY - rect.top - size / 2}px`;
+        btn.appendChild(r);
+        r.addEventListener("animationend", () => r.remove(), { once: true });
+        window.setTimeout(() => { if (r.isConnected) r.remove(); }, 800);
       };
       document.addEventListener("pointermove", place, { passive: true });
-      document.addEventListener("pointerdown", place, { passive: true });
+      document.addEventListener("pointerdown", (event) => { place(event); ripple(event); }, { passive: true });
+      document.addEventListener("pointerout", reset, { passive: true });
     }
     bindSaoButtonSpotlight();
 
