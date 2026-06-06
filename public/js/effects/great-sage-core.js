@@ -9,9 +9,10 @@ const GOLD = 0xd6a64d;
 const GOLD_HOT = 0xffe6a6;
 
 export class GreatSageCore {
-  constructor(canvas, { mobile = false } = {}) {
+  constructor(canvas, { mobile = false, calm = false } = {}) {
     this.canvas = canvas;
     this.mobile = mobile;
+    this.calm = calm;   // reduced-motion：慢轉、粒子幾乎不漂
     this.frame = 0;
     this.running = false;
     this.disposed = false;
@@ -110,14 +111,15 @@ export class GreatSageCore {
       this.t += 0.016;
       this.energy += (this.energyTarget - this.energy) * 0.05;
       const e = this.energy;
-      this.core.rotation.y += 0.0016 + e * 0.004;
-      this.core.rotation.x += 0.0008;
-      this.shell.rotation.y -= 0.0011 + e * 0.003;
-      this.rings[0].rotation.z += 0.0014 + e * 0.005;
-      this.rings[1].rotation.z -= 0.0010 + e * 0.004;
+      const m = this.calm ? 0.28 : 1;   // 靜緩係數
+      this.core.rotation.y += (0.0016 + e * 0.004) * m;
+      this.core.rotation.x += 0.0008 * m;
+      this.shell.rotation.y -= (0.0011 + e * 0.003) * m;
+      this.rings[0].rotation.z += (0.0014 + e * 0.005) * m;
+      this.rings[1].rotation.z -= (0.0010 + e * 0.004) * m;
       const p = this.particles.geometry.attributes.position;
       for (let i = 0; i < this.pSpeed.length; i++) {
-        let y = p.array[i * 3 + 1] + this.pSpeed[i] * (0.004 + e * 0.012);
+        let y = p.array[i * 3 + 1] + this.pSpeed[i] * (0.004 + e * 0.012) * m;
         if (y > 4.6) y = -4.6;
         p.array[i * 3 + 1] = y;
       }

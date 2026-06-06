@@ -29,8 +29,16 @@ export function setLine(textId, text, { error = false } = {}) {
 }
 
 let scrimUser = null; // "modal" | "history" | null
-function showScrim(owner) { scrimUser = owner; $("scrim")?.classList.add("is-open"); }
-function hideScrim() { scrimUser = null; $("scrim")?.classList.remove("is-open"); }
+function showScrim(owner) {
+  scrimUser = owner;
+  const s = $("scrim");
+  if (s) { s.dataset.owner = owner; s.classList.add("is-open"); }
+}
+function hideScrim() {
+  scrimUser = null;
+  const s = $("scrim");
+  if (s) { s.classList.remove("is-open"); delete s.dataset.owner; }
+}
 
 /** 開啟登出確認彈窗。 */
 export function openLogoutModal() {
