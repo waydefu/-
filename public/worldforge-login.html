@@ -105,9 +105,13 @@
       --shadow-lg: 0 24px 80px rgba(0, 0, 0, 0.78), 0 0 38px rgba(214, 166, 77, 0.2);
       --glow-hot: 0 0 28px rgba(255, 226, 160, 0.34);
       --text-glow: 0 0 22px rgba(214, 166, 77, 0.28);
-      --glass-filter-panel: blur(12px) saturate(1.08);
-      --glass-filter-status: blur(10px) saturate(1.14);
-      --glass-filter-backdrop: blur(3px) saturate(1.12);
+      /* S24：backdrop-filter 全面廢除（含關閉態）。它是頻閃頭號元兇——任何會動/會捲的內容
+         在被模糊的祖先內重繪時，整塊模糊區會重新取樣 → 全頁閃（複製本段按下全頁頻閃即此）。
+         研究與實戰一致：blur 系 backdrop-filter 在互動內容上無法做到零閃。玻璃感改由各面板本身
+         的半透明漸層底承載（仍透出底層 WebGL），達成「0% backdrop-filter 頻閃」。 */
+      --glass-filter-panel: none;
+      --glass-filter-status: none;
+      --glass-filter-backdrop: none;
       --glass-filter-none: none;
       --sao-edge: 1px;
       --sao-edge-len: 14px;
