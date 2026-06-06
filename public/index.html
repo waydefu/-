@@ -5302,6 +5302,33 @@
       }
     }
 
+    /* ═══════════ S25 Phase3：UI 微互動編舞（純 transform/opacity）═══════════
+       進場動畫一律結束於「可見」（基底 opacity 預設 1，動畫只是增強，reduced-motion 近瞬時）；
+       hover 效果只在 hover 觸發 → 不可能造成「靜止不繪」。進場用 translate、hover 用 transform
+       （個別屬性，互不覆蓋）。 */
+    .result-section { animation: flgCardIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+    .analysis-result .result-section:nth-child(1) { animation-delay: 0.04s; }
+    .analysis-result .result-section:nth-child(2) { animation-delay: 0.16s; }
+    .analysis-result .result-section:nth-child(3) { animation-delay: 0.28s; }
+    @keyframes flgCardIn { 0% { opacity: 0; translate: 0 16px; } 100% { opacity: 1; translate: 0 0; } }
+
+    @media (hover: hover) and (pointer: fine) {
+      .result-section, .tool-module {
+        transition: transform 0.24s ease, border-color 0.24s ease, box-shadow 0.24s ease;
+      }
+      .result-section:hover, .tool-module:hover {
+        transform: translateY(-2px);
+        border-color: rgba(255, 226, 160, 0.4);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.42), 0 0 18px rgba(214, 166, 77, 0.14);
+      }
+    }
+
+    /* 輸入框聚焦金光（box-shadow 過渡，非持續動畫，安全） */
+    .operational-deck textarea:focus {
+      border-color: rgba(255, 226, 160, 0.62);
+      box-shadow: 0 0 0 1px rgba(255, 226, 160, 0.3), 0 0 22px rgba(214, 166, 77, 0.18);
+    }
+
   </style>
 </head>
 <body class="is-booting">
