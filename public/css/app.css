@@ -226,6 +226,8 @@ button { font: inherit; color: inherit; }
 .history-item.is-active { border-color: var(--c-silverblue); }
 .history-time { font-family: var(--font-mono); font-size: var(--fs-nano); color: var(--c-cyan); }
 .history-preview { font-size: var(--fs-caption); color: var(--c-text-soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.history-clear-all { padding: 6px 10px; font-size: var(--fs-caption); white-space: nowrap; }
+.history-clear-all.is-confirming { --btn-bd: rgba(255, 154, 134, 0.85); color: var(--c-danger); }
 
 /* 桌機（≥1080）：歷史側欄常駐 → 隱藏「開啟/收合」按鈕 */
 @media (min-width: 1080px) {

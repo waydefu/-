@@ -243,6 +243,41 @@ async function deleteHistoryItem(id) {
   }
 }
 
+async function clearAllHistory() {
+  if (!state.historyItems.length) { toast("沒有可清空的卷宗"); return; }
+  const btn = $("historyClearAllBtn");
+  const label = btn?.querySelector(".btn-label");
+  const resetBtn = () => { btn?.classList.remove("is-confirming"); if (label) label.textContent = "全部刪除"; };
+  // 兩擊確認，3 秒未確認自動還原
+  if (!state.pendingClearAll) {
+    state.pendingClearAll = true;
+    btn?.classList.add("is-confirming");
+    if (label) label.textContent = "確認清空？";
+    toast("再次點擊以清空全部卷宗");
+    window.clearTimeout(state.clearAllTimer);
+    state.clearAllTimer = window.setTimeout(() => { state.pendingClearAll = false; resetBtn(); }, 3000);
+    return;
+  }
+  state.pendingClearAll = false;
+  window.clearTimeout(state.clearAllTimer);
+  resetBtn();
+  const ids = state.historyItems.map((e) => e.id);
+  state.historyItems = [];
+  state.activeHistoryId = "";
+  state.pendingDeleteId = "";
+  try { localStorage.setItem(historyKey(), JSON.stringify([])); } catch {}
+  renderHistory();
+  toast("已清空全部鑑定卷宗");
+  const user = AppState.get("currentUser");
+  if (fb.db && user && ids.length) {
+    try {
+      const batch = fb.db.batch();
+      ids.forEach((id) => batch.delete(fb.db.collection("users").doc(user.uid).collection("history").doc(id)));
+      await batch.commit();
+    } catch { toast("雲端清空受阻，本機已清空"); }
+  }
+}
+
 async function persistHistory({ draft, result, ts }) {
   const user = AppState.get("currentUser");
   const id = (crypto.randomUUID && crypto.randomUUID()) || String(Date.now());
@@ -378,6 +413,7 @@ function bind() {
     if (open) closeHistory(); else openHistory();
   });
   $("historyCloseBtn")?.addEventListener("click", closeHistory);
+  $("historyClearAllBtn")?.addEventListener("click", clearAllHistory);
 
   // 登出
   $("logoutBtn")?.addEventListener("click", openLogoutModal);
