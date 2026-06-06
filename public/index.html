@@ -5164,6 +5164,17 @@
       display: block;
     }
 
+    /* ═══════════ S24：複製本段「全頁黑塊」根治 ═══════════
+       真兇＝S23 把 spotlight ::before 加到「每顆」.sao-btn，含住在 .result-section
+       (clip-path + overflow:hidden) 內的複製鈕；按下時 ::before 重繪 → 逼整個深色區塊
+       重新光柵化 → 全頁閃黑塊。修法：spotlight 只留安全容器的主鈕 + navbar icon，
+       其餘鈕關閉 ::before（回純 :active 變色，transform/opacity 零閃）；按鈕全域禁 filter。 */
+    .sao-btn { filter: none !important; }
+    .sao-btn::before { display: none !important; }
+    .primary-btn.sao-btn::before,
+    .analyze-ritual-btn.sao-btn::before,
+    .app-navbar-actions > button.sao-btn::before { display: block !important; }
+
     /* ═══════════ S24：LINK START 電影級入場（純 opacity + 獨立 transform 屬性 → 零閃）═══════════
        只動 opacity / scale / rotate / translate（個別屬性，可正確疊加且走 compositor）。
        無 backdrop-filter、無 animated filter、無 blend → 先天不可能頻閃。手機自動降規。 */
@@ -5188,82 +5199,91 @@
       background: radial-gradient(circle, rgba(255,228,160,0.92) 0%, rgba(214,150,60,0.42) 26%, transparent 62%);
       opacity: 0; scale: 0.2; will-change: opacity, scale;
     }
-    .lsc-grid {
-      position: absolute; inset: -25%;
-      background:
-        repeating-linear-gradient(0deg, rgba(214,166,77,0.09) 0 1px, transparent 1px 46px),
-        repeating-linear-gradient(90deg, rgba(214,166,77,0.09) 0 1px, transparent 1px 46px);
-      opacity: 0; rotate: 0deg; scale: 1.35; will-change: opacity, rotate, scale;
+    /* SAO「Link Start」潛行隧道：3D 透視 + 環沿 Z 軸衝向觀者 + 整條順時鐘旋轉 + 放射光紋。 */
+    .lsc-stage {
+      position: relative; width: min(96vmin, 900px); aspect-ratio: 1;
+      display: grid; place-items: center;
+      perspective: 460px; perspective-origin: 50% 50%;
     }
-    .lsc-stage { position: relative; width: min(80vmin, 540px); aspect-ratio: 1; display: grid; place-items: center; }
     .lsc-stage > * { position: absolute; }
-    .lsc-ring {
-      inset: 0; border-radius: 50%;
-      background: conic-gradient(from 0deg,
-        transparent 0 8%, rgba(255,226,160,0.95) 11% 16%, transparent 20% 33%,
-        rgba(214,166,77,0.75) 35% 40%, transparent 44% 66%,
-        rgba(255,226,160,0.95) 69% 74%, transparent 78% 100%);
-      -webkit-mask: radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px) 50%, transparent 50%);
-              mask: radial-gradient(circle, transparent 0 calc(50% - 3px), #000 calc(50% - 3px) 50%, transparent 50%);
+    .lsc-tunnel {
+      width: 100%; height: 100%; display: grid; place-items: center;
+      transform-style: preserve-3d;
+      rotate: 0deg; will-change: rotate;
+    }
+    .lsc-tunnel i {
+      grid-area: 1 / 1;
+      width: min(80vmin, 640px); aspect-ratio: 1; border-radius: 50%;
+      border: 3px solid rgba(255, 228, 165, 0.92);
+      box-shadow: 0 0 26px rgba(214, 166, 77, 0.55), inset 0 0 30px rgba(255, 226, 160, 0.22);
+      opacity: 0; transform: translateZ(-2000px);
+      will-change: transform, opacity;
+    }
+    /* 放射光紋（warp 速度感）：細金線從中心向外旋出 */
+    .lsc-streaks {
+      width: 220%; aspect-ratio: 1; border-radius: 50%;
+      background: repeating-conic-gradient(from 0deg, transparent 0 3.4deg, rgba(255, 226, 160, 0.12) 3.4deg 4deg);
+      -webkit-mask: radial-gradient(circle, #000 0 10%, transparent 58%);
+              mask: radial-gradient(circle, #000 0 10%, transparent 58%);
       opacity: 0; scale: 0.4; rotate: 0deg; will-change: opacity, scale, rotate;
     }
-    .lsc-ring-2 { inset: 13%; }
-    .lsc-ring-3 { inset: 27%; }
-    .lsc-sigil {
-      width: 34%; aspect-ratio: 1;
-      background: conic-gradient(from 45deg, rgba(255,236,180,0.96), rgba(214,150,60,0.55), rgba(255,236,180,0.96));
-      clip-path: polygon(50% 0,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);
-      opacity: 0; scale: 0.3; rotate: 0deg; will-change: opacity, scale, rotate;
-    }
-    .lsc-core {
-      width: 8%; aspect-ratio: 1; border-radius: 50%;
-      background: radial-gradient(circle, #fff 0%, rgba(255,228,160,0.92) 40%, transparent 75%);
-      opacity: 0; scale: 0; will-change: opacity, scale;
-    }
-    .lsc-sweep {
-      inset: 0;
-      background: linear-gradient(115deg, transparent 44%, rgba(255,248,210,0.68) 50%, transparent 56%);
-      opacity: 0; translate: -120% 0; will-change: opacity, translate;
+    /* 中央消失點亮核 */
+    .lsc-vanish {
+      width: 13%; aspect-ratio: 1; border-radius: 50%;
+      background: radial-gradient(circle, #fff 0%, rgba(255, 228, 160, 0.92) 36%, transparent 72%);
+      opacity: 0; scale: 0.2; will-change: opacity, scale;
     }
     .lsc-title {
-      position: absolute; bottom: 15%; display: flex; gap: 0.6em;
+      position: absolute; bottom: 14%; display: flex; gap: 0.6em;
       font-family: var(--font-cyber, "Orbitron", sans-serif);
-      font-weight: 900; letter-spacing: 0.4em;
+      font-weight: 900; letter-spacing: 0.42em;
       font-size: clamp(1.3rem, 5.4vw, 2.9rem);
-      color: rgba(255,240,200,0.98); text-shadow: 0 0 24px rgba(214,166,77,0.6);
+      color: rgba(255, 240, 200, 0.98); text-shadow: 0 0 24px rgba(214, 166, 77, 0.6);
     }
     .lsc-title b { opacity: 0; translate: 0 18px; will-change: opacity, translate; }
 
     .link-start-cinematic.is-playing .lsc-veil { animation: lscVeil 3s ease both; }
     .link-start-cinematic.is-playing .lsc-bloom { animation: lscBloom 3s cubic-bezier(0.2,0.7,0.2,1) both; }
-    .link-start-cinematic.is-playing .lsc-grid { animation: lscGrid 3s ease-out both; }
-    .link-start-cinematic.is-playing .lsc-ring-1 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) both, lscSpin 4s linear 0.5s infinite; }
-    .link-start-cinematic.is-playing .lsc-ring-2 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) 0.12s both, lscSpin 3s linear 0.5s infinite; }
-    .link-start-cinematic.is-playing .lsc-ring-3 { animation: lscRingIn 0.7s cubic-bezier(0.2,0.8,0.2,1) 0.24s both, lscSpinR 2.2s linear 0.5s infinite; }
-    .link-start-cinematic.is-playing .lsc-sigil { animation: lscSigilIn 0.8s cubic-bezier(0.2,0.8,0.2,1) 0.3s both, lscSpin 6s linear 0.6s infinite; }
-    .link-start-cinematic.is-playing .lsc-core { animation: lscCore 3s ease-out 0.4s both; }
-    .link-start-cinematic.is-playing .lsc-sweep { animation: lscSweep 1.5s ease-in-out 0.8s both; }
+    .link-start-cinematic.is-playing .lsc-tunnel { animation: lscTunnelSpin 3s linear both; }
+    .link-start-cinematic.is-playing .lsc-tunnel i { animation: lscDive 1.8s linear infinite; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(1)  { animation-delay: 0s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(2)  { animation-delay: -0.15s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(3)  { animation-delay: -0.30s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(4)  { animation-delay: -0.45s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(5)  { animation-delay: -0.60s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(6)  { animation-delay: -0.75s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(7)  { animation-delay: -0.90s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(8)  { animation-delay: -1.05s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(9)  { animation-delay: -1.20s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(10) { animation-delay: -1.35s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(11) { animation-delay: -1.50s; }
+    .link-start-cinematic.is-playing .lsc-tunnel i:nth-child(12) { animation-delay: -1.65s; }
+    .link-start-cinematic.is-playing .lsc-streaks { animation: lscStreaks 3s ease-out both; }
+    .link-start-cinematic.is-playing .lsc-vanish { animation: lscVanish 3s ease-out 0.15s both; }
     .link-start-cinematic.is-playing .lsc-title b { animation: lscTitle 0.6s cubic-bezier(0.2,0.8,0.2,1) both; }
-    .link-start-cinematic.is-playing .lsc-title b:nth-child(1) { animation-delay: 0.95s; }
-    .link-start-cinematic.is-playing .lsc-title b:nth-child(2) { animation-delay: 1.12s; }
+    .link-start-cinematic.is-playing .lsc-title b:nth-child(1) { animation-delay: 1.0s; }
+    .link-start-cinematic.is-playing .lsc-title b:nth-child(2) { animation-delay: 1.18s; }
     .link-start-cinematic.is-ending { animation: lscEnd 0.5s ease both; }
 
-    @keyframes lscVeil { 0%{opacity:0} 14%{opacity:1} 82%{opacity:1} 100%{opacity:0} }
-    @keyframes lscBloom { 0%{opacity:0;scale:0.2} 24%{opacity:0.92;scale:0.8} 70%{opacity:0.5;scale:1.12} 100%{opacity:0;scale:1.6} }
-    @keyframes lscGrid { 0%{opacity:0;rotate:0deg;scale:1.4} 30%{opacity:0.5} 100%{opacity:0;rotate:26deg;scale:1} }
-    @keyframes lscRingIn { 0%{opacity:0;scale:0.4} 100%{opacity:1;scale:1} }
-    @keyframes lscSpin { to { rotate: 360deg; } }
-    @keyframes lscSpinR { to { rotate: -360deg; } }
-    @keyframes lscSigilIn { 0%{opacity:0;scale:0.3} 100%{opacity:0.95;scale:1} }
-    @keyframes lscCore { 0%{opacity:0;scale:0} 30%{opacity:1;scale:1.2} 70%{opacity:0.9;scale:1} 100%{opacity:0;scale:2.4} }
-    @keyframes lscSweep { 0%{opacity:0;translate:-120% 0} 30%{opacity:1} 100%{opacity:0;translate:120% 0} }
+    @keyframes lscVeil { 0%{opacity:0} 12%{opacity:1} 82%{opacity:1} 100%{opacity:0} }
+    @keyframes lscBloom { 0%{opacity:0;scale:0.2} 22%{opacity:0.9;scale:0.7} 70%{opacity:0.4;scale:1.1} 100%{opacity:0;scale:1.6} }
+    @keyframes lscTunnelSpin { from { rotate: 0deg; } to { rotate: 360deg; } }
+    @keyframes lscDive {
+      0%   { opacity: 0; transform: translateZ(-2000px); }
+      12%  { opacity: 1; }
+      85%  { opacity: 1; }
+      100% { opacity: 0; transform: translateZ(460px); }
+    }
+    @keyframes lscStreaks { 0%{opacity:0;scale:0.4;rotate:0deg} 26%{opacity:0.9} 100%{opacity:0;scale:1.7;rotate:90deg} }
+    @keyframes lscVanish { 0%{opacity:0;scale:0.2} 28%{opacity:1;scale:1.1} 70%{opacity:0.9;scale:0.9} 100%{opacity:0;scale:2.6} }
     @keyframes lscTitle { 0%{opacity:0;translate:0 18px} 100%{opacity:1;translate:0 0} }
     @keyframes lscEnd { 0%{opacity:1} 100%{opacity:0} }
 
     @media (max-width: 820px) {
-      /* 手機降規：留環+符印+字幕，移除大範圍金光/光網以省 GPU、避免任何風險 */
-      .lsc-bloom, .lsc-grid, .lsc-sweep { display: none; }
-      .lsc-stage { width: min(74vmin, 360px); }
+      /* 手機降規：保留隧道+字幕，移除大範圍金光/光紋以省 GPU、避免任何風險 */
+      .lsc-bloom, .lsc-streaks { display: none; }
+      .lsc-stage { perspective: 380px; }
+      .lsc-tunnel i:nth-child(n+9) { display: none; }   /* 手機只留 8 環 */
     }
 
   </style>
@@ -5501,14 +5521,13 @@
   <div class="link-start-cinematic" id="linkStartCinematic" aria-hidden="true" inert>
     <div class="lsc-veil" aria-hidden="true"></div>
     <div class="lsc-bloom" aria-hidden="true"></div>
-    <div class="lsc-grid" aria-hidden="true"></div>
     <div class="lsc-stage" aria-hidden="true">
-      <span class="lsc-ring lsc-ring-1"></span>
-      <span class="lsc-ring lsc-ring-2"></span>
-      <span class="lsc-ring lsc-ring-3"></span>
-      <span class="lsc-sigil"></span>
-      <span class="lsc-core"></span>
-      <span class="lsc-sweep"></span>
+      <span class="lsc-tunnel" aria-hidden="true">
+        <i></i><i></i><i></i><i></i><i></i><i></i>
+        <i></i><i></i><i></i><i></i><i></i><i></i>
+      </span>
+      <span class="lsc-vanish" aria-hidden="true"></span>
+      <span class="lsc-streaks" aria-hidden="true"></span>
     </div>
     <div class="lsc-title" aria-hidden="true">
       <b>LINK</b><b>START</b>
