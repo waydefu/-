@@ -7,40 +7,40 @@
 :root {
   color-scheme: dark;
 
-  /* ── 表面（由深到淺） ── */
-  --c-void: #04060c;        /* 最底 */
-  --c-obsidian: #070a14;
-  --c-navy: #0b1124;
-  --c-surface: #0e1530;     /* 面板底 */
-  --c-surface-2: #131c3d;   /* 面板浮起 */
-  --c-line: #2a3a66;        /* 邊框 */
-  --c-line-soft: #1b2546;
+  /* ── 表面（黑金：暖黑/炭金，由深到淺） ── */
+  --c-void: #050403;        /* 最底 */
+  --c-obsidian: #0a0806;
+  --c-navy: #100c07;        /* 暖黑（語意沿用，值改黑金） */
+  --c-surface: #14100a;     /* 面板底 */
+  --c-surface-2: #1d1710;   /* 面板浮起 */
+  --c-line: #4a3a1e;        /* 金棕邊框 */
+  --c-line-soft: #2b2313;
 
-  /* ── 文字 ── */
-  --c-text: #eef3ff;        /* holy white（主文字） */
-  --c-text-soft: #c2cdec;   /* silver-blue */
-  --c-text-muted: #8492bc;  /* 次要 */
-  --c-text-faint: #6b78a0;  /* placeholder */
+  /* ── 文字（暖白/羊皮紙） ── */
+  --c-text: #f4eede;        /* warm holy white（主文字） */
+  --c-text-soft: #d9c8a4;   /* parchment */
+  --c-text-muted: #a08d68;  /* 次要 */
+  --c-text-faint: #7d6e4c;  /* placeholder */
 
-  /* ── 主色 / 點綴 ── */
-  --c-gold: #d9c48c;        /* muted gold（主行動/標題重點） */
-  --c-gold-bright: #f0e3b6;
-  --c-cyan: #86e8ff;        /* pale cyan（資訊/連線） */
-  --c-silverblue: #7fb0ff;  /* silver blue（互動/連結） */
-  --c-violet: #9c8cff;      /* controlled violet（強調，少量） */
-  --c-danger: #ff8c8c;      /* 危險/刪除（柔和紅，不刺眼） */
-  --c-ok: #8ce6b0;          /* 成功 */
+  /* ── 主色 / 點綴（黑金；語意名沿用，全部金系，零藍紫） ── */
+  --c-gold: #d6a64d;        /* 主金 */
+  --c-gold-bright: #ffe6a6;
+  --c-cyan: #e9d29a;        /* 原 cyan → 改淡金（eyebrow/狀態點） */
+  --c-silverblue: #e2c074;  /* 原 silver-blue → 改金（focus/連結/active） */
+  --c-violet: #b98a3a;      /* 原 violet → 改古銅（氛圍光暈） */
+  --c-danger: #ff9a86;      /* 危險/刪除（柔和橘紅，不刺眼） */
+  --c-ok: #cbe39a;          /* 成功（暖綠金） */
 
   /* ── 主色透明變體（光暈/邊框用，皆克制） ── */
-  --glow-gold: rgba(217, 196, 140, 0.30);
-  --glow-cyan: rgba(134, 232, 255, 0.26);
-  --glow-violet: rgba(156, 140, 255, 0.24);
+  --glow-gold: rgba(214, 166, 77, 0.32);
+  --glow-cyan: rgba(233, 210, 154, 0.24);
+  --glow-violet: rgba(185, 138, 58, 0.22);
 
-  /* ── 玻璃面板（靜態半透明漸層，無 backdrop-filter） ── */
-  --panel-bg: linear-gradient(180deg, rgba(18, 26, 56, 0.92), rgba(9, 14, 32, 0.94));
-  --panel-bg-strong: linear-gradient(180deg, rgba(20, 29, 62, 0.97), rgba(10, 15, 34, 0.98));
-  --panel-border: 1px solid rgba(124, 156, 224, 0.20);
-  --panel-border-hover: 1px solid rgba(160, 192, 255, 0.42);
+  /* ── 玻璃面板（靜態半透明暖黑漸層，無 backdrop-filter） ── */
+  --panel-bg: linear-gradient(180deg, rgba(28, 22, 12, 0.92), rgba(12, 9, 5, 0.94));
+  --panel-bg-strong: linear-gradient(180deg, rgba(33, 26, 14, 0.97), rgba(13, 10, 6, 0.98));
+  --panel-border: 1px solid rgba(214, 166, 77, 0.22);
+  --panel-border-hover: 1px solid rgba(255, 226, 160, 0.45);
 
   /* ── 圓角 ── */
   --r-xs: 6px;
