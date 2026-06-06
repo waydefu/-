@@ -148,10 +148,11 @@
         </div>
       </section>
     </div>
+    <!-- 遮罩移入 app-main：與 history sheet 同堆疊脈絡（解 .app-main z-index:10 的脈絡陷阱）。
+         脈絡內 z：panel(20) < scrim(29) < sheet(30)；登出彈窗在 body 根 z(40) 仍在最上。
+         header 與 app-main 同根層 z10、app-main DOM 在後 → 暗場也會蓋到 header。 -->
+    <div class="scrim" id="scrim"></div>
   </main>
-
-  <!-- 手機歷史 sheet 的遮罩 + 彈窗遮罩共用 -->
-  <div class="scrim" id="scrim"></div>
 
   <!-- 登出確認彈窗 -->
   <div class="modal" id="logoutModal" role="alertdialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutCopy" hidden>

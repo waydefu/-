@@ -253,8 +253,8 @@ button { font: inherit; color: inherit; }
   opacity: 0; pointer-events: none; transition: opacity var(--t-mid) var(--ease-out);
 }
 .scrim.is-open { opacity: 1; pointer-events: auto; }
-/* 歷史 sheet 不要變暗聚焦：scrim 透明（仍接點擊關閉），只有登出彈窗才暗場 */
-.scrim[data-owner="history"] { background: transparent; }
+/* 變暗保留（歷史 + 登出彈窗都有聚焦暗場）；z-order 保證 sheet/彈窗永遠在暗幕之上，
+   不會「連彈窗都被遮住」（scrim z=drawer-1 < sheet=drawer < modal）。 */
 .modal[hidden] { display: none; }
 .modal {
   position: fixed; left: 50%; top: 50%; z-index: var(--z-modal);
