@@ -5027,13 +5027,124 @@
       animation: overrideDissolve 0.34s var(--sao-easing-out) both !important;
     }
 
-    /* ═══════════ S22：乾淨實心斜角鈕（取代壞掉又會閃的偏移雙偽元素 2077 效果）═══════════
-       原 .sao-btn 用兩套互相打架的 ::before/::after 偏移底板 + drop-shadow + strike 動畫，
-       在手機/捲動時重繪閃爍、效果糊掉。以下對「navbar 純 icon 鈕」與「鑑定後複製本段鈕」
-       改成自成一套單層實心鈕：實心金黑底 + 金邊 + 斜切角，停用全部偽元素/scan/strike，
-       hover/focus/active（手機點按）才換色微亮。穩、不閃、手機可用。 */
+    /* ═══════════ S23：統一按鈕皮膚（乾淨實心斜角 + 指標 spotlight 光暈）═══════════
+       取代舊的雙偽元素 2077 系統（兩套互打、手機捲動時重繪閃爍、效果糊掉）。
+       所有 .sao-btn：單層實心金黑底 + 斜切角 + 金邊；::before 改造成 spotlight 光暈
+       （跟隨指標/點按，GPU 便宜、手機可用）；::after 改成主鈕專用旋轉金邊；scan/tag 停用。
+       變體：is-danger/danger-btn（紅）、primary/analyze（主鈕更亮 + 旋轉金邊）。
+       指標座標由 JS 寫入 --mx/--my（見 main.js bindSaoButtonSpotlight）。 */
+    @keyframes saoSheen { 0% { transform: translateX(-130%); } 100% { transform: translateX(130%); } }
 
-    /* navbar 純 icon 鈕（歷史 / 帳號） */
+    .sao-btn {
+      --mx: 50%;
+      --my: 50%;
+      --sao-skin-base: linear-gradient(180deg, rgba(38, 23, 8, 0.95), rgba(13, 7, 2, 0.98));
+      --sao-skin-edge: rgba(214, 166, 77, 0.44);
+      --sao-skin-glow: rgba(255, 206, 120, 0.55);
+      overflow: hidden !important;
+      background: var(--sao-skin-base) !important;
+      border: 1px solid var(--sao-skin-edge) !important;
+      border-radius: 0 !important;
+      clip-path: var(--sao-cyber-clip);
+      color: rgba(255, 240, 205, 0.95) !important;
+      box-shadow: inset 0 1px 0 rgba(255, 226, 160, 0.16), 0 6px 18px rgba(0, 0, 0, 0.4) !important;
+      transition: border-color 0.18s ease, color 0.18s ease, box-shadow 0.22s ease, transform 0.12s ease, background 0.22s ease;
+    }
+    /* spotlight 光暈層（跟隨 --mx/--my，hover/focus/點按才亮） */
+    .sao-btn::before {
+      content: "" !important;
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: 0 !important;
+      display: block !important;
+      border: 0 !important;
+      border-radius: 0 !important;
+      clip-path: var(--sao-cyber-clip);
+      background: radial-gradient(120px circle at var(--mx) var(--my), var(--sao-skin-glow), transparent 60%) !important;
+      opacity: 0 !important;
+      transform: none !important;
+      filter: none !important;
+      transition: opacity 0.2s ease !important;
+      pointer-events: none !important;
+    }
+    .sao-btn::after { display: none !important; }
+    .sao-btn .sao-btn-scan,
+    .sao-btn .sao-btn-tag { display: none !important; }
+    /* 內容墊在光暈之上 */
+    .sao-btn > .sao-btn-label,
+    .sao-btn > .sao-btn-symbol,
+    .sao-btn > .btn-prefix,
+    .sao-btn > .btn-label,
+    .sao-btn > .btn-loading,
+    .sao-btn > .nav-icon {
+      position: relative;
+      z-index: 1;
+    }
+    .sao-btn:hover:not(:disabled),
+    .sao-btn:focus-visible,
+    .sao-btn:active {
+      border-color: rgba(255, 226, 160, 0.74) !important;
+      color: rgba(255, 248, 214, 1) !important;
+      transform: translateY(-1px) !important;
+      box-shadow: 0 0 16px rgba(214, 166, 77, 0.3), inset 0 0 0 1px rgba(255, 226, 160, 0.24) !important;
+    }
+    .sao-btn:hover:not(:disabled)::before,
+    .sao-btn:focus-visible::before,
+    .sao-btn:active::before {
+      opacity: 0.85 !important;
+    }
+
+    /* 變體：危險（紅）—— 清除手稿 / 清空紀錄 / 封存並登出 / 歷史刪除 */
+    .sao-btn.is-danger,
+    .sao-btn.danger-btn {
+      --sao-skin-base: linear-gradient(180deg, rgba(78, 28, 12, 0.95), rgba(26, 8, 3, 0.98));
+      --sao-skin-edge: rgba(214, 120, 77, 0.52);
+      --sao-skin-glow: rgba(255, 150, 95, 0.5);
+      color: rgba(255, 224, 200, 0.96) !important;
+    }
+    .sao-btn.is-danger:hover:not(:disabled),
+    .sao-btn.is-danger:focus-visible,
+    .sao-btn.is-danger:active {
+      border-color: rgba(255, 150, 100, 0.78) !important;
+    }
+
+    /* 變體：主鈕（啟動鑑定 / Google 登入）＝更亮金 + 旋轉金邊（最高規格特效） */
+    .primary-btn.sao-btn,
+    .analyze-ritual-btn.sao-btn {
+      --sao-skin-base: linear-gradient(180deg, rgba(96, 60, 21, 0.97), rgba(32, 15, 4, 0.99));
+      --sao-skin-edge: rgba(255, 214, 140, 0.62);
+      --sao-skin-glow: rgba(255, 226, 150, 0.72);
+      color: rgba(255, 246, 214, 1) !important;
+    }
+    /* 主鈕對角掃光（容器內、transform GPU 動畫；被 overflow:hidden 正確裁切到斜角形狀）。 */
+    .primary-btn.sao-btn::after,
+    .analyze-ritual-btn.sao-btn::after {
+      content: "" !important;
+      display: block !important;
+      position: absolute !important;
+      inset: 0 !important;
+      z-index: 0 !important;
+      background: linear-gradient(105deg, transparent 42%, rgba(255, 244, 200, 0.5) 50%, transparent 58%) !important;
+      opacity: 0 !important;
+      transform: translateX(-130%) !important;
+      transition: opacity 0.25s ease !important;
+      pointer-events: none !important;
+    }
+    .primary-btn.sao-btn:hover:not(:disabled)::after,
+    .primary-btn.sao-btn:focus-visible::after,
+    .primary-btn.sao-btn:active::after,
+    .analyze-ritual-btn.sao-btn:hover:not(:disabled)::after,
+    .analyze-ritual-btn.sao-btn:focus-visible::after,
+    .analyze-ritual-btn.sao-btn:active::after {
+      opacity: 1 !important;
+      animation: saoSheen 1.9s ease-in-out infinite !important;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .primary-btn.sao-btn::after,
+      .analyze-ritual-btn.sao-btn::after { animation: none !important; }
+    }
+
+    /* navbar 純 icon 鈕保留方形尺寸（皮膚沿用上面 .sao-btn 統一系統） */
     .app-navbar-actions > button.nav-icon-btn.sao-btn {
       display: inline-grid;
       place-items: center;
@@ -5042,89 +5153,11 @@
       min-width: 46px;
       min-height: 46px;
       padding: 0;
-      background: linear-gradient(180deg, rgba(34, 20, 7, 0.92), rgba(12, 6, 2, 0.97)) !important;
-      border: 1px solid rgba(214, 166, 77, 0.42) !important;
-      clip-path: var(--sao-cyber-clip);
-      color: rgba(255, 238, 196, 0.94);
-      box-shadow: inset 0 1px 0 rgba(255, 226, 160, 0.16) !important;
-      transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
-    }
-    .app-navbar-actions > button.nav-icon-btn.sao-btn::before,
-    .app-navbar-actions > button.nav-icon-btn.sao-btn::after,
-    .app-navbar-actions > button.nav-icon-btn.sao-btn .sao-btn-scan,
-    .app-navbar-actions > button.nav-icon-btn.sao-btn .sao-btn-tag {
-      display: none !important;
     }
     .nav-icon-btn .nav-icon {
-      position: relative;
-      z-index: 1;
       width: 22px;
       height: 22px;
       display: block;
-    }
-    .app-navbar-actions > button.nav-icon-btn.sao-btn:hover,
-    .app-navbar-actions > button.nav-icon-btn.sao-btn:focus-visible,
-    .app-navbar-actions > button.nav-icon-btn.sao-btn:active {
-      background: linear-gradient(180deg, rgba(54, 33, 11, 0.97), rgba(18, 9, 3, 1)) !important;
-      border-color: rgba(255, 226, 160, 0.72) !important;
-      color: rgba(255, 247, 212, 1);
-      box-shadow: 0 0 14px rgba(214, 166, 77, 0.3), inset 0 0 0 1px rgba(255, 226, 160, 0.26) !important;
-      transform: translateY(-1px);
-    }
-
-    /* 鑑定後「複製本段」鈕：根治「按鈕隨機消失再出現」＝砍掉捲動時重繪閃爍的偏移底板/陰影/動畫 */
-    .result-section-copy.sao-btn {
-      background: linear-gradient(180deg, rgba(40, 24, 8, 0.94), rgba(14, 7, 2, 0.98)) !important;
-      border: 1px solid rgba(214, 166, 77, 0.42) !important;
-      clip-path: var(--sao-cyber-clip);
-      color: rgba(255, 240, 200, 0.94) !important;
-      box-shadow: inset 0 1px 0 rgba(255, 226, 160, 0.16) !important;
-    }
-    .result-section-copy.sao-btn::before,
-    .result-section-copy.sao-btn::after,
-    .result-section-copy.sao-btn .sao-btn-scan,
-    .result-section-copy.sao-btn .sao-btn-tag {
-      display: none !important;
-    }
-    .result-section-copy.sao-btn .sao-btn-symbol,
-    .result-section-copy.sao-btn .sao-btn-label {
-      position: relative;
-      z-index: 1;
-    }
-    .result-section-copy.sao-btn:hover,
-    .result-section-copy.sao-btn:focus-visible,
-    .result-section-copy.sao-btn:active {
-      background: linear-gradient(180deg, rgba(58, 35, 12, 0.97), rgba(20, 10, 3, 1)) !important;
-      border-color: rgba(255, 226, 160, 0.66) !important;
-      box-shadow: 0 0 12px rgba(214, 166, 77, 0.26) !important;
-    }
-
-    /* 清除手稿鈕：同改乾淨實心（紅味）。根治「鑑定後按鈕消失、按下才出現」＝偽元素
-       ::before drop-shadow + contain 在結果渲染/捲動時 compositing 重繪把按鈕畫沒了。 */
-    #clearDraftButton.sao-btn {
-      background: linear-gradient(180deg, rgba(74, 26, 12, 0.94), rgba(28, 9, 4, 0.98)) !important;
-      border: 1px solid rgba(214, 120, 77, 0.5) !important;
-      clip-path: var(--sao-cyber-clip);
-      color: rgba(255, 222, 198, 0.95) !important;
-      box-shadow: inset 0 1px 0 rgba(255, 190, 150, 0.16) !important;
-    }
-    #clearDraftButton.sao-btn::before,
-    #clearDraftButton.sao-btn::after,
-    #clearDraftButton.sao-btn .sao-btn-scan,
-    #clearDraftButton.sao-btn .sao-btn-tag {
-      display: none !important;
-    }
-    #clearDraftButton.sao-btn .sao-btn-symbol,
-    #clearDraftButton.sao-btn .sao-btn-label {
-      position: relative;
-      z-index: 1;
-    }
-    #clearDraftButton.sao-btn:hover,
-    #clearDraftButton.sao-btn:focus-visible,
-    #clearDraftButton.sao-btn:active {
-      background: linear-gradient(180deg, rgba(96, 36, 16, 0.97), rgba(34, 11, 5, 1)) !important;
-      border-color: rgba(255, 150, 100, 0.7) !important;
-      box-shadow: 0 0 12px rgba(185, 75, 25, 0.3) !important;
     }
 
   </style>

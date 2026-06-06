@@ -478,6 +478,25 @@
       root.querySelectorAll?.(".sao-btn").forEach((button) => hydrateSaoButton(button));
     }
 
+    // S23：spotlight 指標光暈——把指標/點按座標寫進按鈕的 --mx/--my，CSS ::before 的
+    // radial-gradient 即跟隨。delegated 一組監聽、passive、closest 便宜；pointerdown 讓手機點按也亮。
+    let __saoSpotlightBound = false;
+    function bindSaoButtonSpotlight() {
+      if (__saoSpotlightBound) return;
+      __saoSpotlightBound = true;
+      const place = (event) => {
+        const btn = event.target instanceof Element ? event.target.closest(".sao-btn") : null;
+        if (!btn) return;
+        const rect = btn.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+        btn.style.setProperty("--mx", `${((event.clientX - rect.left) / rect.width) * 100}%`);
+        btn.style.setProperty("--my", `${((event.clientY - rect.top) / rect.height) * 100}%`);
+      };
+      document.addEventListener("pointermove", place, { passive: true });
+      document.addEventListener("pointerdown", place, { passive: true });
+    }
+    bindSaoButtonSpotlight();
+
     function setButtonGlyph(button, symbol, label) {
       if (!(button instanceof HTMLElement)) return;
       button.replaceChildren(createButtonGlyph(symbol), createButtonLabel(label));
