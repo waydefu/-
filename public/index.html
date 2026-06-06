@@ -5287,6 +5287,21 @@
       .lsc-tunnel i:nth-child(n+9) { display: none; }   /* 手機只留 8 環 */
     }
 
+    /* ═══════════ S25 Phase2：手機登入頁近乎無特效 ═══════════
+       手機 + 未進工作區時隱藏 WebGL 畫布與所有重裝飾層（WebGL RAF 也由 JS 暫停），
+       只留靜態氛圍底 + 登入框。進工作區（body.operational）後全部恢復。 */
+    @media (max-width: 820px) {
+      body:not(.operational) #webgl-container,
+      body:not(.operational) #linkStartFX,
+      body:not(.operational) .leyline-rain,
+      body:not(.operational) .core-pulse,
+      body:not(.operational) .shockwave,
+      body:not(.operational) .reference-side-fill,
+      body:not(.operational) .center-caption {
+        display: none !important;
+      }
+    }
+
   </style>
 </head>
 <body class="is-booting">

@@ -3014,6 +3014,8 @@
         logoutConfirmWindow?.setAttribute("hidden", "");
         this.setOperationalDeckAvailability(true);
         document.body.classList.add("operational");
+        // S25 Phase2：進工作區 → 恢復 WebGL（手機登入頁先前暫停的奇觀層在此甦醒）。
+        window.__FLG_WEBGL_RUNTIME__?.resume?.("operational");
         document.body.classList.toggle("workbench-materializing", !prefersReducedMotion);
         this.operationalDeck.style.filter = "none";
         this.operationalDeck.style.setProperty("backdrop-filter", "var(--glass-filter-none)");
@@ -4455,6 +4457,15 @@
         pauseWebglRuntime("context-lost");
         return;
       }
+      // S25 Phase2：手機登入頁維持暫停（除非明確「進工作區」），讓 visibilitychange 等
+      // 一般 resume 不會在登入頁把 WebGL 喚醒。
+      if (reason !== "operational" && mobileQuery.matches && !document.body.classList.contains("operational")) {
+        webglRuntimePaused = true;
+        webglPauseReason = "mobile-login";
+        cancelWebglFrame();
+        updateWebglRuntimeState();
+        return;
+      }
       webglRuntimePaused = false;
       webglPauseReason = "";
       manager.clock.getDelta();
@@ -4586,3 +4597,8 @@
 
     updateWebglRuntimeState();
     scheduleWebglFrame();
+    // S25 Phase2：手機登入頁近乎無特效——啟動後若是手機且尚未進工作區，暫停 WebGL 跑圈
+    // （真正省電 + 乾淨；CSS 也會隱藏畫布與重裝飾層）。進工作區時由 enterOperationalMode 恢復。
+    if (mobileQuery.matches && !document.body.classList.contains("operational")) {
+      pauseWebglRuntime("mobile-login");
+    }
