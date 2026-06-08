@@ -114,6 +114,8 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
   .modal.is-closing { animation-duration: 0.34s !important; }
   .history-panel.is-open { animation-duration: 0.42s !important; }
   .history-panel.is-closing { animation-duration: 0.34s !important; }
+  /* 載入頁打字機：reduced-motion 也要動（class 選擇器 + !important 蓋過 * 熔斷） */
+  .typewriter, .typewriter .slide, .typewriter .paper, .typewriter .keyboard:after { animation-duration: 3s !important; animation-iteration-count: infinite !important; }
   .sao-pop { animation-duration: 0.5s !important; }
   .sao-pop.is-closing { animation-duration: 0.34s !important; }
 }

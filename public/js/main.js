@@ -45,9 +45,10 @@ function createResultSection(kind, title, eyebrow, content) {
 
   const copy = document.createElement("button");
   copy.type = "button";
-  copy.className = "btn btn-ghost result-section-copy";
+  copy.className = "copy-cube";
   copy.dataset.copySection = kind;
-  copy.innerHTML = '<svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="btn-label">複製本段</span>';
+  copy.setAttribute("aria-label", "複製本段");
+  copy.innerHTML = '<span class="cc-icon"><svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span><span class="cc-cube"><span class="cc-side cc-front btn-label">複製本段</span><span class="cc-side cc-top">點此複製</span></span>';
 
   head.append(wrap, copy);
 
@@ -382,15 +383,19 @@ async function copySection(kind, btn) {
   toast(ok ? "已複製到剪貼簿" : "剪貼簿寫入失敗，請手動選取");
   // Stage 3-C：複製鈕回饋強化（成功→「已複製 ✓」綠態，1.4s 後還原）
   if (ok && btn) {
-    const label = btn.querySelector(".btn-label");
+    const label = btn.querySelector(".btn-label");   // cube 正面（或一般 label）
+    const top = btn.querySelector(".cc-top");         // cube hover 時可見的頂面
     const prev = label ? label.textContent : "";
+    const prevTop = top ? top.textContent : "";
     btn.classList.add("is-copied");
     if (label) label.textContent = "已複製 ✓";
+    if (top) top.textContent = "已複製 ✓";              // 兩面都顯示成功，hover 翻到頂面也看得到
     window.clearTimeout(btn._copiedTimer);
     btn._copiedTimer = window.setTimeout(() => {
       btn.classList.remove("is-copied");
       if (label) label.textContent = prev || "複製本段";
-    }, 1400);
+      if (top) top.textContent = prevTop || "點此複製";
+    }, 1600);
   }
 }
 
@@ -422,6 +427,14 @@ function applyAuthState(user) {
 /* ════════ 綁定（一次性，無重複） ════════ */
 function bind() {
   bindScrim();
+
+  // 載入頁：typewriter 播放一輪後淡出，進入登入頁
+  window.setTimeout(() => {
+    const bl = document.getElementById("bootLoader");
+    if (!bl) return;
+    bl.classList.add("is-done");
+    window.setTimeout(() => bl.remove(), 700);
+  }, 3200);
 
   // 禁詞資料載入（一次）→ 載完即掃一次目前草稿
   fetch("/forbidden-words.json").then((r) => (r.ok ? r.json() : [])).then((d) => { FORBIDDEN = Array.isArray(d) ? d : []; scanForbidden(); }).catch(() => {});

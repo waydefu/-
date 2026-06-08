@@ -171,7 +171,7 @@ Dark Fantasy UI · Arcane Magic Tech · Ancient Magical Machinery · Cinematic H
 ### 現況
 
 - 正式入口背景 = `js/effects/great-sage-core.js`（電影級）：Three.js（jsdelivr full URL）+ **UnrealBloom 後製**（alpha-safe 自寫 combine shader，輸出 base.a 永不黑屏）+ ACES tone mapping（exposure 0.82）。場景＝雙層 icosahedron 核心 + 核心光球 + 中央光爆 sprite + CanvasTexture 發光軌道環（不同傾斜軸 + 發光電子）。bloom addon 動態 import 靠 importmap 解內部 `'three'`，失敗 → catch → 退回基礎奇觀（不黑屏）。
-- 已**接回的 legacy 強模組**（動態 import，皆 `(THREE, this.group, profile{reduced,mobile,lowPower}, null)` + `update` + `dispose`）：`ReferenceGlyphRing`（細緻符文環）、`MagiculeParticleField`（shader 發光粒子）、`RaphaelComputationRing`（計算環）。**孤兒待接**：`arcane-core`（奇點核心）；`gold-bokeh-field` / `optical-background` / `stepped-animation` 目前未用。
+- 已**接回的 legacy 強模組**（動態 import，皆 `(THREE, this.group, profile{reduced,mobile,lowPower}, null)` + `update` + `dispose`）：`ReferenceGlyphRing`（細緻符文環）、`MagiculeParticleField`（shader 發光小光點）、`RaphaelComputationRing`（計算環）。`arcane-core` 的奇點核心 shader 已**取精華複製進** `great-sage-core`（非整檔 import）。`webgl/` 現存：`constants` / `math-utils` / `dispose-utils` + 上述三模組；孤兒（`arcane-core` / `optical-background` / `gold-bokeh-field` / `stepped-animation` / `materials`）已**刪除**（git 歷史保留）。
 - **自適應 DPR**：`great-sage-core` 每秒測 FPS，嚴重掉幀降 render scale（floor 0.6×）、回穩才升 — 唯一效能旋鈕，不關特效。
 - **登入儀式**：滑入/聚焦登入鈕 → `worldforge:pulse` → 核心短暫充能；handoff = LINK START canvas 光速隧道 warp（`link-start.js`）+ 收尾羊皮紙金淨化閃光（`.ls-flash`）；`decryptText` 文字解碼揭露 `鑑定核心已連線`。
 - **彈窗**：登入卡 / 歷史 / 登出 統一 SAO 開合（水平展開→垂直展開）+ 金色邊光。

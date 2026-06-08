@@ -94,6 +94,7 @@ export class GreatSageCore {
     this._initGlyphRing();  // 細緻符文環
     this._initMagicule();   // shader 發光粒子場
     this._initCompRing();   // 大賢者計算環（同心環 + 刻線 + 破弧 + 符文標記）
+    this._initGsap();       // GSAP 鏡頭導演（電影級進場 dolly + 待機微漂）
 
     canvas.addEventListener("webglcontextlost", this._onLost, false);
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
@@ -183,7 +184,7 @@ export class GreatSageCore {
       ]);
       if (this.disposed) return;
       const w = window.innerWidth, h = window.innerHeight;
-      this.baseTarget = new THREE.WebGLRenderTarget(1, 1, { samples: this.mobile ? 0 : 2 });
+      this.baseTarget = new THREE.WebGLRenderTarget(1, 1, { samples: this.mobile ? 0 : 4 }); // MSAA 4×：邊緣銳化（保 alpha、不破透明）
       this.bloomComposer = new EffectComposer(this.renderer);
       this.bloomComposer.renderToScreen = false;
       const rp = new RenderPass(this.scene, this.camera);
@@ -254,6 +255,25 @@ export class GreatSageCore {
       if (this.compInst?.group) this.compInst.group.scale.setScalar(0.32); // 縮入視野
     } catch (e) {
       console.info("[FLG] 計算環未啟用：" + (e?.message || e));
+    }
+  }
+
+  // GSAP 鏡頭導演：電影級進場 dolly（由遠拉近）+ 待機微漂（x/y；避開 resize 設定的 z）
+  async _initGsap() {
+    try {
+      const mod = await import("https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm");
+      if (this.disposed) return;
+      const gsap = mod.gsap || mod.default || mod;
+      if (!gsap?.to) return;
+      this.gsap = gsap;
+      const baseZ = this.camera.position.z;
+      this.camera.position.z = baseZ + 7;
+      gsap.to(this.camera.position, { z: baseZ, duration: 2.8, ease: "power3.out" });
+      gsap.fromTo(this.camera.rotation, { z: 0.1 }, { z: 0, duration: 3.0, ease: "power2.out" });
+      gsap.to(this.camera.position, { x: 0.25, duration: 9, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
+      gsap.to(this.camera.position, { y: 0.16, duration: 11, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
+    } catch (e) {
+      console.info("[FLG] GSAP 鏡頭未啟用：" + (e?.message || e));
     }
   }
 
@@ -366,6 +386,7 @@ export class GreatSageCore {
     try { this.glyphInst?.dispose(); } catch {}
     try { this.mpInst?.dispose(); } catch {}
     try { this.compInst?.dispose(); } catch {}
+    try { this.gsap?.killTweensOf(this.camera.position); this.gsap?.killTweensOf(this.camera.rotation); } catch {}
     this.renderer.dispose();
   }
 }
