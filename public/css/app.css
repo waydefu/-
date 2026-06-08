@@ -330,6 +330,7 @@ button { font: inherit; color: inherit; }
   .actions-row { gap: var(--s-2); }
   .actions-row .analyze-star.btn-lg { padding: 0 var(--s-4); }
   .review-controls { gap: 10px; }
+  .spark-switch { font-size: 17px; }
 }
 
 /* ═══ 結果區 ═══ */
@@ -456,7 +457,7 @@ button { font: inherit; color: inherit; }
 .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label { transform: translate(54px, -32px) scale(1); opacity: 1; transition-delay: 0.16s; }
 
 /* 思考開關（spark-switch · 黑金 · 滑動 warp） */
-.spark-switch { display: inline-block; font-size: 18px; flex: 0 0 auto; transition: opacity 0.2s ease; }
+.spark-switch { display: inline-block; font-size: 20px; flex: 0 0 auto; transition: opacity 0.2s ease; }
 .spark-switch.is-disabled { opacity: 0.4; pointer-events: none; }
 .spark-switch input { display: none; }
 .spark-switch .track {
@@ -482,15 +483,15 @@ button { font: inherit; color: inherit; }
   box-shadow: inset 0 0.1em 0.3em rgba(0,0,0,0.4), 0 0 0.6em 0.05em rgba(230,184,90,0.45);
 }
 .spark-switch input:checked + .track .knob { transform: translateX(2.5em); background: #fff6e0; }
-.spark-switch input:checked + .track::before { opacity: 0.85; }
+.spark-switch input:checked + .track::before { opacity: 0.6; }
 .spark-switch input:checked + .track .knob svg { color: #b8860b; transform: scale(1.1); }
 .spark-switch .stars { position: absolute; inset: 0; z-index: 1; }
-.spark-switch .star { position: absolute; background: #e7c977; border-radius: 50%; transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s; }
+.spark-switch .star { position: absolute; background: #ffe9b0; border-radius: 50%; box-shadow: 0 0 0.3em rgba(255,228,150,0.85); transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s, box-shadow 0.3s; }
 .spark-switch .star:nth-child(1) { top: 0.4em; left: 100%; width: 0.15em; height: 0.15em; animation: spk-drift 3s linear infinite; }
 .spark-switch .star:nth-child(2) { top: 1.2em; left: 100%; width: 0.2em; height: 0.2em; animation: spk-drift 4s linear infinite 1s; }
 .spark-switch .star:nth-child(3) { top: 2em; left: 100%; width: 0.1em; height: 0.1em; animation: spk-drift 2.5s linear infinite 0.5s; }
 .spark-switch .star:nth-child(4) { top: 0.8em; left: 100%; width: 0.15em; height: 0.15em; animation: spk-drift 5s linear infinite 2s; }
-.spark-switch input:checked + .track .star { width: 1.5em; height: 0.1em; border-radius: 0.05em; background: rgba(255,246,224,0.9); }
+.spark-switch input:checked + .track .star { width: 1.6em; height: 0.16em; border-radius: 0.08em; background: #fff6e0; box-shadow: 0 0 0.45em rgba(255,240,200,0.95); }
 .spark-switch input:checked + .track .star:nth-child(1) { animation: spk-warp 0.4s linear infinite; }
 .spark-switch input:checked + .track .star:nth-child(2) { animation: spk-warp 0.6s linear infinite 0.1s; }
 .spark-switch input:checked + .track .star:nth-child(3) { animation: spk-warp 0.3s linear infinite 0.2s; }

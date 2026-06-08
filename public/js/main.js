@@ -6,6 +6,7 @@ import { AppState } from "./core/state.js";
 import { analyzeDraft, isApiError } from "./services/analyze-api.js";
 import { splitAnalysisSections, renderMarkdownLite } from "./utils/result-sections.js";
 import { fb, initAuth, signInWithGoogle, signOutUser } from "./app/auth.js";
+import { initReviewControls } from "./app/review-controls.js";
 import {
   toast, setLine, openLogoutModal, closeLogoutModal,
   openHistory, closeHistory, bindScrim
@@ -425,39 +426,6 @@ function applyAuthState(user) {
 }
 
 /* ════════ 綁定（一次性，無重複） ════════ */
-/* ════════ 模型 / 思考模式手動控制 ════════ */
-function computeThinking(model, thinkOn) {
-  if (model === "auto") return "auto";   // 依字數自動切深／快
-  if (model === "groq") return "off";    // 弱模型恆快速（少字規則）
-  return thinkOn ? "on" : "off";         // Kimi：看思考開關
-}
-function initReviewControls() {
-  const radios = Array.from(document.querySelectorAll('input[name="modelPick"]'));
-  const current = $("modelCurrent");
-  const thinkInput = $("thinkInput");
-  const thinkWrap = $("thinkToggle");
-  const dialOpen = $("modelDialOpen");
-  const label = { auto: "自", kimi: "深", groq: "快" };
-
-  const sync = () => {
-    const model = radios.find((r) => r.checked)?.value || "auto";
-    const thinkOn = !!(thinkInput && thinkInput.checked);
-    AppState.set("reviewModel", model);
-    AppState.set("reviewThinking", computeThinking(model, thinkOn));
-    if (current) current.textContent = label[model] || "自";
-    const thinkActive = model === "kimi";       // 思考開關只在 Kimi 時生效
-    thinkWrap?.classList.toggle("is-disabled", !thinkActive);
-    if (thinkInput) thinkInput.disabled = !thinkActive;
-  };
-
-  radios.forEach((r) => r.addEventListener("change", () => {
-    sync();
-    if (dialOpen) dialOpen.checked = false;     // 選完收合放射選單
-  }));
-  thinkInput?.addEventListener("change", sync);
-  sync();
-}
-
 function bind() {
   bindScrim();
 

@@ -2,34 +2,17 @@ import { onRequest } from "firebase-functions/v2/https";
 import { defineSecret } from "firebase-functions/params";
 import * as admin from "firebase-admin";
 import { createHash } from "crypto";
-import Groq from "groq-sdk";
-import OpenAI from "openai";
 import { SYSTEM_PROMPT, ALLOWED_ORIGINS } from "./config";
 import { validateDraftInput } from "./validation";
 import { checkAndIncrementQuota, peekQuota, refundQuota } from "./quota";
+import {
+  type Provider,
+  estimateTokens, resolveModelChoice, resolveThinkingChoice, resolveFast,
+  makeNimClient, makeGroqClient, buildProviderChain,
+} from "./providers";
 
 const GROQ_API_KEY = defineSecret("GROQ_API_KEY");
 const NVIDIA_API_KEY = defineSecret("NVIDIA_API_KEY");
-
-// ── LLM 供應商鏈 ───────────────────────────────────────────────
-// 主力：NVIDIA NIM(OpenAI 相容端點)三顆中文強模型依序 fallback；
-// 末端跨供應商退回 Groq(不同配額池，NIM 整批掛掉時仍可用)。
-// ⚠️ model id 請對 build.nvidia.com 各模型卡「View Code」範例核對；
-//    填錯只會 404 → 自動跳下一顆，不致命。model id 已對 build.nvidia.com View Code 核對。
-const NIM_BASE_URL = "https://integrate.api.nvidia.com/v1";
-const NIM_MODEL_KIMI     = "moonshotai/kimi-k2.6";
-const NIM_MODEL_GLM      = "z-ai/glm-5.1";
-const NIM_MODEL_NEMOTRON = "nvidia/nemotron-3-ultra-550b-a55b";
-const NIM_MAX_TOKENS = 16384;            // NIM context 充裕；深度模式 thinking 會佔額度，給足避免重寫被截斷
-const GROQ_MODEL = "llama-3.3-70b-versatile";
-const GROQ_TPM = 12000;                  // 免費 tier：prompt + max_tokens 合計上限
-const GROQ_MAX_TOKENS = 6000;
-const FAST_DRAFT_CHARS = 600;            // 草稿 ≤ 此字數 → 關 thinking 走快速路徑（短稿不需深度推理）
-
-// 繁中粗估 ~1.6 token/字（保守上估：寧可少給 max_tokens 也不要撞 Groq TPM 413）
-function estimateTokens(text: string): number {
-  return Math.ceil(text.length * 1.6);
-}
 
 admin.initializeApp();
 
@@ -291,42 +274,14 @@ const analyzeHandler = async (req: any, res: any): Promise<void> => {
   ];
   const promptTokens = estimateTokens(SYSTEM_PROMPT) + estimateTokens(userPrompt);
 
-  // timeout 拉到接近 function 上限（非串流要等完整生成，深度模式可能 2~3 分）；
-  // maxRetries:0 → 初次失敗立刻換下一顆，不卡 SDK 退避重試。
-  const nim  = new OpenAI({ apiKey: NVIDIA_API_KEY.value(), baseURL: NIM_BASE_URL, timeout: 530000, maxRetries: 0 });
-  const groq = new Groq({ apiKey: GROQ_API_KEY.value(), timeout: 120000, maxRetries: 0 });
+  // 供應商鏈（NIM Kimi→GLM→Nemotron→Groq）+ 手動覆寫 + 快慢判定，全在 providers.ts。
+  const modelChoice = resolveModelChoice(req.body?.model);
+  const thinkingChoice = resolveThinkingChoice(req.body?.thinking);
+  const fast = resolveFast(thinkingChoice, draft.length);
 
-  // 依序嘗試；初次連線丟錯(429/5xx/404)就換下一顆。NIM 三顆中文強模型優先。
-  // thinkOff：短稿快速模式時關 thinking 的參數（各家 NIM 參數名不同）。
-  type Provider = { label: string; client: any; model: string; maxTokens: number; thinkOff?: Record<string, unknown> };
-  const providers: Provider[] = [
-    { label: "nim-kimi",     client: nim, model: NIM_MODEL_KIMI,     maxTokens: NIM_MAX_TOKENS, thinkOff: { chat_template_kwargs: { thinking: false } } },
-    { label: "nim-glm",      client: nim, model: NIM_MODEL_GLM,      maxTokens: NIM_MAX_TOKENS, thinkOff: { chat_template_kwargs: { enable_thinking: false } } },
-    { label: "nim-nemotron", client: nim, model: NIM_MODEL_NEMOTRON, maxTokens: NIM_MAX_TOKENS, thinkOff: { chat_template_kwargs: { enable_thinking: false } } },
-  ];
-  // Groq 跨供應商備援：受 TPM 限制，僅在「容得下完整重寫」時才納入(否則必 413，納入無益)。
-  const groqBudget = GROQ_TPM - promptTokens - 600;
-  if (groqBudget >= 1500) {
-    providers.push({ label: "groq", client: groq, model: GROQ_MODEL, maxTokens: Math.min(GROQ_MAX_TOKENS, groqBudget) });
-  }
-
-  // 手動覆寫（前端可選）：model = auto|kimi|groq；thinking = auto|on|off
-  const modelChoice = ["auto", "kimi", "groq"].includes(String(req.body?.model || "auto").toLowerCase())
-    ? String(req.body?.model || "auto").toLowerCase() : "auto";
-  const thinkingChoice = ["auto", "on", "off"].includes(String(req.body?.thinking || "auto").toLowerCase())
-    ? String(req.body?.thinking || "auto").toLowerCase() : "auto";
-
-  // 指定模型 → 提到最前（其餘仍作 fallback）
-  const prefLabel = modelChoice === "kimi" ? "nim-kimi" : modelChoice === "groq" ? "groq" : "";
-  if (prefLabel) {
-    const pref = providers.filter((p) => p.label === prefLabel);
-    if (pref.length) providers.splice(0, providers.length, ...pref, ...providers.filter((p) => p.label !== prefLabel));
-  }
-
-  // thinking：on=強制深度、off=強制快速、auto=依字數；Groq 無 thinking，恆快速
-  const fast = thinkingChoice === "on" ? false
-             : thinkingChoice === "off" ? true
-             : draft.length <= FAST_DRAFT_CHARS;
+  const nim = makeNimClient(NVIDIA_API_KEY.value());
+  const groq = makeGroqClient(GROQ_API_KEY.value());
+  const providers = buildProviderChain({ nim, groq, promptTokens, modelChoice });
 
   // 快速模式（無深度思考）容易只做表面潤飾 → 追加強制硬邏輯指令，把審稿水準拉回來
   if (fast) {

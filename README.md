@@ -1,6 +1,6 @@
 # Fantasy Lore Guardian / 大賢者鑑定系統
 
-西方奇幻小說編修核心。使用者貼上一段草稿後，前端以 Firebase Auth 建立身份，透過 Firebase Functions v2 的 SSE 串流呼叫 Groq，回傳「修改後全文」與「審查摘要」，並依帳號同步草稿歷史。
+西方奇幻小說編修核心。使用者貼上一段草稿後，前端以 Firebase Auth 建立身份，透過 Firebase Functions v2 呼叫 LLM 供應商鏈（NVIDIA NIM 多模型 + Groq 跨供應商備援；非串流、以單一 SSE 事件回傳），得到「修改後全文」與「審查摘要」，並依帳號同步草稿歷史。可手動選模型（自動／Kimi／Groq）與思考模式（深度／快速）。
 
 > **2026-06-07 架構重做（source of truth 切換）**
 > 本 README 已重寫，描述的是 **`rebuild/aaa-2026` 分支的模組化新架構**（lean 語意化 `index.html` + 外部模組 + `public/css/*` 設計系統 + `public/js/effects/*` 特效層），這是現行**正式入口**與唯一 source of truth。
@@ -17,7 +17,7 @@
   1. 不在程式碼、註解、log、issue、README 記錄 Groq API key / key prefix / Firebase Admin credential / Secret Manager 輸出 / 任何 server secret。
   2. 不改 Firebase / Auth / API / Firestore 資料契約、分析 SSE 流程、配額邏輯、`firestore.rules`，除非任務明確要求。
   3. 所有 WebGL / Canvas / Audio loop 必須有 cleanup：離開登入頁、登出、context lost、visibility hidden、頁面卸載都要停止 CPU / GPU 工作並 dispose。
-  4. Groq 免費 tier：控制 prompt 與 `max_tokens`，維持後端每日配額（訪客 5、帳號 30）。不升級 tier、不還原多版本知識庫。
+  4. **永久免費 tier only**：主力 NVIDIA NIM（Kimi K2.6 / GLM-5.1 / Nemotron 3 Ultra，免費 endpoint）+ Groq 免費備援；控制 prompt 與 `max_tokens`，維持後端每日配額（訪客 5、帳號 30）。不升級任何付費 tier、不還原多版本知識庫。NIM key（`nvapi-`）只放 Secret Manager。
 - 不可為了 HUD / 特效氛圍犧牲主工具頁可讀性：草稿、輸出、登入欄位、錯誤訊息、主按鈕、帳號/歷史操作必須比裝飾更清楚、更可點擊。
 - 改 WebGL / 特效 / CSS / 登入流程 / 前端時，跑 `npm run check:frontend`、`npm test`，必要時 `npm run build`；部署後 `firebase deploy --only hosting` 與 `npm run smoke:hosting`。文件-only 至少 `git diff --check`。
 - 前端無 build step（vanilla ES Modules）。Three.js 與其 addon 走 **jsdelivr full-URL / `/+esm`**（已在 CSP `script-src` 白名單），**不使用 importmap、不需改 CSP hash**。
@@ -27,7 +27,7 @@
 ## 最高優先級
 
 1. **安全與資料隔離優先**：Secret hygiene、Auth 為唯一登入真相、Firestore owner-only、配額由後端決定，前端不可偽造。
-2. **成本控制**：Groq 免費 tier，prompt + `max_tokens` 受控，後端每日配額硬限制。
+2. **成本控制**：永久免費 tier（NIM 多模型 + Groq 備援），prompt + `max_tokens` 受控，後端每日配額硬限制。
 3. 視覺語言是 **黑暗西幻魔導 + 黑金魔法書**，不是冷藍 cyberpunk、蘋果式 glassmorphism、SaaS 登入頁或行銷 landing page。
 4. 登入頁可以電影感極強；主工具頁背景可保留黑金氛圍，但**內容區可讀性永遠優先**，特效只在背景層、不蓋表單/結果/操作。
 5. Firebase Auth 是唯一登入真相。正式入口只保留 Google popup；handoff 動畫只能在真實 Google 登入成功後播放，不可用假帳密/自動成功/固定時間硬切偽裝驗證。
@@ -43,11 +43,12 @@ Fantasy Lore Guardian 是「禁忌魔導書庫 / 西方奇幻小說編修核心�
 
 產品邊界：
 
-- 單次輸入上限：前端與後端皆 1800 字。
+- 單次輸入上限：前端與後端皆 5,000 字（NIM 大 context；Groq 備援依 TPM 動態壓 `max_tokens`，容不下則跳過）。
 - 分析目標：單段深度審查與文學級重寫，不做長篇分章、不接外部設定書。
 - 輸出：先完整重寫，再給精簡審查摘要。
+- 雙模式：≤600 字或手動關 thinking 走快速（~20-40s）；較長走深度（thinking 開，~1-3 分）。
 - 使用者資料：Firebase Auth 隔離帳號，Firestore 保存歷史，LocalStorage 做草稿與快取輔助。
-- 成本：Groq 免費 tier，後端配額每日訪客 5 次、登入帳號 30 次。
+- 成本：永久免費 tier（NIM 多模型 + Groq 備援），後端配額每日訪客 5 次、登入帳號 30 次。
 
 ---
 
@@ -62,9 +63,11 @@ flowchart LR
   UI --> Fn["Firebase Functions v2 analyzeV2"]
   Fn --> Admin["Firebase Admin 驗 ID token"]
   Fn --> Quota["Firestore quota/{uid}"]
-  Fn --> Groq["Groq llama-3.3-70b-versatile"]
+  Fn --> NIM["NVIDIA NIM：Kimi K2.6 → GLM-5.1 → Nemotron 3 Ultra"]
+  Fn --> Groq["Groq llama-3.3-70b（跨供應商備援）"]
+  NIM --> Fn
   Groq --> Fn
-  Fn --> SSE["SSE text/event-stream"]
+  Fn --> SSE["單一 SSE 事件（非串流，避免 CJK 亂碼）"]
   SSE --> UI
   UI --> History["Firestore users/{uid}/history"]
 ```
@@ -83,6 +86,7 @@ public/
     app/
       auth.js           Firebase 初始化 + Google 登入/登出（行為不變）
       ui.js             彈窗/抽屜/toast/狀態/遮罩（分層正確、transform/opacity）
+      review-controls.js 模型放射選單（自/深/快）+ 思考開關，寫入 AppState 供 analyze-api 帶入
     core/               config.js（設定）、state.js（AppState）、types.js
     services/           analyze-api.js（呼叫 Cloud Function + SSE）、cache.js（per-uid 快取）
     utils/              result-sections.js（拆段 + markdown-lite）、hud-state.js
@@ -117,17 +121,19 @@ public/
 - 導航：`#historyToggleBtn`、`#logoutBtn`。
 - 歷史：`#historyPanel`、`#historyClearAllBtn`、`#historyCloseBtn`、`#sysStatusText`、`#historyList`。
 - 草稿：`#draftField`、`#charCount`、`#draftSync`、`#analyzeBtn`（`[data-op="analyze"]`）、`#clearBtn`。
+- 審稿控制：`#modelDial`、`#modelDialOpen`、`input[name="modelPick"]`（auto/kimi/groq）、`#modelCurrent`、`#thinkToggle`（`.spark-switch`）、`#thinkInput`。
 - 結果：`#resultStatusText`、`#analysisResult`。
 - 覆蓋層：`#scrim`、`#logoutModal`（`#logoutCancelBtn`/`#logoutConfirmBtn`）、`#linkStart`、`#toasts`。
 - 狀態 class：`body.is-authed`（登入↔App 切換）。
 - 特效接點事件：`worldforge:analysis-start` / `worldforge:analysis-complete`（特效層唯讀訂閱，驅動能量；不改業務邏輯）。
 
-### Backend（不動）
+### Backend
 
-- `functions/src/index.ts`：`analyzeV2` HTTP function。CORS、App Check、Auth、輸入驗證、配額、Groq 串流、structured logging。
-- `functions/src/config.ts`：CORS allowlist 與西幻總編 system prompt。
-- `functions/src/validation.ts`：1800 字限制與 prompt injection marker 防護。
-- `functions/src/quota.ts`：每日配額 transaction、冪等扣款、Groq 失敗退還。
+- `functions/src/index.ts`：`analyzeV2` HTTP function（handler）。CORS、App Check、Auth、輸入驗證、配額、供應商呼叫迴圈（非串流 → 單一 SSE 事件）、structured logging。
+- `functions/src/providers.ts`：**LLM 供應商層**。NIM/Groq client 建構、供應商鏈組裝（Kimi→GLM→Nemotron→Groq）、token 估算、model/thinking/快慢解析、各家關 thinking 參數。**改模型 / 順序 / 字數門檻只動這檔**。
+- `functions/src/config.ts`：CORS allowlist 與西幻總編 system prompt（v2，14 條內部審稿規則）。
+- `functions/src/validation.ts`：5,000 字限制與 prompt injection marker 防護。
+- `functions/src/quota.ts`：每日配額 transaction、冪等扣款、供應商失敗退還。
 - `firestore.rules`：只允許 `users/{uid}/history/{id}` owner CRUD，限制固定欄位、id、時間戳、字串長度。
 
 ### Runtime 限制
@@ -135,7 +141,7 @@ public/
 - 前端 Vanilla JS ES Modules，**無 build step**。
 - Three.js 0.164.1 與其 addon 由 **jsdelivr full-URL / `/+esm`** 動態 import（lazy）；不用 importmap，不需 CSP hash。jsdelivr 已在 CSP `script-src` / `script-src-elem` 白名單。
 - Firebase Web SDK 使用 compat 版本（gstatic CDN，`defer` + `integrity`）；App Check report-only，不強制阻擋。
-- Cloud Functions：Node 22、Functions v2、Secret Manager `GROQ_API_KEY`。
+- Cloud Functions：Node 22、Functions v2、Secret Manager `GROQ_API_KEY` + `NVIDIA_API_KEY`（`nvapi-`，效期 6 個月，到期需重設並重部署）。依賴 `openai`（打 NIM OpenAI 相容端點 `integrate.api.nvidia.com/v1`）+ `groq-sdk`。
 - CSP 不允許任意 inline script；首屏 critical inline `<style>` 由 `style-src 'unsafe-inline'` 放行。`**/*.@(js|css|html)` 由 Hosting 設 `Cache-Control: no-cache`（部署即傳播）。
 
 ---
@@ -226,26 +232,26 @@ sequenceDiagram
   participant A as main.js
   participant API as analyze-api.js
   participant F as analyzeV2
-  participant G as Groq
+  participant P as Providers (NIM/Groq)
   participant H as Firestore History
 
   U->>A: 貼上草稿並送出
-  A->>A: 檢查空值、1800 字、rate limit
-  A->>API: analyzeDraft(draft, AbortSignal)
-  API->>API: 讀取同 uid 快取
+  A->>A: 檢查空值、5000 字、rate limit
+  A->>API: analyzeDraft(draft, model, thinking, AbortSignal)
+  API->>API: 讀取同 uid+model+thinking 快取
   API->>API: 取得 Firebase ID token 與 App Check token
-  API->>F: POST text + Authorization + X-Firebase-AppCheck
+  API->>F: POST text/model/thinking + Authorization + X-Firebase-AppCheck
   F->>F: CORS / App Check / Auth / Validation / Quota
-  F->>G: Groq streaming completion
-  G-->>F: token chunks
-  F-->>API: SSE data chunks
-  API-->>A: cumulative text
-  A->>A: 串流期間更新 result shell
-  A->>A: 完成後 sanitize + 分區渲染
+  F->>F: 組裝供應商鏈 + 快慢判定（providers.ts）
+  F->>P: 依序嘗試（非串流），初次失敗換下一顆
+  P-->>F: 完整 completion
+  F-->>API: 單一 SSE 事件（完整結果）+ [DONE]
+  API-->>A: 完整文字
+  A->>A: sanitize + 容錯分區渲染
   A->>H: addHistory(draft, result)
 ```
 
-錯誤處理：新分析 abort 前一筆；前端 UX timeout 180s；後端錯誤統一 `{ code, message }`（相容舊 `{ error }`）；Groq 建連失敗退還 quota；SSE 中途錯誤送 `data: { error }`，前端中斷並顯示可讀錯誤。
+錯誤處理：新分析 abort 前一筆；前端 UX timeout 300s（深度模式）；後端錯誤統一 `{ code, message }`（相容舊 `{ error }`）；**所有供應商皆失敗或回空白**才退還 quota 並回 HTTP 錯誤（fallback 鏈先嘗試 NIM 三顆再 Groq）；非串流故無中途 SSE 中斷。
 
 ---
 
@@ -333,7 +339,7 @@ firebase functions:log --only analyzeV2 -n 80
 
 ### 改分析與結果後
 
-- 空草稿不可送；超過 1800 字顯示前端錯誤；Ctrl/Cmd+Enter 可送。
+- 空草稿不可送；超過 5,000 字顯示前端錯誤；Ctrl/Cmd+Enter 可送；模型／思考切換正確帶入請求與快取鍵。
 - SSE 首字後 result shell 不重複重建；完成後分「修改後全文」與「審查摘要」。
 - 完整複製、分區複製、重新審閱、回到手稿可用。
 - 歷史新增、載入、單筆刪除、批次刪除正常。
@@ -355,7 +361,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 前端入口：`public/index.html`
 - 設計系統 CSS：`public/css/tokens.css`、`app.css`、`motion.css`
 - 主流程 / 編排：`public/js/main.js`
-- Auth / UI 控制：`public/js/app/auth.js`、`public/js/app/ui.js`
+- Auth / UI / 審稿控制：`public/js/app/auth.js`、`public/js/app/ui.js`、`public/js/app/review-controls.js`
 - 核心設定 / 狀態 / 型別：`public/js/core/`
 - API 串流 / 快取：`public/js/services/analyze-api.js`、`cache.js`
 - 結果解析 / HUD 工具：`public/js/utils/result-sections.js`、`hud-state.js`
@@ -363,7 +369,7 @@ firebase functions:log --only analyzeV2 -n 80
 - Legacy 強 WebGL 模組（Phase 2 接回）：`public/js/webgl/`
 - 禁詞資料：`public/forbidden-words.json`
 - Service Worker：`public/sw.js`、`sw-register.js`、`swkill.js`
-- Cloud Function：`functions/src/index.ts`、`config.ts`、`validation.ts`、`quota.ts`
+- Cloud Function：`functions/src/index.ts`（handler）、`providers.ts`（LLM 供應商層）、`config.ts`、`validation.ts`、`quota.ts`
 - Firestore rules：`firestore.rules`
 - Hosting / CSP 設定：`firebase.json`
 - Hosting smoke：`scripts/smoke-hosting.mjs`
