@@ -29,7 +29,7 @@ export function buildHudState({
   analyzing = false,
 } = {}) {
   const draftLength = String(draftText || "").length;
-  const draftRatio = clamp(draftLength / 1800);
+  const draftRatio = clamp(draftLength / 5000);
   const hitCount = Math.max(0, Number(forbiddenHits) || 0);
   const integrityRatio = clamp(1 - hitCount / 10);
   const barrierRatio = appCheckRatio[String(appCheckStatus || "").toLowerCase()] ?? 0.3;
@@ -46,7 +46,7 @@ export function buildHudState({
       flow: quotaLimit > 0 ? `${Math.max(0, quotaRemaining)}/${quotaLimit}` : "—",
       quotaResetAt: quota?.resetAt || "",
       analyzing: analyzing ? "ANALYZING" : "STANDBY",
-      draftLength: `${draftLength}/1800`,
+      draftLength: `${draftLength}/5000`,
     },
     analyzing: !!analyzing,
   };

@@ -32,13 +32,13 @@ export const APP_CHECK_CONFIG = {
 export const API_CONFIG = {
   FUNCTIONS_URL:       "https://analyzev2-yxfwrism4q-uc.a.run.app",
   QUOTA_URL:           "https://us-central1-project-7276420283723642146.cloudfunctions.net/quotaPeek",
-  FETCH_TIMEOUT_MS:    180000,
+  FETCH_TIMEOUT_MS:    300000,  // 深度模式：NIM thinking 開啟，長稿可達 2~3 分（後端 timeout 540s）
   FIRESTORE_TIMEOUT_MS: 5000,
 };
 
 /** User-input, persistence, and history size limits. */
 export const LIMITS = {
-  MAX_INPUT_CHARS:  1800,   // 單段審查上限（集大成 vFinal：單段深度審查、不分塊）
+  MAX_INPUT_CHARS:  5000,   // 單段審查上限（NIM 大 context 後放寬；Groq 備援會動態壓 max_tokens）
   MAX_DRAFT_STORE:  8192,
   MAX_RESULT_CHARS: 81920,
   MAX_HISTORY:      30,
@@ -48,7 +48,7 @@ export const LIMITS = {
 export const UI_CONFIG = {
   STORAGE_KEY:       "flg_history_v2",
   DRAFT_KEY:         "flg_draft_v1",
-  ANALYSIS_RULE_VERSION: "hard-logic-western-fantasy-v1",
+  ANALYSIS_RULE_VERSION: "hard-logic-western-fantasy-v2",
   DRAFT_DEBOUNCE_MS: 3000,
   RATE_LIMIT_MAX:    5,
   RATE_LIMIT_WINDOW_MS: 60000,

@@ -1,4 +1,4 @@
-export const MAX_DRAFT_CHARS = 1800;
+export const MAX_DRAFT_CHARS = 5000;
 
 export type DraftValidationResult =
   | { ok: true; draft: string }

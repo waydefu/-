@@ -1,7 +1,7 @@
 // @ts-nocheck
 // 大賢者鑑定系統 — App 進入點與控制器（Stage 1 基礎重生）
 // 功能邏輯沿用 core/services/utils；無 WebGL 耦合（Stage 2 再以 effects-manager 漸進增強）。
-import { LIMITS, MSG, UI_CONFIG } from "./core/config.js";
+import { API_CONFIG, LIMITS, MSG, UI_CONFIG } from "./core/config.js";
 import { AppState } from "./core/state.js";
 import { analyzeDraft, isApiError } from "./services/analyze-api.js";
 import { splitAnalysisSections, renderMarkdownLite } from "./utils/result-sections.js";
@@ -337,7 +337,7 @@ async function runAnalysis() {
   setLine("resultStatusText", "正在解析手稿並建立鑑定卷宗");
   const progress = startProgress(box);
   $("analysisResult")?.closest(".col-stack")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  const timeout = window.setTimeout(() => ctrl.abort(), 180000);
+  const timeout = window.setTimeout(() => ctrl.abort(), API_CONFIG.FETCH_TIMEOUT_MS);
   try {
     const { result, fromCache } = await analyzeDraft(draft, ctrl.signal, reqId, () => {});
     if (reqId !== AppState.get("currentReqId")) return;
@@ -425,6 +425,39 @@ function applyAuthState(user) {
 }
 
 /* ════════ 綁定（一次性，無重複） ════════ */
+/* ════════ 模型 / 思考模式手動控制 ════════ */
+function computeThinking(model, thinkOn) {
+  if (model === "auto") return "auto";   // 依字數自動切深／快
+  if (model === "groq") return "off";    // 弱模型恆快速（少字規則）
+  return thinkOn ? "on" : "off";         // Kimi：看思考開關
+}
+function initReviewControls() {
+  const radios = Array.from(document.querySelectorAll('input[name="modelPick"]'));
+  const current = $("modelCurrent");
+  const thinkInput = $("thinkInput");
+  const thinkWrap = $("thinkToggle");
+  const dialOpen = $("modelDialOpen");
+  const label = { auto: "自", kimi: "深", groq: "快" };
+
+  const sync = () => {
+    const model = radios.find((r) => r.checked)?.value || "auto";
+    const thinkOn = !!(thinkInput && thinkInput.checked);
+    AppState.set("reviewModel", model);
+    AppState.set("reviewThinking", computeThinking(model, thinkOn));
+    if (current) current.textContent = label[model] || "自";
+    const thinkActive = model === "kimi";       // 思考開關只在 Kimi 時生效
+    thinkWrap?.classList.toggle("is-disabled", !thinkActive);
+    if (thinkInput) thinkInput.disabled = !thinkActive;
+  };
+
+  radios.forEach((r) => r.addEventListener("change", () => {
+    sync();
+    if (dialOpen) dialOpen.checked = false;     // 選完收合放射選單
+  }));
+  thinkInput?.addEventListener("change", sync);
+  sync();
+}
+
 function bind() {
   bindScrim();
 
@@ -457,6 +490,7 @@ function bind() {
 
   $("analyzeBtn")?.addEventListener("click", runAnalysis);
   $("clearBtn")?.addEventListener("click", clearDraft);
+  initReviewControls();
 
   const field = $("draftField");
   field?.addEventListener("input", () => {

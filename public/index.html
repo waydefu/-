@@ -143,10 +143,10 @@
           <div class="panel-body">
             <div class="field">
               <label class="field-label" for="draftField">小說手稿</label>
-              <span class="field-help" id="draftHelp">建議 1,800 字內；系統會先完整重寫，再輸出精煉審查摘要。</span>
+              <span class="field-help" id="draftHelp">建議 5,000 字內；≤600 字自動加速、較長走深度審稿，亦可右側手動指定模型與思考模式。</span>
               <textarea class="draft-input" id="draftField" placeholder="貼上你的小說草稿…" aria-describedby="draftHelp charCount"></textarea>
               <div class="draft-meta">
-                <span id="charCount">0 / 1,800</span>
+                <span id="charCount">0 / 5,000</span>
                 <span id="draftSync" aria-live="polite">草稿記憶待命中</span>
               </div>
               <p class="spell-warn" id="forbiddenWarn" aria-live="polite" hidden></p>
@@ -165,6 +165,26 @@
               <button class="clear-del" type="button" id="clearBtn" aria-label="清空手稿">
                 <svg class="clear-svg" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path></svg>
               </button>
+              <div class="review-controls" role="group" aria-label="模型與思考模式">
+                <div class="model-dial" id="modelDial">
+                  <input type="checkbox" id="modelDialOpen" class="md-trigger" aria-label="展開模型選擇">
+                  <label for="modelDialOpen" class="md-circle" title="選擇模型"><span class="md-current" id="modelCurrent">自</span></label>
+                  <div class="md-subs">
+                    <span class="md-sub"><input value="auto" name="modelPick" type="radio" id="mdAuto" class="md-sub-trigger" checked><label for="mdAuto" title="自動（依字數切深／快）">自</label></span>
+                    <span class="md-sub"><input value="kimi" name="modelPick" type="radio" id="mdKimi" class="md-sub-trigger"><label for="mdKimi" title="Kimi 深度">深</label></span>
+                    <span class="md-sub"><input value="groq" name="modelPick" type="radio" id="mdGroq" class="md-sub-trigger"><label for="mdGroq" title="Groq 快速（弱模型，少字規則）">快</label></span>
+                  </div>
+                </div>
+                <label class="spark-switch" id="thinkToggle" title="思考模式（選 Kimi 時生效）">
+                  <input type="checkbox" id="thinkInput" checked aria-label="思考模式">
+                  <div class="track">
+                    <div class="stars"><span class="star"></span><span class="star"></span><span class="star"></span><span class="star"></span></div>
+                    <div class="knob">
+                      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M13 2L3 14H12L11 22L21 10H12L13 2Z" fill="currentColor"></path></svg>
+                    </div>
+                  </div>
+                </label>
+              </div>
             </div>
           </div>
         </div>
