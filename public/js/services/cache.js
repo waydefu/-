@@ -1,28 +1,8 @@
 // @ts-check
 
-import { API_CONFIG, UI_CONFIG } from '../core/config.js';
+import { UI_CONFIG } from '../core/config.js';
 
 const CACHE_KEY_SEPARATOR = "::";
-
-/** Sliding-window client-side rate limiter. */
-export class RateLimiter {
-  constructor(maxCalls, windowMs) {
-    this.maxCalls = maxCalls;
-    this.windowMs = windowMs;
-    this.timestamps = [];
-  }
-
-  tryAcquire() {
-    const now = Date.now();
-    this.timestamps = this.timestamps.filter((t) => now - t < this.windowMs);
-    if (this.timestamps.length >= this.maxCalls) {
-      const waitSec = Math.ceil((this.timestamps[0] + this.windowMs - now) / 1000);
-      return { ok: false, waitSec: Math.max(1, waitSec) };
-    }
-    this.timestamps.push(now);
-    return { ok: true, waitSec: 0 };
-  }
-}
 
 /** LocalStorage-backed LRU cache for analysis results. */
 export class AnalysisCache {
@@ -101,20 +81,5 @@ export class AnalysisCache {
   }
 }
 
-/** Shared limiter for analysis requests. */
-export const analyzeRateLimiter = new RateLimiter(
-  UI_CONFIG.RATE_LIMIT_MAX,
-  UI_CONFIG.RATE_LIMIT_WINDOW_MS
-);
-
 /** Shared analysis response cache. */
 export const analysisCache = new AnalysisCache(UI_CONFIG.CACHE_MAX_ENTRIES);
-
-/** Add a timeout guard to Firestore compat SDK promises. */
-export const withFirestoreTimeout = (promise, ms = API_CONFIG.FIRESTORE_TIMEOUT_MS) =>
-  Promise.race([
-    promise,
-    new Promise((_, reject) => {
-      setTimeout(() => reject(Object.assign(new Error("Firestore timeout"), { code: "deadline-exceeded" })), ms);
-    }),
-  ]);

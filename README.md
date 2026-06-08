@@ -89,7 +89,7 @@ public/
       review-controls.js 模型放射選單（自/深/快）+ 思考開關，寫入 AppState 供 analyze-api 帶入
     core/               config.js（設定）、state.js（AppState）、types.js
     services/           analyze-api.js（呼叫 Cloud Function + SSE）、cache.js（per-uid 快取）
-    utils/              result-sections.js（拆段 + markdown-lite）、hud-state.js
+    utils/              result-sections.js（拆段 + markdown-lite + 容錯標題解析）
     effects/
       effects-manager.js  WebGL lazy 初始化 + context-lost→CSS fallback + 生命週期總控
       great-sage-core.js  現行背景 WebGL 場景（Three.js via jsdelivr）
@@ -364,7 +364,7 @@ firebase functions:log --only analyzeV2 -n 80
 - Auth / UI / 審稿控制：`public/js/app/auth.js`、`public/js/app/ui.js`、`public/js/app/review-controls.js`
 - 核心設定 / 狀態 / 型別：`public/js/core/`
 - API 串流 / 快取：`public/js/services/analyze-api.js`、`cache.js`
-- 結果解析 / HUD 工具：`public/js/utils/result-sections.js`、`hud-state.js`
+- 結果解析：`public/js/utils/result-sections.js`
 - 特效層：`public/js/effects/effects-manager.js`、`great-sage-core.js`、`interactions.js`、`link-start.js`
 - Legacy 強 WebGL 模組（Phase 2 接回）：`public/js/webgl/`
 - 禁詞資料：`public/forbidden-words.json`

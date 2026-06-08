@@ -50,15 +50,8 @@ export const UI_CONFIG = {
   DRAFT_KEY:         "flg_draft_v1",
   ANALYSIS_RULE_VERSION: "hard-logic-western-fantasy-v2",
   DRAFT_DEBOUNCE_MS: 3000,
-  RATE_LIMIT_MAX:    5,
-  RATE_LIMIT_WINDOW_MS: 60000,
   CACHE_MAX_ENTRIES: 20,
 };
-
-/** Default analyze button label. */
-export const BTN_DEFAULT = "開啟法典審閱";
-/** Analyze button label while a request is active. */
-export const BTN_LOADING = "法典審閱中…";
 
 /** Localized UI copy used by the front-end runtime. */
 export const MSG = {
@@ -69,11 +62,10 @@ export const MSG = {
   SYNC_SAVE_ERR:  "草稿記憶儲存失敗",
   OFFLINE_TOAST:  "雲端資料載入失敗，顯示本機暫存紀錄。",
   SAVE_ERR_TOAST: "雲端儲存失敗（{code}），本機紀錄仍保留。",
-  TIMEOUT:        "請求逾時（超過 180 秒），請稍後再試。",
+  TIMEOUT:        "請求逾時（超過 300 秒），請稍後再試。",
   FETCH_FAIL:     "無法連線至分析服務，請確認網路後重試。",
   NO_FIREBASE:    "驗證服務尚未就緒，請稍後再試。",
   POPUP_CLOSED:   "auth/popup-closed-by-user",
-  RATE_LIMIT:     "分析請求過於頻繁，請 {sec} 秒後再試。",
   QUOTA_EXCEEDED: "今日使用次數已達上限，請明日再試。",
   CACHE_HIT:      "已從草稿記憶載入相同文本的分析結果。",
 };

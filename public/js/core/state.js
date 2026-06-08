@@ -28,9 +28,3 @@ state[key] = value;
 },
 };
 })();
-
-/** @type {import('./types.js').HistoryItem[]} */
-export const historyData = [];
-
-/** Selected history item ids. */
-export const selectedIds = new Set();

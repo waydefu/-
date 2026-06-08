@@ -16,7 +16,7 @@ const MODEL_LABEL = { auto: "自", kimi: "深", groq: "快" };
  * @param {boolean} thinkOn
  * @returns {"auto"|"on"|"off"}
  */
-export function computeThinking(model, thinkOn) {
+function computeThinking(model, thinkOn) {
   if (model === "auto") return "auto";
   if (model === "groq") return "off";
   return thinkOn ? "on" : "off";

@@ -1,6 +1,6 @@
 // @ts-check
 
-export function escapeHtml(value) {
+function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -130,12 +130,4 @@ export function renderMarkdownLite(markdown) {
   flushParagraph(paragraph, html);
   flushList(list, html);
   return html.join("\n");
-}
-
-export function sectionsToPlainText(parsed) {
-  if (parsed?.fallback) return parsed.fallback;
-  const parts = [];
-  if (parsed?.rewrite) parts.push(`修改後全文\n\n${parsed.rewrite}`);
-  if (parsed?.summary) parts.push(`審查摘要\n\n${parsed.summary}`);
-  return parts.join("\n\n");
 }
