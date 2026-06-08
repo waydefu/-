@@ -456,42 +456,41 @@ button { font: inherit; color: inherit; }
 .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label { transform: translate(-54px, -32px) scale(1); opacity: 1; transition-delay: 0.10s; }
 .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label { transform: translate(54px, -32px) scale(1); opacity: 1; transition-delay: 0.16s; }
 
-/* 思考開關（spark-switch · 黑金 · 滑動 warp） */
+/* 思考開關（spark-switch · 依使用者範例配色 · 滑動 warp） */
 .spark-switch { display: inline-block; font-size: 20px; flex: 0 0 auto; transition: opacity 0.2s ease; }
 .spark-switch.is-disabled { opacity: 0.4; pointer-events: none; }
 .spark-switch input { display: none; }
 .spark-switch .track {
-  position: relative; width: 5em; height: 2.5em; background: #100c06;
+  position: relative; width: 5em; height: 2.5em; background: #080e27;
   border-radius: 1.25em; cursor: pointer; overflow: hidden;
-  border: 0.08em solid rgba(214,178,90,0.3);
-  box-shadow: inset 0 0.2em 0.5em rgba(0,0,0,0.6), 0 0.1em 0.3em rgba(0,0,0,0.4);
-  transition: border-color 0.4s ease, box-shadow 0.4s ease;
+  border: 0.1em solid rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 0.2em 0.5em rgba(0, 0, 0, 0.6), 0 0.2em 0.4em rgba(0, 0, 0, 0.2);
+  transition: all 0.4s ease;
 }
 .spark-switch .track::before {
   content: ""; position: absolute; inset: 0;
-  background: linear-gradient(90deg, #6b4f1c, #f0d488); opacity: 0; transition: opacity 0.4s ease;
+  background: linear-gradient(90deg, #3478f6, #f5ba1f); opacity: 0; transition: opacity 0.4s ease;
 }
 .spark-switch .knob {
   position: absolute; top: 0.15em; left: 0.15em; width: 2em; height: 2em;
-  background: #f3e6c4; border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  z-index: 2; transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1), background 0.4s ease;
-  box-shadow: 0 0.1em 0.3em rgba(0,0,0,0.4);
+  background: #f7f7f7; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+  z-index: 2; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0.1em 0.3em rgba(0, 0, 0, 0.3);
 }
-.spark-switch .knob svg { width: 1.2em; height: 1.2em; color: #4a3a14; transition: color 0.4s ease, transform 0.4s ease; }
+.spark-switch .knob svg { width: 1.2em; height: 1.2em; color: #272727; transition: color 0.4s ease, transform 0.4s ease; }
 .spark-switch input:checked + .track {
-  border-color: rgba(240,212,136,0.8);
-  box-shadow: inset 0 0.1em 0.3em rgba(0,0,0,0.4), 0 0 0.6em 0.05em rgba(230,184,90,0.45);
+  border-color: rgba(245, 186, 31, 0.8);
+  box-shadow: inset 0 0.1em 0.3em rgba(0, 0, 0, 0.4), 0 0 0.6em 0.1em rgba(245, 186, 31, 0.4);
 }
-.spark-switch input:checked + .track .knob { transform: translateX(2.5em); background: #fff6e0; }
-.spark-switch input:checked + .track::before { opacity: 0.6; }
-.spark-switch input:checked + .track .knob svg { color: #b8860b; transform: scale(1.1); }
+.spark-switch input:checked + .track .knob { transform: translateX(2.5em); }
+.spark-switch input:checked + .track::before { opacity: 1; }
+.spark-switch input:checked + .track .knob svg { color: #f5ba1f; transform: scale(1.1); }
 .spark-switch .stars { position: absolute; inset: 0; z-index: 1; }
-.spark-switch .star { position: absolute; background: #ffe9b0; border-radius: 50%; box-shadow: 0 0 0.3em rgba(255,228,150,0.85); transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s, box-shadow 0.3s; }
+.spark-switch .star { position: absolute; background: #f7f7f7; border-radius: 50%; transition: width 0.3s, height 0.3s, background 0.3s, border-radius 0.3s; }
 .spark-switch .star:nth-child(1) { top: 0.4em; left: 100%; width: 0.15em; height: 0.15em; animation: spk-drift 3s linear infinite; }
 .spark-switch .star:nth-child(2) { top: 1.2em; left: 100%; width: 0.2em; height: 0.2em; animation: spk-drift 4s linear infinite 1s; }
 .spark-switch .star:nth-child(3) { top: 2em; left: 100%; width: 0.1em; height: 0.1em; animation: spk-drift 2.5s linear infinite 0.5s; }
 .spark-switch .star:nth-child(4) { top: 0.8em; left: 100%; width: 0.15em; height: 0.15em; animation: spk-drift 5s linear infinite 2s; }
-.spark-switch input:checked + .track .star { width: 1.6em; height: 0.16em; border-radius: 0.08em; background: #fff6e0; box-shadow: 0 0 0.45em rgba(255,240,200,0.95); }
+.spark-switch input:checked + .track .star { width: 1.5em; height: 0.1em; border-radius: 0.05em; background: rgba(255, 255, 255, 0.9); }
 .spark-switch input:checked + .track .star:nth-child(1) { animation: spk-warp 0.4s linear infinite; }
 .spark-switch input:checked + .track .star:nth-child(2) { animation: spk-warp 0.6s linear infinite 0.1s; }
 .spark-switch input:checked + .track .star:nth-child(3) { animation: spk-warp 0.3s linear infinite 0.2s; }
