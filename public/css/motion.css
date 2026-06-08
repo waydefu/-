@@ -60,67 +60,17 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
 .link-start::before {
   content: ""; position: absolute; inset: 0;
   /* 暖色暗場（中央不純黑 → 不再像黑塊） */
-  background: radial-gradient(circle at 50% 50%, rgba(72, 42, 9, 0.5) 0%, rgba(12, 6, 1, 0.9) 52%, rgba(2, 1, 0, 0.97) 100%);
+  background: radial-gradient(circle at 50% 50%, rgba(58, 33, 7, 0.9) 0%, rgba(14, 7, 1, 0.95) 52%, rgba(2, 1, 0, 0.98) 100%);
 }
-.link-start.is-playing { visibility: visible; animation: lsFade 2.8s var(--ease-out) forwards; }
-@keyframes lsFade { 0% { opacity: 0; } 7% { opacity: 1; } 82% { opacity: 1; } 100% { opacity: 0; } }
+.link-start.is-playing { visibility: visible; animation: lsFade 3.6s var(--ease-out) forwards; }
+@keyframes lsFade { 0% { opacity: 0; } 5% { opacity: 1; } 86% { opacity: 1; } 100% { opacity: 0; } }
 
-/* warp 放射光束（旋轉 + 擴張） */
-.ls-rays {
-  position: absolute; width: 200vmax; aspect-ratio: 1; border-radius: 50%;
-  background: repeating-conic-gradient(from 0deg, transparent 0 2.6deg, rgba(255, 226, 160, 0.16) 2.6deg 3.2deg);
-  -webkit-mask: radial-gradient(circle, transparent 0 8%, #000 22%, transparent 62%);
-          mask: radial-gradient(circle, transparent 0 8%, #000 22%, transparent 62%);
-  opacity: 0; will-change: transform, opacity;
-}
-.link-start.is-playing .ls-rays { animation: lsRays 2.8s ease-out forwards; }
-@keyframes lsRays { 0%{opacity:0;transform:rotate(0deg) scale(0.5)} 20%{opacity:0.9} 100%{opacity:0;transform:rotate(82deg) scale(1.5)} }
-
-.ls-tunnel {
-  position: relative; width: min(92vmin, 760px); aspect-ratio: 1;
-  display: grid; place-items: center; perspective: 440px; perspective-origin: 50% 50%;
-}
-.ls-tunnel i {
-  position: absolute; grid-area: 1 / 1; width: min(82vmin, 660px); aspect-ratio: 1; border-radius: 50%;
-  border: 3px solid rgba(255, 236, 180, 0.95);
-  box-shadow: 0 0 40px rgba(255, 210, 120, 0.55), 0 0 14px rgba(255, 236, 180, 0.6), inset 0 0 26px rgba(255, 210, 120, 0.4);
-  opacity: 0; transform: translateZ(-2200px); will-change: transform, opacity;
-}
-.link-start.is-playing .ls-tunnel { animation: spin 2.8s linear; }   /* 順時鐘整條旋轉 */
-.link-start.is-playing .ls-tunnel i { animation: lsDive 1.35s linear infinite; }
-.link-start.is-playing .ls-tunnel i:nth-child(1)  { animation-delay: 0s; }
-.link-start.is-playing .ls-tunnel i:nth-child(2)  { animation-delay: -0.112s; }
-.link-start.is-playing .ls-tunnel i:nth-child(3)  { animation-delay: -0.225s; }
-.link-start.is-playing .ls-tunnel i:nth-child(4)  { animation-delay: -0.337s; }
-.link-start.is-playing .ls-tunnel i:nth-child(5)  { animation-delay: -0.45s; }
-.link-start.is-playing .ls-tunnel i:nth-child(6)  { animation-delay: -0.562s; }
-.link-start.is-playing .ls-tunnel i:nth-child(7)  { animation-delay: -0.675s; }
-.link-start.is-playing .ls-tunnel i:nth-child(8)  { animation-delay: -0.787s; }
-.link-start.is-playing .ls-tunnel i:nth-child(9)  { animation-delay: -0.9s; }
-.link-start.is-playing .ls-tunnel i:nth-child(10) { animation-delay: -1.012s; }
-.link-start.is-playing .ls-tunnel i:nth-child(11) { animation-delay: -1.125s; }
-.link-start.is-playing .ls-tunnel i:nth-child(12) { animation-delay: -1.237s; }
-@keyframes lsDive {
-  0%   { opacity: 0; transform: translateZ(-2200px); }
-  12%  { opacity: 1; }
-  82%  { opacity: 1; }
-  100% { opacity: 0; transform: translateZ(520px); }
-}
-
-/* 中央光核：脈動 + 收尾爆閃（填滿中央、收尾打光揭開工作區） */
-.ls-core {
-  position: absolute; width: 46vmin; max-width: 360px; aspect-ratio: 1; border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 250, 235, 0.95) 0%, rgba(255, 210, 120, 0.6) 24%, rgba(214, 150, 60, 0.25) 46%, transparent 70%);
-  opacity: 0; will-change: transform, opacity;
-}
-.link-start.is-playing .ls-core { animation: lsCore 2.8s var(--ease-out) forwards; }
-@keyframes lsCore {
-  0%   { opacity: 0; transform: scale(0.2); }
-  18%  { opacity: 0.85; transform: scale(0.7); }
-  68%  { opacity: 0.5; transform: scale(1); }
-  86%  { opacity: 1; transform: scale(2.6); }
-  100% { opacity: 0; transform: scale(3.4); }
-}
+/* 光速隧道 warp：canvas 放射加速光線（由 link-start.js 繪製）；純 2D、手機安全、不破圖 */
+.ls-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* 淨化閃光（羊皮紙金；warp 收尾短閃後回黑曜石）— 僅動 opacity，零閃安全 */
+.ls-flash { position: absolute; inset: 0; opacity: 0; background: radial-gradient(circle at 50% 50%, rgba(221, 204, 170, 0.62), rgba(221, 204, 170, 0.2) 42%, transparent 72%); }
+.link-start.is-playing .ls-flash { animation: lsFlash 3.6s var(--ease-out) forwards; }
+@keyframes lsFlash { 0%, 70% { opacity: 0; } 80% { opacity: 0.78; } 100% { opacity: 0; } }
 
 .ls-title {
   position: absolute; bottom: 15%; display: flex; gap: 0.5em;
@@ -158,14 +108,12 @@ body.is-authed .workspace > .col-stack:last-of-type { animation-delay: 0.12s; }
   /* 使用者要求「不擋、要看到」：入場編舞 + LINK START 轉場即使在 reduced-motion 也照播
      （class 選擇器 + !important 蓋過上面的 * 熔斷；其餘動畫仍維持熔斷尊重少動）。 */
   body.is-authed .workspace > .col-stack { animation-duration: var(--t-slow) !important; }
-  .link-start.is-playing { animation-duration: 2.8s !important; }
-  .link-start.is-playing .ls-rays { animation-duration: 2.8s !important; }
-  .link-start.is-playing .ls-tunnel { animation-duration: 2.8s !important; }
-  .link-start.is-playing .ls-tunnel i { animation-duration: 1.35s !important; animation-iteration-count: infinite !important; }
-  .link-start.is-playing .ls-core { animation-duration: 2.8s !important; }
-  .link-start.is-playing .ls-title b { animation-duration: 0.55s !important; }
+  .link-start.is-playing { animation-duration: 3.6s !important; }
+  .link-start.is-playing .ls-flash { animation-duration: 3.6s !important; }
   .modal.is-open { animation-duration: 0.42s !important; }
   .modal.is-closing { animation-duration: 0.34s !important; }
+  .history-panel.is-open { animation-duration: 0.42s !important; }
+  .history-panel.is-closing { animation-duration: 0.34s !important; }
   .sao-pop { animation-duration: 0.5s !important; }
   .sao-pop.is-closing { animation-duration: 0.34s !important; }
 }

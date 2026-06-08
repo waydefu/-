@@ -41,10 +41,10 @@ class MagiculeParticleField {
   }
 
   getParticleCount() {
-    if (this.profile.reduced) return 80;
-    if (this.profile.mobile) return 350;
-    if (this.profile.lowPower) return 200;
-    return 1000;
+    if (this.profile.reduced) return 200;
+    if (this.profile.mobile) return 850;
+    if (this.profile.lowPower) return 500;
+    return 2200;
   }
 
   colorForIndex(index) {
@@ -70,7 +70,7 @@ class MagiculeParticleField {
       const yBand = this.profile.mobile ? 10 : 16;
       const y = (pseudo(i, 4) - 0.5) * yBand;
       const speed = (0.014 + (i % 7) * 0.003) * (i % 2 ? -1 : 1);
-      const scale = this.profile.mobile ? 0.55 + pseudo(i, 5) * 0.9 : 0.72 + pseudo(i, 5) * 1.15;
+      const scale = this.profile.mobile ? 0.4 + pseudo(i, 5) * 0.5 : 0.45 + pseudo(i, 5) * 0.55;
       const theta = baseTheta + phase;
       const spiral = clamp(radius * Math.exp(0.18 * ((theta % TAU) - Math.PI)), minRadius, maxRadius);
 
@@ -123,7 +123,7 @@ class MagiculeParticleField {
           vColor = color;
           vScale = aScale;
           vec4 mv = modelViewMatrix * vec4(position, 1.0);
-          gl_PointSize = uSize * aScale * (145.0 / max(18.0, -mv.z)) * (1.0 + uWarp * 0.34);
+          gl_PointSize = uSize * aScale * (100.0 / max(18.0, -mv.z)) * (1.0 + uWarp * 0.34);
           gl_Position = projectionMatrix * mv;
         }
       `,
@@ -137,11 +137,10 @@ class MagiculeParticleField {
         void main() {
           vec2 p = gl_PointCoord - 0.5;
           float d = length(p);
-          float core = smoothstep(0.5, 0.0, d);
-          float hot = smoothstep(0.18, 0.0, d);
-          vec3 color = vColor * (0.48 + hot * 1.1 + uEnergy * 0.28 + uWarp * 0.18);
-          float alpha = core * uOpacity * (0.52 + vScale * 0.28 + hot * 0.32) * (1.0 + uWarp * 0.22);
-          gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.72));
+          float pt = smoothstep(0.5, 0.3, d);            // 硬邊小光點
+          vec3 color = vColor * (0.58 + uEnergy * 0.2);  // 較暗 → bloom 不暈成大球
+          float alpha = pt * uOpacity * (0.72 + vScale * 0.2) * (1.0 + uWarp * 0.2);
+          gl_FragColor = vec4(color, clamp(alpha, 0.0, 0.85));
         }
       `,
     });

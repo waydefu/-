@@ -65,13 +65,16 @@ export function closeLogoutModal() {
   m._closeTimer = window.setTimeout(() => { m.classList.remove("is-closing"); m.hidden = true; }, 360);
 }
 
-/** 開啟手機歷史 sheet（桌機側欄常駐，不需此）。 */
+/** 開啟歷史 sheet（全裝置皆為置中底部抽屜）。 */
 export function openHistory() {
   const p = $("historyPanel");
   if (!p) return;
+  window.clearTimeout(p._closeTimer);
+  p.classList.remove("is-closing");
+  void p.offsetWidth; // reflow → SAO 開合動畫重新觸發
   p.classList.add("is-open");
   $("historyToggleBtn")?.setAttribute("aria-expanded", "true");
-  if (window.matchMedia("(max-width: 1079px)").matches) showScrim("history");
+  showScrim("history"); // 全裝置皆抽屜（部落格式單欄）→ 一律出遮罩
 }
 
 /** 關閉手機歷史 sheet。 */
@@ -79,6 +82,9 @@ export function closeHistory() {
   const p = $("historyPanel");
   if (!p) return;
   p.classList.remove("is-open");
+  p.classList.add("is-closing");
+  window.clearTimeout(p._closeTimer);
+  p._closeTimer = window.setTimeout(() => p.classList.remove("is-closing"), 360);
   $("historyToggleBtn")?.setAttribute("aria-expanded", "false");
   if (scrimUser === "history") hideScrim();
 }

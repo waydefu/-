@@ -122,6 +122,20 @@ function updateDiagnostics() {
     cc.classList.toggle("over", len > LIMITS.MAX_INPUT_CHARS);
   }
 }
+
+/* 禁詞掃描：偵測東方語彙並提示西幻替換（資料 = /forbidden-words.json） */
+let FORBIDDEN = [];
+function scanForbidden() {
+  const el = $("forbiddenWarn");
+  if (!el) return;
+  const text = $("draftField")?.value || "";
+  if (!text || !FORBIDDEN.length) { el.hidden = true; el.textContent = ""; return; }
+  const hits = [];
+  for (const w of FORBIDDEN) { if (w?.term && text.includes(w.term)) hits.push(w); if (hits.length >= 8) break; }
+  if (!hits.length) { el.hidden = true; el.textContent = ""; return; }
+  el.hidden = false;
+  el.textContent = `偵測到 ${hits.length} 個東方語彙，建議替換：` + hits.map((w) => `${w.term}→${w.replace}`).join("、");
+}
 function saveDraft() {
   try {
     localStorage.setItem(draftKey(), $("draftField")?.value || "");
@@ -137,6 +151,7 @@ function restoreDraft() {
     setLine("draftSync", saved ? "草稿記憶已同步" : "草稿記憶待命中");
   } catch { setLine("draftSync", "草稿記憶同步受阻", { error: true }); }
   updateDiagnostics();
+  scanForbidden();
 }
 function clearDraft() {
   const field = $("draftField");
@@ -320,6 +335,7 @@ async function runAnalysis() {
   const startedAt = Date.now();
   setLine("resultStatusText", "正在解析手稿並建立鑑定卷宗");
   const progress = startProgress(box);
+  $("analysisResult")?.closest(".col-stack")?.scrollIntoView({ behavior: "smooth", block: "start" });
   const timeout = window.setTimeout(() => ctrl.abort(), 180000);
   try {
     const { result, fromCache } = await analyzeDraft(draft, ctrl.signal, reqId, () => {});
@@ -381,10 +397,25 @@ async function copySection(kind, btn) {
 /* ════════ 工具 ════════ */
 function escapeHtml(s) { return String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
 
+/** 文字解碼揭露（字元池逐幀替換為最終文字）— 登入成功時的儀式感。 */
+function decryptText(id, finalStr, frames = 26) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const pool = "アイウエオカ0123456789#@%&*<>/\\=+ΛΣΦΨΩ";
+  let f = 0;
+  window.clearInterval(el._dec);
+  el._dec = window.setInterval(() => {
+    f++;
+    const shown = Math.floor((f / frames) * finalStr.length);
+    el.textContent = finalStr.split("").map((ch, i) => (i < shown || ch === " ") ? ch : pool[Math.floor(Math.random() * pool.length)]).join("");
+    if (f >= frames) { window.clearInterval(el._dec); el.textContent = finalStr; }
+  }, 46);
+}
+
 /* ════════ 認證狀態 → 切換登入/App ════════ */
 function applyAuthState(user) {
   document.body.classList.toggle("is-authed", !!user);
-  if (user) { restoreDraft(); refreshHistory(false); setLine("sysStatusText", "鑑定核心已連線"); }
+  if (user) { restoreDraft(); refreshHistory(false); setLine("sysStatusText", "鑑定核心已連線"); decryptText("resultStatusText", "鑑定核心已連線，準備解析手稿"); } // 解碼用可見的卷宗狀態列（sysStatusText 在關閉的歷史彈窗內，看不到）
   else { setLine("authStatus", ""); }
 }
 
@@ -392,16 +423,24 @@ function applyAuthState(user) {
 function bind() {
   bindScrim();
 
+  // 禁詞資料載入（一次）→ 載完即掃一次目前草稿
+  fetch("/forbidden-words.json").then((r) => (r.ok ? r.json() : [])).then((d) => { FORBIDDEN = Array.isArray(d) ? d : []; scanForbidden(); }).catch(() => {});
+
   $("googleLoginBtn")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
     btn.classList.add("is-loading"); btn.setAttribute("disabled", "true");
     setLine("authStatus", "Google 授權通道開啟中…");
-    try { await signInWithGoogle(); playLinkStart(); }
+    try { await signInWithGoogle(); playLinkStart(); window.setTimeout(() => decryptText("resultStatusText", "鑑定核心已連線，準備解析手稿"), 3800); }
     catch (err) {
       const closed = err?.code === "auth/popup-closed-by-user";
       setLine("authStatus", closed ? "已取消登入，請再試一次" : "Google 授權失敗，請稍後再試", { error: !closed });
     } finally { btn.classList.remove("is-loading"); btn.removeAttribute("disabled"); }
   });
+
+  // 登入頁互動充能：滑入 / 聚焦登入鈕 → 派發脈衝給 WebGL 核心
+  const _loginBtn = $("googleLoginBtn");
+  _loginBtn?.addEventListener("pointerenter", () => window.dispatchEvent(new CustomEvent("worldforge:pulse")));
+  _loginBtn?.addEventListener("focus", () => window.dispatchEvent(new CustomEvent("worldforge:pulse")));
 
   $("analyzeBtn")?.addEventListener("click", runAnalysis);
   $("clearBtn")?.addEventListener("click", clearDraft);
@@ -409,6 +448,7 @@ function bind() {
   const field = $("draftField");
   field?.addEventListener("input", () => {
     updateDiagnostics();
+    scanForbidden();
     window.clearTimeout(state.draftTimer);
     state.draftTimer = window.setTimeout(saveDraft, UI_CONFIG.DRAFT_DEBOUNCE_MS);
   });

@@ -22,6 +22,10 @@ test-results/
 playwright-report/
 artifacts/
 output/
+.playwright-cli/
+
+# Scratch / stray (assistant & agent artifacts)
+codex_*
 
 # Local command cache/temp (keeps checks off a full C: drive)
 .npm-cache/

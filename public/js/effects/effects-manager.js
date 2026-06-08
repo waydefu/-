@@ -4,6 +4,7 @@
 // 使用者要求：手機一律不降級、不做 FPS 自動停用（移除效能 gating）。
 let core = null;
 let calmMode = false;
+let pulseT = 0;
 
 function webglSupported() {
   try {
@@ -26,6 +27,13 @@ function bindLifecycle() {
   });
   window.addEventListener("worldforge:analysis-start", () => core?.setEnergy(1));
   window.addEventListener("worldforge:analysis-complete", () => core?.setEnergy(0));
+  // 登入頁互動充能：滑入 / 聚焦登入鈕 → 核心短暫提亮（儀式感）
+  window.addEventListener("worldforge:pulse", () => {
+    if (!core) return;
+    core.setEnergy(0.7);
+    window.clearTimeout(pulseT);
+    pulseT = window.setTimeout(() => core?.setEnergy(0), 1100);
+  });
   window.addEventListener("pagehide", () => disposeCore(""), { once: true });
 }
 

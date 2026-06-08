@@ -92,7 +92,7 @@ class RaphaelComputationRing {
     for (let i = 0; i < count; i++) {
       const t = count === 1 ? 0 : i / (count - 1);
       const radius = 5.2 + t * (this.profile.mobile ? 10.5 : 18.5);
-      const tube = 0.012 + (1 - t) * 0.02;
+      const tube = 0.006 + (1 - t) * 0.009;  // 細發光線（非塑膠管）
       const color = palette[i % palette.length];
       const mat = this.createMeshMaterial(color, 0.13 + (1 - t) * 0.10);
       const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 4, this.profile.mobile ? 128 : 224), mat);

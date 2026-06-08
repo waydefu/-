@@ -3,7 +3,6 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "prebuild": "npm run sync:login-mother",
     "build": "npm run build:functions",
     "build:functions": "npm --prefix functions run build",
     "check": "npm run check:frontend && npm run check:functions",
@@ -15,8 +14,7 @@
     "test:visual:update": "playwright test tests/visual/worldforge.spec.ts tests/visual/zoom.spec.ts tests/visual/dialog.spec.ts tests/visual/cls.spec.ts --update-snapshots",
     "test:rules": "firebase emulators:exec --only firestore \"node --test tests/firestore-emulator.emu.mjs\"",
     "smoke:hosting": "node scripts/smoke-hosting.mjs",
-    "audit:functions": "npm --prefix functions audit",
-    "sync:login-mother": "node scripts/sync-worldforge-login.mjs"
+    "audit:functions": "npm --prefix functions audit"
   },
   "devDependencies": {
     "@axe-core/cli": "^4.11.3",

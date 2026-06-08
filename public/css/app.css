@@ -41,10 +41,10 @@ button { font: inherit; color: inherit; }
 .bg-stage::before {
   content: ""; position: absolute; inset: -10%;
   background:
-    radial-gradient(120% 90% at 50% -10%, rgba(120, 86, 30, 0.42), transparent 55%),
-    radial-gradient(90% 70% at 18% 8%, rgba(184, 132, 52, 0.14), transparent 60%),
-    radial-gradient(80% 60% at 84% 18%, rgba(150, 110, 42, 0.12), transparent 60%),
-    linear-gradient(180deg, #0d0a06 0%, #070503 60%, #050403 100%);
+    radial-gradient(105% 95% at 4% 2%, rgba(204, 144, 52, 0.55), transparent 60%),    /* 左上：金 */
+    radial-gradient(110% 100% at 97% 99%, rgba(28, 92, 172, 0.52), transparent 64%),  /* 右下：深藍（更深） */
+    radial-gradient(85% 75% at 50% 46%, rgba(120, 86, 36, 0.16), transparent 70%),     /* 中央暖光：填空虛 */
+    linear-gradient(150deg, #120e08 0%, #0a0705 55%, #050403 100%);
 }
 /* 緩慢飄移的能量輝光（transform 動畫，GPU；reduced-motion 由 motion.css 關閉） */
 .bg-aura {
@@ -157,10 +157,10 @@ button { font: inherit; color: inherit; }
 .field-label { font-size: var(--fs-caption); color: var(--c-text-soft); font-weight: 600; }
 .field-help { font-size: var(--fs-caption); color: var(--c-text-muted); }
 .draft-input {
-  width: 100%; min-height: clamp(180px, 30vh, 360px); max-height: 60vh; resize: vertical;
-  padding: var(--s-4); background: rgba(8, 6, 3, 0.72); color: var(--c-text);
+  width: 100%; min-height: clamp(280px, 48vh, 620px); max-height: 74vh; resize: vertical;
+  padding: var(--s-5); background: rgba(8, 6, 3, 0.72); color: var(--c-text);
   border: 1px solid var(--c-line); border-radius: var(--r-md);
-  font-family: var(--font-serif); font-size: var(--fs-body-lg); line-height: 1.85;
+  font-family: var(--font-serif); font-size: 1.12rem; line-height: 1.95;
   transition: border-color var(--t-mid) var(--ease-out);
 }
 .draft-input::placeholder { color: var(--c-text-faint); }
@@ -168,29 +168,23 @@ button { font: inherit; color: inherit; }
 .draft-meta { display: flex; justify-content: space-between; gap: var(--s-3); font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--c-text-muted); }
 .draft-meta .over { color: var(--c-danger); }
 .draft-meta .warn { color: var(--c-gold); }
+/* 禁詞提示（東方語彙 → 西幻替換） */
+.spell-warn { font-family: var(--font-mono); font-size: var(--fs-caption); line-height: 1.65; color: var(--c-gold); background: rgba(40, 28, 10, 0.5); border: 1px solid rgba(214, 166, 77, 0.3); border-radius: var(--r-sm); padding: var(--s-2) var(--s-3); }
+/* 手機：輸入區維持原本尺寸（不加大） */
+@media (max-width: 820px) {
+  .draft-input { min-height: clamp(180px, 30vh, 360px); max-height: 60vh; padding: var(--s-4); font-size: var(--fs-body-lg); line-height: 1.85; }
+}
 
-/* ═══ 工作區版面（桌機 3 欄 / 手機單欄） ═══ */
+/* ═══ 工作區版面（部落格式：全裝置單欄置中、手稿放大、卷宗在下） ═══ */
 .app-main { position: relative; z-index: var(--z-shell); min-height: calc(100dvh - var(--shell-header-h)); }
 .workspace {
-  display: grid; gap: var(--s-5);
-  max-width: var(--content-max); margin-inline: auto;
-  padding: clamp(var(--s-4), 3vw, var(--s-6));
-  grid-template-columns: 1fr;
+  display: grid; gap: var(--s-6);
+  max-width: 880px; margin-inline: auto;        /* 部落格式單欄置中可讀寬 */
+  padding: clamp(var(--s-5), 4vw, var(--s-7));
+  grid-template-columns: 1fr;                     /* 手稿置中放大、鑑定卷宗在下 */
 }
-@media (min-width: 1080px) {
-  .workspace {
-    /* 排版優化：歷史側欄收窄；輸入適中；鑑定卷宗（主產出/主閱讀）給最大欄寬 + 加大欄距 */
-    grid-template-columns: 280px minmax(0, 0.92fr) minmax(0, 1.32fr);
-    gap: var(--s-6);
-    align-items: start;
-  }
-  .col-aside { position: sticky; top: calc(var(--shell-header-h) + var(--s-5)); }
-}
-/* 超寬螢幕：再放大可用寬，讓卷宗有更舒適的閱讀寬度 */
-@media (min-width: 1600px) {
-  .workspace { grid-template-columns: 300px minmax(0, 0.9fr) minmax(0, 1.4fr); }
-}
-.col-stack { display: grid; gap: var(--s-5); min-width: 0; }
+@media (min-width: 1280px) { .workspace { max-width: 960px; } }
+.col-stack { display: grid; gap: var(--s-5); min-width: 0; scroll-margin-top: calc(var(--shell-header-h) + var(--s-4)); }
 
 /* ── 狀態 / 步驟 ── */
 .status-line { display: flex; align-items: center; gap: var(--s-2); padding: var(--s-3) var(--s-4); border-radius: var(--r-sm); background: rgba(20, 15, 8, 0.7); border: var(--panel-border); color: var(--c-text-soft); font-size: var(--fs-caption); }
@@ -229,7 +223,7 @@ button { font: inherit; color: inherit; }
 
 /* ═══ 登入畫面 ═══ */
 .auth-screen { position: relative; z-index: var(--z-shell); min-height: 100dvh; display: grid; place-items: center; padding: var(--s-5); }
-.auth-card { width: min(480px, 100%); background: var(--panel-bg-strong); border: var(--panel-border); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }
+.auth-card { width: min(480px, 100%); background: linear-gradient(180deg, rgba(10, 7, 3, 0.72), rgba(4, 3, 1, 0.82)); border: var(--panel-border); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }
 .auth-eyebrow { font-family: var(--font-mono); font-size: var(--fs-caption); letter-spacing: 0.28em; color: var(--c-cyan); }
 .auth-title { font-family: var(--font-display); font-size: var(--fs-h1); color: var(--c-gold-bright); margin: var(--s-3) 0; line-height: 1.15; }
 .auth-copy { color: var(--c-text-soft); margin-bottom: var(--s-6); }
@@ -247,23 +241,16 @@ button { font: inherit; color: inherit; }
 .history-clear-all { padding: 6px 10px; font-size: var(--fs-caption); white-space: nowrap; }
 .history-clear-all.is-confirming { --btn-bd: rgba(255, 154, 134, 0.85); color: var(--c-danger); }
 
-/* 桌機（≥1080）：歷史側欄常駐 → 隱藏「開啟/收合」按鈕 */
-@media (min-width: 1080px) {
-  #historyToggleBtn, #historyCloseBtn { display: none; }
+/* 全裝置：歷史 = 螢幕置中 SAO 彈窗（水平展開→垂直展開；reverse 收合，與登出彈窗一致） */
+.history-panel {
+  position: fixed; top: 50%; left: 50%; z-index: var(--z-drawer);
+  width: min(560px, calc(100% - 2 * var(--s-5))); max-height: min(80dvh, 640px);
+  overflow-y: auto; overscroll-behavior: contain; border-radius: var(--r-lg);
+  transform: translate(-50%, -50%) scaleX(0) scaleY(0.02); transform-origin: center center;
+  opacity: 0; pointer-events: none;
 }
-
-/* 手機（<1080）：歷史改 bottom sheet（fixed，預設收起，.is-open 滑出） */
-@media (max-width: 1079px) {
-  .history-panel {
-    position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--z-drawer);
-    max-height: 82dvh; overflow-y: auto; overscroll-behavior: contain;
-    border-radius: var(--r-lg) var(--r-lg) 0 0;
-    padding-bottom: env(safe-area-inset-bottom, 0px);
-    transform: translateY(102%); opacity: 0; pointer-events: none;
-    transition: transform var(--t-mid) var(--ease-out), opacity var(--t-mid) var(--ease-out);
-  }
-  .history-panel.is-open { transform: translateY(0); opacity: 1; pointer-events: auto; }
-}
+.history-panel.is-open { pointer-events: auto; animation: modalIn 0.42s var(--ease-out) forwards; }
+.history-panel.is-closing { animation: modalOut 0.34s var(--ease-out) forwards; }
 
 /* ═══ 彈窗（modal；NO contain:paint；transform/opacity 動畫） ═══ */
 .scrim {
@@ -291,6 +278,12 @@ button { font: inherit; color: inherit; }
 .modal-copy { color: var(--c-text-soft); margin-bottom: var(--s-5); }
 .modal-actions { display: flex; gap: var(--s-3); }
 .modal-actions .btn { flex: 1; }
+
+/* SAO 彈窗共用：金色邊光（premium 質感，靜態不閃；登入卡 / 歷史 / 登出彈窗一致） */
+.auth-card, .history-panel, .modal {
+  border: 1px solid rgba(214, 166, 77, 0.32);
+  box-shadow: var(--sh-lg), 0 0 28px rgba(214, 166, 77, 0.16), inset 0 0 20px rgba(255, 230, 166, 0.05);
+}
 
 /* ═══ Toast ═══ */
 .toasts { position: fixed; left: 50%; bottom: clamp(20px, 6vh, 64px); z-index: var(--z-toast); transform: translateX(-50%); display: grid; gap: var(--s-2); width: min(520px, calc(100vw - 32px)); pointer-events: none; }
