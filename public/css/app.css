@@ -189,10 +189,11 @@ button { font: inherit; color: inherit; }
 
 /* 登入鈕 3D 傾轉（by javierBarroso 風）→ 單一 Google 登入 */
 .login-3d { perspective: 700px; }
-.login-platform { transform-style: preserve-3d; transition: transform 0.42s var(--ease-out), box-shadow 0.42s var(--ease-out); }
-.login-3d:hover .login-platform { transform: rotateX(26deg); box-shadow: 0 22px 28px -8px rgba(214,166,77,0.42); }
-.login-face { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); transition: transform 0.42s cubic-bezier(0.68,-0.4,0.27,1.45); transform-style: preserve-3d; }
-.login-3d:hover .login-face { transform: translateZ(38px) translateY(-10px) rotateX(-26deg); }
+.login-platform { transform-style: preserve-3d; overflow: visible; transition: transform 0.42s var(--ease-out), box-shadow 0.42s var(--ease-out); }
+.login-3d:hover .login-platform { transform: rotateX(62deg); box-shadow: 0 24px 34px -8px rgba(214,166,77,0.42); }
+.login-face { display: inline-flex; align-items: center; justify-content: center; gap: var(--s-2); font-size: 1.22rem; font-weight: 600; transition: transform 0.42s cubic-bezier(0.68,-0.3,0.27,1.4); transform-style: preserve-3d; }
+.login-face .btn-ico { width: 22px; height: 22px; }
+.login-3d:hover .login-face { transform: translateZ(36px) translateY(10px) rotateX(-62deg); }
 
 /* 複製鈕 cube flip（github 風）→ 黑金；保留 .btn-label 供「已複製 ✓」回饋 */
 .copy-cube { display: flex; align-items: stretch; margin-left: auto; border: 2px solid rgba(214,166,77,0.5); width: -moz-fit-content; width: fit-content; cursor: pointer; background: transparent; padding: 0; border-radius: 4px; overflow: hidden; }
@@ -203,7 +204,7 @@ button { font: inherit; color: inherit; }
 .copy-cube:hover .cc-cube { transform: rotateX(-90deg); }
 .cc-side { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.03em; backface-visibility: hidden; }
 .cc-front { background: #1d1710; color: #ffe6a6; transform: translateZ(17px); }
-.cc-top { background: #d6a64d; color: #1a1206; transform: rotateX(90deg) translateZ(17px); }
+.cc-top { background: #1d1710; color: #ffe6a6; transform: rotateX(90deg) translateZ(17px); }
 .copy-cube.is-copied .cc-front, .copy-cube.is-copied .cc-top { background: rgba(96,140,60,0.92); color: #f2f8e2; }
 .copy-cube.is-copied { border-color: rgba(150,190,90,0.7); }
 .copy-cube:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }

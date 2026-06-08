@@ -48,7 +48,7 @@ function createResultSection(kind, title, eyebrow, content) {
   copy.className = "copy-cube";
   copy.dataset.copySection = kind;
   copy.setAttribute("aria-label", "複製本段");
-  copy.innerHTML = '<span class="cc-icon"><svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span><span class="cc-cube"><span class="cc-side cc-front btn-label">複製本段</span><span class="cc-side cc-top">點此複製</span></span>';
+  copy.innerHTML = '<span class="cc-icon"><svg class="btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg></span><span class="cc-cube"><span class="cc-side cc-front btn-label">複製本段</span><span class="cc-side cc-top">複製本段</span></span>';
 
   head.append(wrap, copy);
 
@@ -394,7 +394,7 @@ async function copySection(kind, btn) {
     btn._copiedTimer = window.setTimeout(() => {
       btn.classList.remove("is-copied");
       if (label) label.textContent = prev || "複製本段";
-      if (top) top.textContent = prevTop || "點此複製";
+      if (top) top.textContent = prevTop || "複製本段";
     }, 1600);
   }
 }
