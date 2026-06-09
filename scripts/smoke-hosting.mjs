@@ -1,16 +1,46 @@
 import assert from "node:assert/strict";
+import { existsSync, statSync } from "node:fs";
+import { readFile } from "node:fs/promises";
+import { join, normalize, resolve, sep } from "node:path";
 
 const HOSTING_URL = process.env.HOSTING_URL || "https://project-7276420283723642146.web.app";
 const FUNCTION_URL = process.env.FUNCTION_URL || "https://analyzev2-yxfwrism4q-uc.a.run.app";
 const QUOTA_URL = process.env.QUOTA_URL || "https://us-central1-project-7276420283723642146.cloudfunctions.net/quotaPeek";
 const APP_CHECK_SITE_KEY = "6LedZPIsAAAAABlAQUZHEgY6wcohTTucKOWbTWp2";
+const FETCH_TIMEOUT_MS = Number(process.env.SMOKE_FETCH_TIMEOUT_MS || 15_000);
+const SKIP_REMOTE = process.env.SMOKE_SKIP_REMOTE === "1";
+const LOCAL_PUBLIC_DIR = process.env.SMOKE_LOCAL_PUBLIC_DIR ? resolve(process.env.SMOKE_LOCAL_PUBLIC_DIR) : "";
 
 const ok = (label) => console.log(`ok - ${label}`);
 
-const fetchText = async (url, init) => {
-  const res = await fetch(url, init);
-  const text = await res.text();
-  return { res, text };
+const localPublicPath = (url) => {
+  if (!LOCAL_PUBLIC_DIR) return "";
+  const target = new URL(url);
+  if (target.origin !== new URL(HOSTING_URL).origin) return "";
+  const decoded = decodeURIComponent(target.pathname || "/");
+  const normalized = normalize(decoded).replace(/^([/\\])+/, "");
+  const candidate = resolve(join(LOCAL_PUBLIC_DIR, normalized));
+  if (!candidate.startsWith(LOCAL_PUBLIC_DIR + sep) && candidate !== LOCAL_PUBLIC_DIR) return "";
+  if (existsSync(candidate) && statSync(candidate).isFile()) return candidate;
+  return join(LOCAL_PUBLIC_DIR, "index.html");
+};
+
+const fetchText = async (url, init = {}) => {
+  const filePath = localPublicPath(url);
+  if (filePath) {
+    if (!existsSync(filePath)) return { res: { status: 404 }, text: "" };
+    return { res: { status: 200 }, text: await readFile(filePath, "utf8") };
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
+  try {
+    const res = await fetch(url, { ...init, signal: init.signal || controller.signal });
+    const text = await res.text();
+    return { res, text };
+  } finally {
+    clearTimeout(timeout);
+  }
 };
 
 const main = async () => {
@@ -19,40 +49,33 @@ const main = async () => {
     headers: { "cache-control": "no-cache", "pragma": "no-cache" },
   });
   assert.equal(home.res.status, 200, "Hosting home should return 200");
-  assert.match(home.text, /GREAT SAGE MANUSCRIPT SYSTEM/, "Home should load the Raphael inline shell");
+  assert.match(home.text, /大賢者鑑定系統/, "Home should load the Great Sage app shell");
   assert.match(home.text, /\/js\/main\.js/, "Home should load the operational runtime bundle");
-  assert.match(home.text, /arcane-lens/, "Home should include the Arcane Sage lens layer");
-  assert.match(home.text, /id="webgl-container"/, "Home should include the persistent WebGL container");
-  assert.match(home.text, /<dialog class="ritual-stack"[^>]+id="ritualStack"/, "Home should expose the login modal as a native dialog");
-  assert.match(home.text, /id="openRitualBtn"[^>]*>[\s\S]*?使用 Google 登入[\s\S]*?<\/button>/, "Home should expose the single Google login CTA");
-  assert.doesNotMatch(home.text, /id="guestScribeBtn"/, "Guest login fallback should be removed");
-  assert.doesNotMatch(home.text, /id="sealPanel"/, "Dead external seal panel should be removed");
-  assert.doesNotMatch(home.text, /login-modal-backdrop/, "Dead login backdrop should be removed");
+  assert.match(home.text, /id="authScreen"/, "Home should expose the current login screen");
+  assert.match(home.text, /id="googleLoginBtn"[^>]*>[\s\S]*?使用 Google 登入[\s\S]*?<\/button>/, "Home should expose the single Google login CTA");
+  assert.match(home.text, /id="bgStage"/, "Home should include the current cinematic background stage");
+  assert.match(home.text, /id="sageCanvas"/, "Home should include the progressive WebGL canvas");
   assert.match(home.text, /data-op="analyze"/, "Home should include the stable operational analysis action hook");
-  assert.match(home.text, /啟動手稿鑑定引擎/, "Home should include the S10.7 operational analysis action copy");
-  assert.match(home.text, /app-navbar/, "Home should include the fixed operational navbar");
-  assert.match(home.text, /id="historyToggle"/, "Home should include the history navbar control");
-  assert.match(home.text, /id="accountToggle"/, "Home should include the account navbar control");
-  assert.match(home.text, /西方奇幻小說 AI 重寫與審稿系統/, "Home should include S10.7 Worldforge editorial copy");
+  assert.match(home.text, /啟動鑑定/, "Home should include the current analysis action copy");
+  assert.match(home.text, /class="app-header"/, "Home should include the current app header");
+  assert.match(home.text, /id="historyToggleBtn"/, "Home should include the history navbar control");
+  assert.match(home.text, /id="logoutBtn"/, "Home should include the logout navbar control");
+  assert.match(home.text, /西方奇幻小說 AI 編修系統/, "Home should include the current editorial copy");
   assert.match(home.text, /firebase-app-check-compat/, "Home should load Firebase App Check SDK");
-  ok("hosting Worldforge inline shell, Google-only modal, and App Check SDK");
+  ok("hosting Great Sage app shell, Google-only login, and App Check SDK");
 
   const mainBundle = await fetchText(`${HOSTING_URL}/js/main.js?smoke=${smokeId}`, {
     headers: { "cache-control": "no-cache", "pragma": "no-cache" },
   });
   assert.equal(mainBundle.res.status, 200, "js/main.js should return 200");
-  assert.match(mainBundle.text, /class CoreEngine/, "main.js should include CoreEngine");
-  assert.match(mainBundle.text, /class RuneSystem/, "main.js should include RuneSystem");
-  assert.match(mainBundle.text, /class ParticleSystem/, "main.js should include ParticleSystem");
-  assert.match(mainBundle.text, /class PostProcessingPipeline/, "main.js should include PostProcessingPipeline");
-  assert.match(mainBundle.text, /class LoginController/, "main.js should include LoginController");
-  assert.match(mainBundle.text, /class OperationalModeController/, "main.js should include OperationalModeController");
-  assert.match(mainBundle.text, /createScanBands/, "main.js should include Arcane Sage scan bands");
-  assert.match(mainBundle.text, /createIngestionStreams/, "main.js should include manuscript ingestion streams");
-  assert.match(mainBundle.text, /dataset\.runeLayers/, "main.js should expose login FX metrics for browser validation");
-  assert.match(mainBundle.text, /ensureNavbar/, "main.js should include the S21 navbar wiring");
-  assert.doesNotMatch(mainBundle.text, /ensureSystemMenu|toggleSystemMenu/, "main.js should not include the retired SYS menu wiring");
-  ok("main runtime bundle exposes WebGL systems and S21 navbar wiring");
+  assert.match(mainBundle.text, /function renderResult/, "main.js should include the result renderer");
+  assert.match(mainBundle.text, /function runAnalysis/, "main.js should include the analysis workflow");
+  assert.match(mainBundle.text, /googleLoginBtn/, "main.js should wire the current Google login button");
+  assert.match(mainBundle.text, /historyToggleBtn/, "main.js should wire the current history control");
+  assert.match(mainBundle.text, /logoutBtn/, "main.js should wire the current logout control");
+  assert.match(mainBundle.text, /openLogoutModal/, "main.js should open the current logout modal");
+  assert.match(mainBundle.text, /worldforge:auth-changed/, "main.js should react to auth state changes");
+  ok("main runtime bundle exposes the current app workflow");
 
   const config = await fetchText(`${HOSTING_URL}/js/core/config.js`);
   assert.equal(config.res.status, 200, "core/config.js should return 200");
@@ -64,29 +87,35 @@ const main = async () => {
   const parser = await fetchText(`${HOSTING_URL}/js/utils/result-sections.js`);
   assert.equal(parser.res.status, 200, "result-sections.js should return 200");
   assert.match(parser.text, /splitAnalysisSections/, "result-sections.js should expose section parser");
+  assert.match(parser.text, /sectionsToPlainText/, "result-sections.js should expose plain-text serialization");
   ok("result parser module is deployed");
 
-  const hudState = await fetchText(`${HOSTING_URL}/js/utils/hud-state.js`);
-  assert.equal(hudState.res.status, 200, "hud-state.js should return 200");
-  assert.match(hudState.text, /buildHudState/, "hud-state.js should expose real HUD state mapper");
-  ok("HUD state module is deployed");
+  const effects = await fetchText(`${HOSTING_URL}/js/effects/effects-manager.js`);
+  assert.equal(effects.res.status, 200, "effects-manager.js should return 200");
+  assert.match(effects.text, /sageCanvas/, "effects manager should target the current WebGL canvas");
+  assert.match(effects.text, /GreatSageCore/, "effects manager should lazy-load the current WebGL core");
+  ok("current effects manager module is deployed");
 
-  const unauth = await fetchText(FUNCTION_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ text: "smoke test" }),
-  });
-  assert.equal(unauth.res.status, 401, "Unauthenticated function request should return 401");
-  assert.deepEqual(JSON.parse(unauth.text), {
-    code: "unauthorized",
-    message: "請先登入後再使用。",
-  });
-  ok("function returns standard unauthorized error without touching Groq");
+  if (SKIP_REMOTE) {
+    ok("remote function checks skipped");
+  } else {
+    const unauth = await fetchText(FUNCTION_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "smoke test" }),
+    });
+    assert.equal(unauth.res.status, 401, "Unauthenticated function request should return 401");
+    assert.deepEqual(JSON.parse(unauth.text), {
+      code: "unauthorized",
+      message: "請先登入後再使用。",
+    });
+    ok("function returns standard unauthorized error without touching Groq");
 
-  const quotaUnauth = await fetchText(QUOTA_URL);
-  assert.equal(quotaUnauth.res.status, 401, "Unauthenticated quota request should return 401");
-  assert.equal(JSON.parse(quotaUnauth.text).code, "unauthorized");
-  ok("quotaPeek returns standard unauthorized error without leaking quota");
+    const quotaUnauth = await fetchText(QUOTA_URL);
+    assert.equal(quotaUnauth.res.status, 401, "Unauthenticated quota request should return 401");
+    assert.equal(JSON.parse(quotaUnauth.text).code, "unauthorized");
+    ok("quotaPeek returns standard unauthorized error without leaking quota");
+  }
 };
 
 main().catch((err) => {

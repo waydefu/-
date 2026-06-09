@@ -144,16 +144,16 @@ button { font: inherit; color: inherit; }
 
 /* ═══ uiverse 動態按鈕（黑金化）═══ */
 
-/* 登出鈕 thin-duck-22（by vinodjangid07）→ 黑金圓鈕 hover 展開 */
-.logout-btn { display: flex; align-items: center; justify-content: flex-start; width: 44px; height: 44px; border: 1px solid rgba(214,166,77,0.42); border-radius: 50%; cursor: pointer; position: relative; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.3); background: linear-gradient(180deg, #2a1f0e, #17110a); transition: width 0.3s var(--ease-out), border-radius 0.3s var(--ease-out); }
-.logout-sign { width: 100%; display: flex; align-items: center; justify-content: center; transition: width 0.3s var(--ease-out), padding 0.3s var(--ease-out); }
+/* 登出鈕：保留黑金圓鈕動效，但不再 hover 展寬擠壓 header */
+.logout-btn { display: flex; align-items: center; justify-content: center; width: 44px; min-width: 44px; height: 44px; min-height: 44px; flex: 0 0 44px; border: 1px solid rgba(214,166,77,0.42); border-radius: 50%; cursor: pointer; position: relative; overflow: visible; box-shadow: 0 2px 10px rgba(0,0,0,0.3); background: linear-gradient(180deg, #2a1f0e, #17110a); transition: background 0.3s var(--ease-out), border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), transform 0.2s var(--ease-out); }
+.logout-sign { width: 100%; display: flex; align-items: center; justify-content: center; transition: transform 0.3s var(--ease-out); }
 .logout-sign svg { width: 18px; }
 .logout-sign svg path { fill: #ffe6a6; }
-.logout-text { position: absolute; right: 0; width: 0; opacity: 0; color: #ffe6a6; font-size: 0.95rem; font-weight: 600; white-space: nowrap; transition: opacity 0.3s, width 0.3s; }
-.logout-btn:hover { width: 114px; border-radius: 22px; }
-.logout-btn:hover .logout-sign { width: 34%; padding-left: 14px; }
-.logout-btn:hover .logout-text { opacity: 1; width: 66%; padding-right: 10px; }
-.logout-btn:active { transform: translate(1px,1px); }
+.logout-text { position: absolute; left: 50%; top: calc(100% + 8px); width: max-content; opacity: 0; color: #ffe6a6; font-size: 0.78rem; font-weight: 700; line-height: 1; white-space: nowrap; pointer-events: none; padding: 6px 9px; border-radius: 999px; border: 1px solid rgba(214,166,77,0.42); background: rgba(12, 8, 4, 0.92); box-shadow: 0 8px 18px rgba(0,0,0,0.38), 0 0 16px rgba(214,166,77,0.18); transform: translate(-50%, -4px); transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out); }
+.logout-btn:hover, .logout-btn:focus-visible { border-color: rgba(255,230,166,0.72); box-shadow: 0 0 18px rgba(214,166,77,0.28), 0 2px 10px rgba(0,0,0,0.35); background: linear-gradient(180deg, #38270f, #181006); }
+.logout-btn:hover .logout-sign, .logout-btn:focus-visible .logout-sign { transform: translateX(1px) rotate(-8deg); }
+.logout-btn:hover .logout-text, .logout-btn:focus-visible .logout-text { opacity: 1; transform: translate(-50%, 0); }
+.logout-btn:active { transform: translate(1px,1px) scale(0.96); }
 .logout-btn:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 
 /* 啟動鑑定 star button（by MuhammadHasann）→ 黑金 + hover 星星飛出 */
@@ -176,14 +176,16 @@ button { font: inherit; color: inherit; }
 .analyze-star:hover .star-5 { top: 25%; left: 105%; filter: drop-shadow(0 0 10px #fff6e0); z-index: 2; }
 .analyze-star:hover .star-6 { top: 0%; left: 62%; filter: drop-shadow(0 0 10px #fff6e0); z-index: 2; }
 
-/* 清空手稿 delete button（by vinodjangid07）→ 黑金圓鈕 hover 展開（ember 警示） */
-.clear-del { width: 50px; height: 50px; min-height: 50px; border-radius: 50%; background: linear-gradient(180deg, #221912, #15100a); border: 1px solid rgba(214,166,77,0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(0,0,0,0.3); cursor: pointer; overflow: hidden; position: relative; padding: 0; flex: 0 0 auto; transition: width 0.3s var(--ease-out), border-radius 0.3s var(--ease-out), background 0.3s; }
-.clear-del .clear-svg { width: 13px; transition: width 0.3s, transform 0.3s; }
+/* 清空手稿 delete button：固定尺寸，改用 ember label / icon 動效，避免擠壓主操作 */
+.clear-del { width: 50px; height: 50px; min-width: 50px; min-height: 50px; border-radius: 50%; background: linear-gradient(180deg, #221912, #15100a); border: 1px solid rgba(214,166,77,0.4); display: flex; align-items: center; justify-content: center; box-shadow: 0 0 16px rgba(0,0,0,0.3); cursor: pointer; overflow: visible; position: relative; padding: 0; flex: 0 0 50px; transition: background 0.3s var(--ease-out), border-color 0.3s var(--ease-out), box-shadow 0.3s var(--ease-out), transform 0.2s var(--ease-out); }
+.clear-del .clear-svg { width: 16px; transition: width 0.3s, transform 0.3s; }
 .clear-del .clear-svg path { fill: #ffe6a6; }
-.clear-del::before { position: absolute; top: -20px; content: "清空手稿"; color: #fff; font-size: 2px; font-weight: 600; white-space: nowrap; transition: 0.3s; }
-.clear-del:hover { width: 150px; border-radius: 26px; background: linear-gradient(180deg, #7a2e1a, #561f10); border-color: rgba(255,120,90,0.5); }
-.clear-del:hover .clear-svg { width: 22px; transform: translateY(58%); }
-.clear-del:hover::before { font-size: 13px; opacity: 1; transform: translateY(28px); }
+.clear-del::before { position: absolute; left: 50%; top: -34px; content: "清空手稿"; color: #fff2dc; font-size: 0.78rem; font-weight: 700; line-height: 1; white-space: nowrap; opacity: 0; pointer-events: none; padding: 6px 9px; border-radius: 999px; border: 1px solid rgba(255,120,90,0.48); background: rgba(40, 12, 5, 0.94); box-shadow: 0 8px 18px rgba(0,0,0,0.34), 0 0 18px rgba(255,105,70,0.2); transform: translate(-50%, 8px); transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out); }
+.clear-del::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 1px solid rgba(255,135,84,0.0); opacity: 0; transform: scale(0.84); pointer-events: none; transition: opacity 0.3s var(--ease-out), transform 0.3s var(--ease-out), border-color 0.3s var(--ease-out); }
+.clear-del:hover, .clear-del:focus-visible { background: linear-gradient(180deg, #7a2e1a, #561f10); border-color: rgba(255,120,90,0.6); box-shadow: 0 0 20px rgba(255,95,60,0.22), 0 0 16px rgba(0,0,0,0.34); }
+.clear-del:hover .clear-svg, .clear-del:focus-visible .clear-svg { width: 20px; transform: translateY(-2px) rotate(-9deg); }
+.clear-del:hover::before, .clear-del:focus-visible::before { opacity: 1; transform: translate(-50%, 0); }
+.clear-del:hover::after, .clear-del:focus-visible::after { opacity: 1; transform: scale(1.08); border-color: rgba(255,135,84,0.42); }
 .clear-del:active { transform: scale(0.96); }
 .clear-del:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 
@@ -196,15 +198,15 @@ button { font: inherit; color: inherit; }
 .login-3d:hover .login-face { transform: translateZ(36px) translateY(10px) rotateX(-62deg); }
 
 /* 複製鈕 cube flip（github 風）→ 黑金；保留 .btn-label 供「已複製 ✓」回饋 */
-.copy-cube { display: flex; align-items: stretch; margin-left: auto; border: 2px solid rgba(214,166,77,0.5); width: -moz-fit-content; width: fit-content; cursor: pointer; background: transparent; padding: 0; border-radius: 4px; overflow: hidden; }
+.copy-cube { display: flex; align-items: stretch; margin-left: auto; border: 2px solid rgba(214,166,77,0.5); width: -moz-fit-content; width: fit-content; min-height: 44px; cursor: pointer; background: transparent; padding: 0; border-radius: 4px; overflow: hidden; }
 .cc-icon { background: #d6a64d; padding: 6px 8px; display: flex; align-items: center; flex: 0 0 auto; }
 .cc-icon svg { width: 17px; height: 17px; stroke: #1a1206; }
-.cc-cube { position: relative; transition: transform 0.4s; transform-style: preserve-3d; width: 116px; height: 34px; }
+.cc-cube { position: relative; transition: transform 0.4s; transform-style: preserve-3d; width: 116px; height: 40px; }
 .copy-cube:hover { border-color: var(--c-gold); }
 .copy-cube:hover .cc-cube { transform: rotateX(-90deg); }
 .cc-side { position: absolute; inset: 0; display: flex; justify-content: center; align-items: center; font-size: 0.76rem; font-weight: 600; letter-spacing: 0.03em; backface-visibility: hidden; }
-.cc-front { background: #1d1710; color: #ffe6a6; transform: translateZ(17px); }
-.cc-top { background: #1d1710; color: #ffe6a6; transform: rotateX(90deg) translateZ(17px); }
+.cc-front { background: #1d1710; color: #ffe6a6; transform: translateZ(20px); }
+.cc-top { background: #1d1710; color: #ffe6a6; transform: rotateX(90deg) translateZ(20px); }
 .copy-cube.is-copied .cc-front, .copy-cube.is-copied .cc-top { background: rgba(96,140,60,0.92); color: #f2f8e2; }
 .copy-cube.is-copied { border-color: rgba(150,190,90,0.7); }
 .copy-cube:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
@@ -326,9 +328,11 @@ button { font: inherit; color: inherit; }
     margin: var(--s-4) calc(var(--s-4) * -1) 0; padding: var(--s-3) var(--s-4) calc(var(--s-3) + env(safe-area-inset-bottom, 0px));
     background: linear-gradient(180deg, transparent, rgba(7, 10, 20, 0.96) 30%);
   }
-  /* 手機：啟動鈕 + 清空 + 模型/思考全部擠在同一排 */
-  .actions-row { gap: var(--s-2); }
-  .actions-row .analyze-star.btn-lg { padding: 0 var(--s-4); }
+  /* 手機：主操作獨立一列，次要控制留在第二列；特色動效保留但不擠壓 */
+  .actions-row { flex-wrap: wrap; gap: var(--s-2); }
+  .actions-row .analyze-star.btn-lg { flex: 1 0 100%; padding: 0 var(--s-4); }
+  .clear-del { order: 2; }
+  .review-controls { order: 3; margin-left: auto; }
   .review-controls { gap: 10px; }
   .spark-switch { font-size: 17px; }
 }
@@ -424,8 +428,19 @@ button { font: inherit; color: inherit; }
 /* ════════ 審稿控制：模型放射選單 + 思考開關（黑金） ════════ */
 .review-controls { display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 
-/* 模型放射選單 */
-.model-dial { position: relative; width: 50px; height: 50px; flex: 0 0 auto; z-index: 20; }
+/* 模型放射選單：Arcane Orbit Dial（固定尺寸，不推擠操作列） */
+.model-dial { position: relative; width: 50px; height: 50px; flex: 0 0 50px; z-index: 20; }
+.model-dial::before {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 126px; height: 88px;
+  border: 1px solid rgba(214,178,90,0.0); border-bottom-color: transparent; border-radius: 999px 999px 0 0;
+  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.82);
+  transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out), border-color 0.28s var(--ease-out);
+}
+.model-dial.is-open::before {
+  opacity: 1; border-color: rgba(214,178,90,0.34); border-bottom-color: transparent;
+  transform: translate(-50%, -58%) scale(1);
+  box-shadow: 0 -10px 28px rgba(214,166,77,0.12);
+}
 .md-trigger, .md-sub-trigger { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
 .md-circle {
   display: flex; align-items: center; justify-content: center;
@@ -436,11 +451,20 @@ button { font: inherit; color: inherit; }
   color: #e7c977; font-weight: 700; font-size: 1rem; cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+.md-circle::before, .md-circle::after {
+  content: ""; position: absolute; inset: 5px; border-radius: 50%; pointer-events: none;
+  border: 1px solid rgba(255,230,166,0.18); transition: transform 0.35s var(--ease-out), opacity 0.28s var(--ease-out);
+}
+.md-circle::after { inset: 10px; border-style: dashed; opacity: 0.55; }
 .md-circle:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 0 10px rgba(214,178,90,0.22); }
 .md-circle:active { transform: scale(0.92); }
-.md-trigger:checked ~ .md-circle { box-shadow: 0 0 0 2px rgba(214,178,90,0.55), 0 6px 16px rgba(0,0,0,0.5); }
+.md-trigger:focus-visible ~ .md-circle { outline: 2px solid var(--c-gold); outline-offset: 2px; }
+.md-trigger:checked ~ .md-circle { box-shadow: 0 0 0 2px rgba(214,178,90,0.55), 0 0 22px rgba(214,166,77,0.28), 0 6px 16px rgba(0,0,0,0.5); }
+.md-trigger:checked ~ .md-circle::before { transform: rotate(45deg); opacity: 0.9; }
+.md-trigger:checked ~ .md-circle::after { transform: rotate(-38deg); opacity: 0.8; }
 
-.md-subs { position: absolute; inset: 0; z-index: 1; }
+.md-subs { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+.model-dial.is-open .md-subs { pointer-events: auto; }
 .md-sub { position: absolute; top: 0; left: 0; width: 50px; height: 50px; }
 .md-sub-trigger ~ label {
   display: flex; align-items: center; justify-content: center;
@@ -448,13 +472,17 @@ button { font: inherit; color: inherit; }
   background: radial-gradient(circle at 50% 28%, #241c10, #100c07);
   border: 1px solid rgba(214,178,90,0.35); color: #cbb072;
   font-size: 0.92rem; font-weight: 600; cursor: pointer; opacity: 0; transform: scale(0.4);
-  transition: transform 0.3s ease, opacity 0.3s ease, box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.36);
+  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s var(--ease-out), box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
+  pointer-events: none;
 }
 .md-sub-trigger:checked ~ label { color: #1a130a; background: radial-gradient(circle at 50% 28%, #f0d488, #d6b25a); border-color: #f0d488; }
-.md-sub-trigger ~ label:hover { box-shadow: 0 0 10px rgba(214,178,90,0.55); }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(1) label { transform: translate(0, -58px) scale(1); opacity: 1; transition-delay: 0.04s; }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label { transform: translate(-54px, -32px) scale(1); opacity: 1; transition-delay: 0.10s; }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label { transform: translate(54px, -32px) scale(1); opacity: 1; transition-delay: 0.16s; }
+.md-sub-trigger ~ label:hover, .md-sub-trigger:focus-visible ~ label { box-shadow: 0 0 14px rgba(214,178,90,0.62), 0 6px 18px rgba(0,0,0,0.42); color: #fff1bd; }
+.md-sub-trigger:focus-visible ~ label { outline: 2px solid var(--c-gold); outline-offset: 2px; }
+.md-trigger:checked ~ .md-subs .md-sub label { pointer-events: auto; }
+.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(1) label { transform: translate(0, -62px) scale(1); opacity: 1; transition-delay: 0.04s; }
+.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label { transform: translate(-58px, -36px) scale(1); opacity: 1; transition-delay: 0.10s; }
+.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label { transform: translate(58px, -36px) scale(1); opacity: 1; transition-delay: 0.16s; }
 
 /* 思考開關（spark-switch · 依使用者範例配色 · 滑動 warp） */
 .spark-switch { display: inline-block; font-size: 20px; flex: 0 0 auto; transition: opacity 0.2s ease; }

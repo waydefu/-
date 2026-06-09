@@ -61,6 +61,9 @@ export class GreatSageCore {
     this.energyTarget = 0;
     this.t = 0;
     this.bloomReady = false;
+    this._detailDone = new Set();
+    this._detailPending = 4;
+    this._fullDispatched = false;
     this._onResize = this.resize.bind(this);
     this._onLost = (e) => { e.preventDefault(); this.stop(); };
     this._onRestored = () => { if (!this.disposed) this.start(); };
@@ -100,6 +103,18 @@ export class GreatSageCore {
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
     window.addEventListener("resize", this._onResize, { passive: true });
     window.addEventListener("pointermove", this._onPointer, { passive: true });
+  }
+
+  _markDetailLoaded(name) {
+    if (this.disposed || this._detailDone.has(name)) return;
+    this._detailDone.add(name);
+    this._detailPending = Math.max(0, this._detailPending - 1);
+    if (!this._detailPending && !this._fullDispatched) {
+      this._fullDispatched = true;
+      window.dispatchEvent(new CustomEvent("worldforge:vfx-full", {
+        detail: { bloomReady: this.bloomReady, details: Array.from(this._detailDone) },
+      }));
+    }
   }
 
   _build() {
@@ -209,6 +224,8 @@ export class GreatSageCore {
       this.resize();
     } catch (e) {
       console.info("[FLG] Bloom 未啟用（保留基礎奇觀）：" + (e?.message || e));
+    } finally {
+      this._markDetailLoaded("bloom");
     }
   }
 
@@ -226,6 +243,8 @@ export class GreatSageCore {
       this.glyphInst?.layers?.forEach((l) => { if (l.userData) l.userData.baseOpacity *= 0.55; });
     } catch (e) {
       console.info("[FLG] Glyph 環未啟用：" + (e?.message || e));
+    } finally {
+      this._markDetailLoaded("glyph");
     }
   }
 
@@ -242,6 +261,8 @@ export class GreatSageCore {
       }
     } catch (e) {
       console.info("[FLG] 發光粒子未啟用：" + (e?.message || e));
+    } finally {
+      this._markDetailLoaded("magicule");
     }
   }
 
@@ -255,6 +276,8 @@ export class GreatSageCore {
       if (this.compInst?.group) this.compInst.group.scale.setScalar(0.32); // 縮入視野
     } catch (e) {
       console.info("[FLG] 計算環未啟用：" + (e?.message || e));
+    } finally {
+      this._markDetailLoaded("computation");
     }
   }
 

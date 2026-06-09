@@ -5,6 +5,15 @@
 let core = null;
 let calmMode = false;
 let pulseT = 0;
+let lifecycleBound = false;
+
+function setVfxState(state, detail = {}) {
+  document.body?.classList.remove("vfx-loading", "vfx-ready", "vfx-full", "vfx-fallback");
+  if (state) document.body?.classList.add(`vfx-${state}`);
+  if (state !== "loading") {
+    window.dispatchEvent(new CustomEvent(`worldforge:vfx-${state}`, { detail }));
+  }
+}
 
 function webglSupported() {
   try {
@@ -13,14 +22,17 @@ function webglSupported() {
   } catch { return false; }
 }
 
-function disposeCore(reason) {
+function disposeCore(reason, { fallback = false } = {}) {
   if (core) { try { core.dispose(); } catch {} core = null; }
   const canvas = document.getElementById("sageCanvas");
   if (canvas) canvas.style.opacity = "0"; // 回落到 CSS 電影背景
   if (reason) console.info("[FLG] WebGL 奇觀停用：" + reason + "（保留 CSS 背景）");
+  if (fallback) setVfxState("fallback", { reason: reason || "disabled" });
 }
 
 function bindLifecycle() {
+  if (lifecycleBound) return;
+  lifecycleBound = true;
   document.addEventListener("visibilitychange", () => {
     if (!core) return;
     if (document.hidden) core.stop(); else core.start();
@@ -39,23 +51,32 @@ function bindLifecycle() {
 
 async function load() {
   const canvas = document.getElementById("sageCanvas");
-  if (!canvas) return;
+  if (!canvas) {
+    setVfxState("fallback", { reason: "missing canvas" });
+    return;
+  }
   try {
     const { GreatSageCore } = await import("./great-sage-core.js");
     const mobile = window.matchMedia("(max-width: 820px)").matches;
+    canvas.addEventListener("webglcontextlost", () => disposeCore("context lost", { fallback: true }), { once: true });
     core = new GreatSageCore(canvas, { mobile, calm: calmMode });
     core.start();
     canvas.style.opacity = "1";   // 淡入（CSS transition）
     bindLifecycle();
+    setVfxState("ready", { source: "webgl", mobile, calm: calmMode });
   } catch (error) {
     console.warn("[FLG] WebGL 奇觀層載入失敗，維持 CSS 背景：", error?.message || error);
-    disposeCore("");
+    disposeCore(error?.message || "load failed", { fallback: true });
   }
 }
 
 /** 首屏後延後啟動；不支援 / reduced-motion → 直接維持 CSS 電影背景。 */
 export function initEffects() {
-  if (!webglSupported()) return;   // 真的不支援 WebGL 才純 CSS 背景
+  setVfxState("loading");
+  if (!webglSupported()) {
+    setVfxState("fallback", { reason: "webgl unsupported" });
+    return;
+  }
   // reduced-motion 不再整個跳過——改顯示「靜緩版」奇觀（慢轉、粒子幾乎不漂），
   // 既尊重少動需求、又讓開了 reduced-motion 的裝置仍看得到背景奇觀。
   calmMode = window.matchMedia("(prefers-reduced-motion: reduce)").matches;

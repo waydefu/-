@@ -25,8 +25,8 @@ describe("draft input validation", () => {
 
     assert.equal(result.ok, false);
     assert.equal(result.code, "draft-too-long");
-    assert.match(result.message, /1800/);
-    assert.match(result.message, /1801/);
+    assert.match(result.message, new RegExp(String(MAX_DRAFT_CHARS)));
+    assert.match(result.message, new RegExp(String(MAX_DRAFT_CHARS + 1)));
   });
 
   it("rejects structural system prompt markers", () => {

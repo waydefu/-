@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { enterOperationalWorkbench, openAccountMenu, openHistoryDrawer, openLogoutConfirm, waitForLoginReady } from "./helpers";
+import { enterOperationalWorkbench, openHistoryDrawer, openLogoutConfirm, waitForLoginReady } from "./helpers";
 
-test.describe("Worldforge visual baseline", () => {
+test.describe("Great Sage visual baseline", () => {
   test("登入頁 1366", async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await waitForLoginReady(page);
@@ -36,23 +36,12 @@ test.describe("Worldforge visual baseline", () => {
     await expect(page).toHaveScreenshot("history-drawer-1366.png", { animations: "disabled", caret: "hide" });
   });
 
-  test("帳號選單 1366", async ({ page }) => {
-    await page.setViewportSize({ width: 1366, height: 768 });
-    await waitForLoginReady(page);
-    await enterOperationalWorkbench(page);
-    await expect(page.locator(".app-navbar-actions #accountToggle")).toHaveCount(1);
-    await openAccountMenu(page);
-    await expect(page.locator("#accountMenu")).toBeVisible();
-    await expect(page).toHaveScreenshot("account-menu-1366.png", { animations: "disabled", caret: "hide" });
-  });
-
-  test("navbar exposes account center", async ({ page }) => {
+  test("navbar exposes history and logout controls", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForLoginReady(page);
     await enterOperationalWorkbench(page);
-    await expect(page.locator(".app-navbar-actions .sao-btn")).toHaveCount(2);
-    await expect(page.locator(".app-navbar-actions #accountToggle")).toHaveAttribute("aria-label", "開啟帳號中樞");
-    await expect(page.locator(".app-navbar-actions #historyToggle")).toHaveAttribute("aria-label", "開啟鑑定紀錄");
+    await expect(page.locator(".nav-actions #historyToggleBtn")).toHaveAttribute("aria-label", "開啟鑑定紀錄");
+    await expect(page.locator(".nav-actions #logoutBtn")).toHaveAttribute("aria-label", "登出");
   });
 
   test("visible buttons keep 44px target size", async ({ page }) => {
@@ -79,16 +68,66 @@ test.describe("Worldforge visual baseline", () => {
     expect(failures).toEqual([]);
   });
 
-  test("reduced motion keeps connection window visible", async ({ page }) => {
+  test("secondary action motion does not resize the command row", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForLoginReady(page);
-    await page.evaluate(() => {
-      const connectionWindow = document.getElementById("connectionWindow");
-      if (!connectionWindow) return;
-      connectionWindow.style.display = "grid";
-      connectionWindow.setAttribute("aria-hidden", "false");
+    await enterOperationalWorkbench(page);
+
+    const measure = () => page.evaluate(() => {
+      const row = document.querySelector(".actions-row");
+      const analyze = document.getElementById("analyzeBtn");
+      const clear = document.getElementById("clearBtn");
+      const logout = document.getElementById("logoutBtn");
+      const rect = (node: Element | null) => {
+        const r = node?.getBoundingClientRect();
+        return r ? { width: Math.round(r.width), height: Math.round(r.height) } : { width: 0, height: 0 };
+      };
+      return {
+        row: rect(row),
+        analyze: rect(analyze),
+        clear: rect(clear),
+        logout: rect(logout),
+      };
     });
-    const state = await page.locator("#connectionWindow").evaluate((node) => {
+
+    const before = await measure();
+    await page.locator("#clearBtn").hover();
+    const afterClearHover = await measure();
+    await page.locator("#logoutBtn").hover();
+    const afterLogoutHover = await measure();
+
+    expect(afterClearHover.row).toEqual(before.row);
+    expect(afterLogoutHover.logout.width).toBe(44);
+    expect(afterClearHover.clear.width).toBe(50);
+    expect(afterClearHover.analyze.width).toBeGreaterThan(90);
+  });
+
+  test("model orbit selector opens without layout shift", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await waitForLoginReady(page);
+    await enterOperationalWorkbench(page);
+
+    const before = await page.locator(".actions-row").boundingBox();
+    await page.evaluate(() => {
+      const trigger = document.getElementById("modelDialOpen") as HTMLInputElement | null;
+      const dial = document.getElementById("modelDial");
+      if (trigger) trigger.checked = true;
+      dial?.classList.add("is-open");
+    });
+    const after = await page.locator(".actions-row").boundingBox();
+    const choices = await page.locator(".md-trigger:checked ~ .md-subs .md-sub label").count();
+
+    expect(choices).toBe(3);
+    expect(Math.round(after?.width || 0)).toBe(Math.round(before?.width || 0));
+    expect(Math.round(after?.height || 0)).toBe(Math.round(before?.height || 0));
+  });
+
+  test("reduced motion keeps history panel visible", async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await waitForLoginReady(page);
+    await enterOperationalWorkbench(page);
+    await openHistoryDrawer(page);
+    const state = await page.locator("#historyPanel").evaluate((node) => {
       const rect = node.getBoundingClientRect();
       const style = getComputedStyle(node);
       return {

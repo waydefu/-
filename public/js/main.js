@@ -26,6 +26,50 @@ const fmtTime = (ts) => {
 };
 
 const state = { analyzing: false, historyItems: [], activeHistoryId: "", pendingDeleteId: "", draftTimer: 0 };
+const BOOT_MIN_MS = 3200;
+const BOOT_MAX_MS = 6000;
+let bootDirectorBound = false;
+
+function setBodyVfxState(vfxState) {
+  document.body.classList.remove("vfx-loading", "vfx-ready", "vfx-full", "vfx-fallback");
+  if (vfxState) document.body.classList.add(`vfx-${vfxState}`);
+}
+
+function initBootDirector() {
+  if (bootDirectorBound) return;
+  bootDirectorBound = true;
+  const loader = $("bootLoader");
+  if (!loader) return;
+
+  const boot = { minDone: false, vfxSettled: false, done: false };
+  setBodyVfxState("loading");
+
+  const retire = () => {
+    if (boot.done || !boot.minDone || !boot.vfxSettled) return;
+    boot.done = true;
+    loader.classList.add("is-done");
+    window.setTimeout(() => loader.remove(), 700);
+  };
+
+  const settleVfx = (vfxState) => {
+    boot.vfxSettled = true;
+    setBodyVfxState(vfxState);
+    retire();
+  };
+
+  window.setTimeout(() => {
+    boot.minDone = true;
+    retire();
+  }, BOOT_MIN_MS);
+
+  window.setTimeout(() => {
+    if (!boot.vfxSettled) settleVfx("fallback");
+  }, BOOT_MAX_MS);
+
+  window.addEventListener("worldforge:vfx-ready", () => settleVfx("ready"));
+  window.addEventListener("worldforge:vfx-fallback", () => settleVfx("fallback"));
+  window.addEventListener("worldforge:vfx-full", () => settleVfx("full"));
+}
 
 /* ════════ 結果渲染 ════════ */
 function createResultSection(kind, title, eyebrow, content) {
@@ -177,6 +221,7 @@ function renderHistory() {
     state.activeHistoryId = "";
     const empty = document.createElement("p");
     empty.className = "history-empty";
+    empty.setAttribute("role", "listitem");
     empty.textContent = "尚無鑑定紀錄。完成一次分析後，系統會自動封存於此。";
     list.appendChild(empty);
     return;
@@ -428,14 +473,7 @@ function applyAuthState(user) {
 /* ════════ 綁定（一次性，無重複） ════════ */
 function bind() {
   bindScrim();
-
-  // 載入頁：typewriter 播放一輪後淡出，進入登入頁
-  window.setTimeout(() => {
-    const bl = document.getElementById("bootLoader");
-    if (!bl) return;
-    bl.classList.add("is-done");
-    window.setTimeout(() => bl.remove(), 700);
-  }, 3200);
+  initBootDirector();
 
   // 禁詞資料載入（一次）→ 載完即掃一次目前草稿
   fetch("/forbidden-words.json").then((r) => (r.ok ? r.json() : [])).then((d) => { FORBIDDEN = Array.isArray(d) ? d : []; scanForbidden(); }).catch(() => {});

@@ -27,119 +27,18 @@ export async function waitForLoginReady(page: Page) {
   await routeStaticDocument(page);
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/", { waitUntil: "domcontentloaded", timeout: 10_000 });
-  await page.locator("#ritualStack").waitFor({ state: "attached", timeout: 10_000 });
+  await page.locator("#authScreen").waitFor({ state: "attached", timeout: 10_000 });
   await page.evaluate(() => {
-    document.body.classList.remove("is-booting", "operational", "auth-handoff-collapsing");
-    document.body.classList.add("boot-complete");
-
-    const bootVeil = document.getElementById("bootVeil");
-    if (bootVeil) {
-      bootVeil.style.opacity = "0";
-      bootVeil.style.display = "none";
+    document.body.classList.remove("is-authed");
+    const bootLoader = document.getElementById("bootLoader");
+    if (bootLoader) {
+      bootLoader.style.display = "none";
+      bootLoader.setAttribute("aria-hidden", "true");
     }
-
-    const ritualStack = document.getElementById("ritualStack");
-    if (ritualStack) {
-      ritualStack.addEventListener("cancel", (event) => {
-        event.preventDefault();
-        const status = document.getElementById("ritualStatus");
-        if (status) status.textContent = "請先完成 Google 登入";
-      });
-      if ("showModal" in ritualStack && !ritualStack.open) {
-        ritualStack.showModal();
-      } else if (!ritualStack.open) {
-        ritualStack.setAttribute("open", "");
-      }
-      ritualStack.style.opacity = "1";
-      ritualStack.style.visibility = "visible";
-      ritualStack.style.display = "grid";
-    }
-
+    const authStatus = document.getElementById("authStatus");
+    if (authStatus) authStatus.textContent = "";
   });
-  await hydrateStaticSaoButtons(page);
   await stabilizeVisuals(page);
-}
-
-export async function hydrateStaticSaoButtons(page: Page) {
-  await page.evaluate(() => {
-    function resolveLabel(button: HTMLElement) {
-      const explicit = button.dataset.saoLabel || "";
-      if (explicit.trim()) return explicit.trim();
-      const labelNode = button.querySelector(".sao-btn-label, .btn-label, .nav-label, .history-time");
-      const label = labelNode?.textContent?.trim();
-      if (label) return label;
-      return (button.getAttribute("aria-label") || button.title || button.textContent || "").trim();
-    }
-
-    function resolveTag(button: HTMLElement) {
-      if (button.dataset.saoTag) return button.dataset.saoTag;
-      if (button.id) {
-        const tag = button.id
-          .replace(/Button|Btn|Toggle|Clear|Close/gi, "")
-          .replace(/[a-z][A-Z]/g, (part) => `${part[0]}_${part[1]}`)
-          .split(/[^A-Za-z0-9]+|_/)
-          .filter(Boolean)
-          .map((part) => part[0])
-          .join("")
-          .slice(0, 4)
-          .toUpperCase();
-        if (tag) return tag;
-      }
-      if (button.dataset.op) return String(button.dataset.op).slice(0, 4).toUpperCase();
-      return "SYS";
-    }
-
-    document.querySelectorAll<HTMLElement>(".sao-btn").forEach((button) => {
-      const label = resolveLabel(button) || "SYSTEM";
-      button.dataset.saoTag = resolveTag(button);
-      button.dataset.saoCompact = String(button.classList.contains("history-delete")
-        || (!button.querySelector(".sao-btn-label, .btn-label, .nav-label") && (button.textContent || "").trim().length <= 2));
-
-      if (!button.querySelector(".sao-btn-scan")) {
-        const scan = document.createElement("span");
-        scan.className = "sao-btn-scan";
-        scan.setAttribute("aria-hidden", "true");
-        button.appendChild(scan);
-      }
-
-      if (!button.querySelector(".sao-btn-tag")) {
-        const tag = document.createElement("span");
-        tag.className = "sao-btn-tag";
-        tag.setAttribute("aria-hidden", "true");
-        tag.textContent = button.dataset.saoTag || "SYS";
-        button.appendChild(tag);
-      }
-    });
-  });
-}
-
-export async function applyStaticNavbar(page: Page) {
-  await page.evaluate(() => {
-    const navActions = document.querySelector<HTMLElement>(".app-navbar-actions");
-    if (!navActions) throw new Error("app navbar actions not found");
-    const historyToggle = document.getElementById("historyToggle");
-    const accountToggle = document.getElementById("accountToggle");
-    const reanalyzeButton = document.getElementById("reanalyzeButton");
-    const clearDraftButton = document.getElementById("clearDraftButton");
-
-    [historyToggle, accountToggle]
-      .filter((button): button is HTMLElement => button instanceof HTMLElement)
-      .forEach((button) => {
-        if (button.getAttribute("role") === "menuitem") button.removeAttribute("role");
-        if (button.parentElement !== navActions) navActions.appendChild(button);
-      });
-
-    const operationalActions = document.querySelector<HTMLElement>(".operational-actions");
-    if (operationalActions && clearDraftButton instanceof HTMLElement && clearDraftButton.parentElement !== operationalActions) {
-      operationalActions.appendChild(clearDraftButton);
-    }
-
-    const dossierActions = document.querySelector<HTMLElement>(".dossier-actions");
-    if (dossierActions && reanalyzeButton instanceof HTMLElement && reanalyzeButton.parentElement !== dossierActions) {
-      dossierActions.appendChild(reanalyzeButton);
-    }
-  });
-  await hydrateStaticSaoButtons(page);
 }
 
 export async function stabilizeVisuals(page: Page) {
@@ -154,13 +53,14 @@ export async function stabilizeVisuals(page: Page) {
         scroll-behavior: auto !important;
       }
 
-      #webgl-container canvas,
-      .leyline-rain,
-      .atmosphere,
-      .core-pulse,
-      .shockwave,
-      .arcane-lens {
+      #bootLoader,
+      #sageCanvas,
+      #linkStart,
+      .bg-aura,
+      .bg-grid {
+        opacity: 0 !important;
         visibility: hidden !important;
+        pointer-events: none !important;
       }
     `,
   });
@@ -168,117 +68,131 @@ export async function stabilizeVisuals(page: Page) {
 
 export async function enterOperationalWorkbench(page: Page) {
   await page.evaluate(() => {
-    document.body.classList.remove("is-booting", "login-modal-entering", "auth-handoff-collapsing");
-    document.body.classList.add("boot-complete", "operational");
+    document.body.classList.add("is-authed");
 
-    const ritualDialog = document.getElementById("ritualStack");
-    if (ritualDialog?.open && typeof ritualDialog.close === "function") {
-      ritualDialog.close();
+    const bootLoader = document.getElementById("bootLoader");
+    if (bootLoader) {
+      bootLoader.style.display = "none";
+      bootLoader.setAttribute("aria-hidden", "true");
     }
 
-    const bootVeil = document.getElementById("bootVeil");
-    if (bootVeil) {
-      bootVeil.style.opacity = "0";
-      bootVeil.style.display = "none";
+    const draftField = document.getElementById("draftField") as HTMLTextAreaElement | null;
+    if (draftField) {
+      draftField.value = "遠征隊抵達禁忌書庫，月色照在古堡斷裂的尖塔上。";
     }
 
-    document.querySelectorAll<HTMLElement>("#ritualStack, #overrideWindow, #connectionWindow").forEach((node) => {
-      node.style.opacity = "0";
-      node.style.visibility = "hidden";
-      node.style.display = "none";
-      node.setAttribute("aria-hidden", "true");
-    });
+    const charCount = document.getElementById("charCount");
+    if (charCount) charCount.textContent = "29 / 5,000";
+    const draftSync = document.getElementById("draftSync");
+    if (draftSync) draftSync.textContent = "草稿記憶已同步";
+    const sysStatus = document.getElementById("sysStatusText");
+    if (sysStatus) sysStatus.textContent = "鑑定核心已連線";
+    const resultStatus = document.getElementById("resultStatusText");
+    if (resultStatus) resultStatus.textContent = "魔導鑑定卷宗已完成";
 
-    const deck = document.getElementById("operationalDeck");
-    if (deck) {
-      deck.removeAttribute("inert");
-      deck.setAttribute("aria-hidden", "false");
-      deck.style.opacity = "1";
-      deck.style.visibility = "visible";
-      deck.style.transform = "none";
-      deck.style.filter = "none";
+    const historyPanel = document.getElementById("historyPanel");
+    historyPanel?.classList.remove("is-open", "is-closing");
+    const historyToggleBtn = document.getElementById("historyToggleBtn");
+    historyToggleBtn?.setAttribute("aria-expanded", "false");
+
+    const scrim = document.getElementById("scrim");
+    scrim?.classList.remove("is-open");
+    scrim?.removeAttribute("data-owner");
+
+    const logoutModal = document.getElementById("logoutModal");
+    if (logoutModal) {
+      logoutModal.setAttribute("hidden", "");
+      logoutModal.classList.remove("is-open", "is-closing");
     }
 
     const analysisResult = document.getElementById("analysisResult");
     if (analysisResult) {
       analysisResult.innerHTML = `
-        <section class="result-section">
+        <section class="result-section" data-section="rewrite">
           <div class="result-section-head">
-            <span>修改後全文</span>
-            <button type="button" class="dossier-copy sao-btn"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製本段</span></button>
+            <div>
+              <span class="result-section-eyebrow">REWRITTEN MANUSCRIPT</span>
+              <h3 class="result-section-title">修改後全文</h3>
+            </div>
+            <button type="button" class="copy-cube" data-copy-section="rewrite" aria-label="複製本段">
+              <span class="cc-icon" aria-hidden="true"></span>
+              <span class="cc-cube"><span class="cc-side cc-front btn-label">複製本段</span><span class="cc-side cc-top">複製本段</span></span>
+            </button>
           </div>
           <div class="result-section-body">月色照在古堡斷裂的尖塔上，守門人低聲宣告遠征隊已抵達禁忌書庫。</div>
         </section>
-        <section class="result-section">
+        <section class="result-section" data-section="summary">
           <div class="result-section-head">
-            <span>審查摘要</span>
-            <button type="button" class="dossier-copy sao-btn"><span class="sao-btn-symbol" aria-hidden="true">⧉</span><span class="sao-btn-label">複製本段</span></button>
+            <div>
+              <span class="result-section-eyebrow">EDITORIAL REVIEW</span>
+              <h3 class="result-section-title">審查摘要</h3>
+            </div>
+            <button type="button" class="copy-cube" data-copy-section="summary" aria-label="複製本段">
+              <span class="cc-icon" aria-hidden="true"></span>
+              <span class="cc-cube"><span class="cc-side cc-front btn-label">複製本段</span><span class="cc-side cc-top">複製本段</span></span>
+            </button>
           </div>
           <div class="result-section-body">語氣已調整為沉穩西幻敘事，現代口吻與突兀節奏已收斂。</div>
         </section>
       `;
     }
   });
-  await applyStaticNavbar(page);
-  await hydrateStaticSaoButtons(page);
 }
 
 export async function openHistoryDrawer(page: Page) {
   await page.evaluate(() => {
-    const toggle = document.getElementById("historyToggle");
+    document.body.classList.add("is-authed");
+    const toggle = document.getElementById("historyToggleBtn");
     toggle?.setAttribute("aria-expanded", "true");
-    const drawer = document.getElementById("historyDrawer");
-    drawer?.removeAttribute("hidden");
-    drawer?.setAttribute("aria-hidden", "false");
+
+    const panel = document.getElementById("historyPanel");
+    if (panel) {
+      panel.classList.remove("is-closing");
+      panel.classList.add("is-open");
+      panel.style.opacity = "1";
+      panel.style.pointerEvents = "auto";
+      panel.style.transform = "translate(-50%, -50%) scaleX(1) scaleY(1)";
+    }
+
+    const scrim = document.getElementById("scrim");
+    if (scrim) {
+      scrim.classList.add("is-open");
+      scrim.dataset.owner = "history";
+    }
+
     const list = document.getElementById("historyList");
     if (list) {
       list.innerHTML = `
-        <div class="history-entry">
-          <button class="history-item sao-btn is-active" type="button" aria-current="true">
-            <span class="sao-btn-symbol history-entry-sigil" aria-hidden="true">卷</span>
+        <div class="history-entry" role="listitem">
+          <button class="history-item is-active" type="button" aria-current="true">
             <span class="history-time">2026/05/25 23:40</span>
             <span class="history-preview">遠征隊抵達禁忌書庫，月色照在古堡斷裂的尖塔上...</span>
           </button>
-          <button class="history-delete sao-btn is-danger" type="button" aria-label="刪除此卷宗"><span class="sao-btn-symbol" aria-hidden="true">×</span><span class="sao-btn-label">刪</span></button>
+          <button class="btn btn-ghost btn-danger btn-icon history-delete" type="button" aria-label="刪除此筆鑑定紀錄">×</button>
         </div>
       `;
     }
-  });
-  await hydrateStaticSaoButtons(page);
-}
-
-export async function openAccountMenu(page: Page) {
-  await page.evaluate(() => {
-    const navActions = document.querySelector(".app-navbar-actions");
-    const toggle = document.getElementById("accountToggle");
-    if (!(navActions instanceof HTMLElement) || !(toggle instanceof HTMLElement) || !navActions.contains(toggle)) {
-      throw new Error("account center is not reachable from the navbar");
-    }
-    toggle?.setAttribute("aria-expanded", "true");
-    const menu = document.getElementById("accountMenu");
-    menu?.removeAttribute("hidden");
-    // S20：account-menu 改用 [aria-hidden=false] 控制顯示（override 配方），需一併設定
-    menu?.setAttribute("aria-hidden", "false");
   });
 }
 
 export async function openLogoutConfirm(page: Page) {
   await page.evaluate(() => {
-    const accountMenu = document.getElementById("accountMenu");
-    accountMenu?.setAttribute("hidden", "");
-    document.getElementById("accountToggle")?.setAttribute("aria-expanded", "false");
+    document.body.classList.add("is-authed");
 
-    const dialog = document.getElementById("logoutConfirmWindow");
+    const scrim = document.getElementById("scrim");
+    if (scrim) {
+      scrim.classList.add("is-open");
+      scrim.dataset.owner = "modal";
+    }
+
+    const dialog = document.getElementById("logoutModal");
     if (dialog) {
       dialog.removeAttribute("hidden");
-      dialog.removeAttribute("data-closing");
-      dialog.setAttribute("aria-hidden", "false");
-      dialog.style.display = "block";
+      dialog.classList.remove("is-closing");
+      dialog.classList.add("is-open");
       dialog.style.opacity = "1";
+      dialog.style.pointerEvents = "auto";
       dialog.style.transform = "translate(-50%, -50%) scaleX(1) scaleY(1)";
-      dialog.style.filter = "none";
     }
-    document.documentElement.classList.add("sao-modal-open");
-    document.body.classList.add("sao-modal-open");
   });
 }

@@ -30,7 +30,14 @@ export function initReviewControls() {
   const current = $("modelCurrent");
   const thinkInput = /** @type {HTMLInputElement|null} */ ($("thinkInput"));
   const thinkWrap = $("thinkToggle");
+  const dial = $("modelDial");
   const dialOpen = /** @type {HTMLInputElement|null} */ ($("modelDialOpen"));
+
+  const syncOpen = () => {
+    const open = !!(dialOpen && dialOpen.checked);
+    dial?.classList.toggle("is-open", open);
+    dialOpen?.setAttribute("aria-expanded", String(open));
+  };
 
   const sync = () => {
     const model = radios.find((r) => r.checked)?.value || "auto";
@@ -42,12 +49,26 @@ export function initReviewControls() {
     const thinkActive = model === "kimi";
     thinkWrap?.classList.toggle("is-disabled", !thinkActive);
     if (thinkInput) thinkInput.disabled = !thinkActive;
+    syncOpen();
   };
 
   radios.forEach((r) => r.addEventListener("change", () => {
     sync();
     if (dialOpen) dialOpen.checked = false; // 選完收合放射選單
+    syncOpen();
   }));
+  dialOpen?.addEventListener("change", syncOpen);
+  document.addEventListener("click", (e) => {
+    if (!dialOpen?.checked || !dial) return;
+    if (e.target instanceof Node && dial.contains(e.target)) return;
+    dialOpen.checked = false;
+    syncOpen();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape" || !dialOpen?.checked) return;
+    dialOpen.checked = false;
+    syncOpen();
+  });
   thinkInput?.addEventListener("change", sync);
   sync();
 }

@@ -64,6 +64,18 @@ export function splitAnalysisSections(raw) {
   return { rewrite, summary, fallback: "" };
 }
 
+export function sectionsToPlainText(sections) {
+  const rewrite = String(sections?.rewrite || "").trim();
+  const summary = String(sections?.summary || "").trim();
+  const fallback = String(sections?.fallback || "").trim();
+  if (fallback) return fallback;
+
+  const parts = [];
+  if (rewrite) parts.push(`修改後全文\n${rewrite}`);
+  if (summary) parts.push(`審查摘要\n${summary}`);
+  return parts.join("\n\n");
+}
+
 function renderInline(text) {
   return escapeHtml(text)
     .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
