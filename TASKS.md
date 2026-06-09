@@ -11,6 +11,7 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Use the existing `bootLoader`; do not add a second loading page.
 - Use VFX events to coordinate loader exit: `worldforge:vfx-ready`, `worldforge:vfx-full`, `worldforge:vfx-fallback`.
 - Keep Firebase/Auth/API/history data contracts unchanged.
+- Current VFX direction: this is a magic-circle appraisal core, not a singularity. Remove all oversized plastic ellipse orbits; replace them with rune/tick rings. Use a rune crystal core and one unified framing formula for desktop/mobile.
 
 ## Completed
 - Read README and inspected current VFX, loader, action controls, and model selector.
@@ -27,17 +28,21 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Follow-up: optimized the mobile model selector into a vertical rune rail so the three choices open above the trigger without overlapping clear-draft or thinking spark controls.
 - Follow-up: hardened visual helpers for history/logout open states by disabling helper-driven modal animation, fixing opacity timing drift on slower machines.
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and `git diff --check`.
+- Follow-up: refactored the Great Sage VFX into a magic-circle appraisal core: removed the oversized ellipse orbits and low-poly shell, added a rune crystal core, and balanced the desktop/mobile framing.
+- Follow-up: tuned the reference glyph rings into lower-opacity rune/tick rings with only minor cool calibration accents.
+- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, and a NUL-byte source scan.
 
 ## In Progress
 - None.
 
 ## Next Step
-Done. Selector follow-up is committed. Deploy only if requested.
+Done. Deploy only if requested.
 
 ## Files Changed
 - `TASKS.md`
 - `public/js/effects/effects-manager.js`
 - `public/js/effects/great-sage-core.js`
+- `public/js/webgl/reference-glyph-ring.js`
 - `public/js/main.js`
 - `public/js/app/review-controls.js`
 - `public/css/app.css`
@@ -51,6 +56,13 @@ Done. Selector follow-up is committed. Deploy only if requested.
 - `npm run test:visual` — passed after updating the expected mobile workbench snapshot.
 - `npm run test:a11y` — passed.
 - `git diff --check` — passed with existing CRLF warnings only.
+
+- Current VFX follow-up: `npm run check:frontend` passed.
+- Current VFX follow-up: `npm test` passed.
+- Current VFX follow-up: `npm run test:visual` passed.
+- Current VFX follow-up: `git diff --check` passed with existing CRLF warnings only.
+- Current VFX follow-up: NUL-byte source scan found no matches.
+- Current VFX follow-up: Browser sanity on `http://127.0.0.1:5179/` reached `body.vfx-full` after 30s with a visible 1366x768 canvas and no horizontal overflow; CDP screenshot capture timed out on this machine.
 
 ## Notes For Continuation
 If context is compacted or interrupted: read `README.md`, this `TASKS.md`, then run `git status --short` before continuing.

@@ -23,4 +23,18 @@ describe("frontend source guardrails", () => {
     assert.match(core, /_markDetailLoaded\("bloom"\)/);
     assert.match(core, /_markDetailLoaded\("magicule"\)/);
   });
+
+  it("keeps the Great Sage core as a magic-circle rune core", () => {
+    const core = readFileSync("public/js/effects/great-sage-core.js", "utf8");
+
+    assert.doesNotMatch(core, /orbitDefs/);
+    assert.doesNotMatch(core, /this\.orbits/);
+    assert.doesNotMatch(core, /shellGeo|shellMat|this\.shell/);
+    assert.doesNotMatch(core, /makeGlowRingTexture/);
+
+    assert.match(core, /SphereGeometry/);
+    assert.match(core, /makeCoreSigilTexture/);
+    assert.match(core, /computeFrameProfile/);
+    assert.match(core, /coreSigils/);
+  });
 });

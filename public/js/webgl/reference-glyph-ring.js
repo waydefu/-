@@ -8,7 +8,6 @@ import {
   RAPHAEL_GOLD_CORE,
   WARM_GOLD_NODE,
   SPIRITRON_WHITE,
-  OPTICAL_TEAL,
 } from './constants.js';
 import { clamp } from './math-utils.js';
 import { disposeObjectTree } from './dispose-utils.js';
@@ -85,13 +84,13 @@ const drawTicks = (ctx, radius, count, length, color, width, alpha, skipEvery = 
   ctx.restore();
 };
 
-const drawBrokenArcs = (ctx, radius, count, color, alpha) => {
+const drawBrokenArcs = (ctx, radius, count, color, alpha, width = 5) => {
   ctx.save();
   ctx.strokeStyle = colorToCss(color, alpha);
-  ctx.lineWidth = 5;
+  ctx.lineWidth = width;
   ctx.lineCap = 'round';
   ctx.shadowColor = colorToCss(color, alpha);
-  ctx.shadowBlur = 18;
+  ctx.shadowBlur = width * 3.6;
   for (let i = 0; i < count; i++) {
     const start = i * 0.63 + (i % 3) * 0.14;
     const span = 0.13 + (i % 5) * 0.055;
@@ -143,17 +142,17 @@ class ReferenceGlyphRing {
     const outerRadius = 790 * scale;
 
     if (kind === 'main') {
-      drawRing(ctx, mainRadius - 86 * scale, RAPHAEL_AMBER, 5.4 * scale, 0.48, [30 * scale, 18 * scale]);
-      drawRing(ctx, mainRadius, WARM_GOLD_NODE, 9 * scale, 0.68);
-      drawRing(ctx, mainRadius + 76 * scale, BRIGHT_GOLD, 5.2 * scale, 0.44, [18 * scale, 24 * scale]);
-      drawTicks(ctx, mainRadius - 42 * scale, 144, 36 * scale, RAPHAEL_GOLD_CORE, 2.8 * scale, 0.42, 11);
-      drawTicks(ctx, mainRadius + 42 * scale, 168, 30 * scale, WARM_GOLD_NODE, 2.5 * scale, 0.36, 13);
-      drawBrokenArcs(ctx, mainRadius - 20 * scale, 38, RAPHAEL_AMBER, 0.40);
+      drawRing(ctx, mainRadius - 86 * scale, RAPHAEL_AMBER, 4.8 * scale, 0.42, [30 * scale, 20 * scale]);
+      drawRing(ctx, mainRadius, WARM_GOLD_NODE, 7.2 * scale, 0.56);
+      drawRing(ctx, mainRadius + 76 * scale, BRIGHT_GOLD, 4.6 * scale, 0.34, [18 * scale, 26 * scale]);
+      drawTicks(ctx, mainRadius - 42 * scale, 150, 34 * scale, RAPHAEL_GOLD_CORE, 2.4 * scale, 0.34, 11);
+      drawTicks(ctx, mainRadius + 42 * scale, 174, 28 * scale, WARM_GOLD_NODE, 2.1 * scale, 0.30, 13);
+      drawBrokenArcs(ctx, mainRadius - 20 * scale, 44, RAPHAEL_AMBER, 0.30, 3.6 * scale);
 
       const text = ` ${GLYPH_TEXT.join('  //  ')}  // `;
-      drawCircularText(ctx, text.repeat(2), mainRadius + 12 * scale, 54 * scale, colorToCss(WARM_GOLD_NODE, 0.98), -Math.PI / 2, TAU * 1.02, 22 * scale);
-      drawCircularText(ctx, text.repeat(2), mainRadius - 92 * scale, 34 * scale, colorToCss(RAPHAEL_GOLD_CORE, 0.72), Math.PI / 2, -TAU * 1.02, 12 * scale);
-      drawCircularText(ctx, text.repeat(2), mainRadius + 118 * scale, 24 * scale, colorToCss(SPIRITRON_WHITE, 0.42), Math.PI * 0.15, TAU * 1.02, 10 * scale);
+      drawCircularText(ctx, text.repeat(2), mainRadius + 12 * scale, 48 * scale, colorToCss(WARM_GOLD_NODE, 0.82), -Math.PI / 2, TAU * 1.02, 18 * scale);
+      drawCircularText(ctx, text.repeat(2), mainRadius - 92 * scale, 31 * scale, colorToCss(RAPHAEL_GOLD_CORE, 0.56), Math.PI / 2, -TAU * 1.02, 9 * scale);
+      drawCircularText(ctx, text.repeat(2), mainRadius + 118 * scale, 22 * scale, colorToCss(SPIRITRON_WHITE, 0.30), Math.PI * 0.15, TAU * 1.02, 7 * scale);
     }
 
     if (kind === 'inner') {
@@ -178,12 +177,14 @@ class ReferenceGlyphRing {
     }
 
     if (kind === 'edge') {
-      drawRing(ctx, outerRadius - 40 * scale, OPTICAL_TEAL, 6 * scale, 0.58, [26 * scale, 34 * scale]);
-      drawRing(ctx, outerRadius + 34 * scale, RAPHAEL_CYAN_SOFT, 5.5 * scale, 0.46);
-      drawRing(ctx, outerRadius + 82 * scale, SPIRITRON_WHITE, 3.2 * scale, 0.28, [14 * scale, 32 * scale]);
-      drawTicks(ctx, outerRadius, 112, 50 * scale, OPTICAL_TEAL, 3.4 * scale, 0.40, 5);
-      drawTicks(ctx, outerRadius + 62 * scale, 72, 28 * scale, SPIRITRON_WHITE, 2.1 * scale, 0.24, 6);
-      drawBrokenArcs(ctx, outerRadius - 20 * scale, 22, RAPHAEL_CYAN_SOFT, 0.38);
+      drawRing(ctx, outerRadius - 54 * scale, WARM_GOLD_NODE, 4.2 * scale, 0.34, [22 * scale, 32 * scale]);
+      drawRing(ctx, outerRadius + 18 * scale, RAPHAEL_GOLD_CORE, 3.8 * scale, 0.26);
+      drawRing(ctx, outerRadius + 70 * scale, SPIRITRON_WHITE, 2.4 * scale, 0.15, [12 * scale, 38 * scale]);
+      drawTicks(ctx, outerRadius - 18 * scale, 132, 42 * scale, WARM_GOLD_NODE, 2.4 * scale, 0.28, 7);
+      drawTicks(ctx, outerRadius + 54 * scale, 84, 24 * scale, SPIRITRON_WHITE, 1.8 * scale, 0.16, 6);
+      drawTicks(ctx, outerRadius + 34 * scale, 48, 18 * scale, RAPHAEL_CYAN_SOFT, 1.4 * scale, 0.10, 4);
+      drawBrokenArcs(ctx, outerRadius - 24 * scale, 28, RAPHAEL_AMBER, 0.24, 3.2 * scale);
+      drawBrokenArcs(ctx, outerRadius + 42 * scale, 12, RAPHAEL_CYAN_SOFT, 0.10, 2.2 * scale);
     }
 
     const texture = new this.THREE.CanvasTexture(canvas);
@@ -217,9 +218,9 @@ class ReferenceGlyphRing {
       this.createLayer('main', 18 * mobileScale, 0.42, 0.2, 0);
       return;
     }
-    this.createLayer('edge', 30.5 * mobileScale, this.profile.mobile ? 0.52 : 0.78, -0.3, -0.012);
-    this.createLayer('main', 23.8 * mobileScale, this.profile.mobile ? 0.58 : 0.78, 0.15, 0.018);
-    this.createLayer('inner', 14.4 * mobileScale, this.profile.mobile ? 0.40 : 0.52, 0.35, -0.026);
+    this.createLayer('edge', 27.2 * mobileScale, this.profile.mobile ? 0.44 : 0.56, -0.3, -0.010);
+    this.createLayer('main', 21.4 * mobileScale, this.profile.mobile ? 0.52 : 0.62, 0.15, 0.016);
+    this.createLayer('inner', 13.2 * mobileScale, this.profile.mobile ? 0.34 : 0.42, 0.35, -0.024);
   }
 
   update(dt, time, state = {}) {
