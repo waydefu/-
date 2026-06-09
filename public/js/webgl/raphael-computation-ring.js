@@ -3,13 +3,11 @@
 import {
   TAU,
   BRIGHT_GOLD,
-  RAPHAEL_CYAN,
   RAPHAEL_CYAN_SOFT,
   RAPHAEL_AMBER,
   RAPHAEL_GOLD_CORE,
   WARM_GOLD_NODE,
   SPIRITRON_WHITE,
-  OPTICAL_TEAL,
 } from './constants.js';
 import { disposeObjectTree } from './dispose-utils.js';
 
@@ -19,7 +17,7 @@ class RaphaelComputationRing {
     this.profile = profile;
     this.core = core;
     this.group = new THREE.Group();
-    this.group.name = "Raphael Computation Ring";
+    this.group.name = "Raphael Compact Rune Ring";
     this.group.renderOrder = 2;
     this.rings = [];
     this.tickGroups = [];
@@ -77,29 +75,18 @@ class RaphaelComputationRing {
 
   createConcentricRings() {
     const THREE = this.THREE;
-    const count = this.profile.reduced ? 2 : this.profile.mobile || this.profile.lowPower ? 5 : 9;
-    const palette = [
-      RAPHAEL_GOLD_CORE,
-      WARM_GOLD_NODE,
-      RAPHAEL_AMBER,
-      BRIGHT_GOLD,
-      WARM_GOLD_NODE,
-      RAPHAEL_GOLD_CORE,
-      WARM_GOLD_NODE,
-      OPTICAL_TEAL,
-      RAPHAEL_CYAN_SOFT,
-    ];
+    const count = this.profile.reduced ? 2 : this.profile.mobile || this.profile.lowPower ? 3 : 4;
+    const palette = [RAPHAEL_GOLD_CORE, WARM_GOLD_NODE, RAPHAEL_AMBER, BRIGHT_GOLD];
     for (let i = 0; i < count; i++) {
       const t = count === 1 ? 0 : i / (count - 1);
-      const radius = 5.2 + t * (this.profile.mobile ? 10.5 : 18.5);
-      const tube = 0.006 + (1 - t) * 0.009;  // 細發光線（非塑膠管）
-      const color = palette[i % palette.length];
-      const mat = this.createMeshMaterial(color, 0.13 + (1 - t) * 0.10);
+      const radius = 2.8 + t * (this.profile.mobile ? 4.2 : 6.2);
+      const tube = 0.004 + (1 - t) * 0.007;
+      const mat = this.createMeshMaterial(palette[i % palette.length], 0.08 + (1 - t) * 0.10);
       const ring = new THREE.Mesh(new THREE.TorusGeometry(radius, tube, 4, this.profile.mobile ? 128 : 224), mat);
       ring.renderOrder = 2;
-      ring.rotation.set(i * 0.17, i * 0.11, i * 0.37);
+      ring.rotation.z = i * 0.37;
       ring.userData = {
-        speed: (0.018 + i * 0.006) * (i % 2 ? -1 : 1),
+        speed: (0.014 + i * 0.005) * (i % 2 ? -1 : 1),
         baseOpacity: mat.opacity,
         phase: i * 0.58,
       };
@@ -111,15 +98,15 @@ class RaphaelComputationRing {
   createTickRings() {
     const THREE = this.THREE;
     const configs = this.profile.mobile || this.profile.lowPower
-      ? [{ radius: 8.2, ticks: 48 }, { radius: 12.8, ticks: 64 }]
-      : [{ radius: 7.2, ticks: 72 }, { radius: 12.4, ticks: 96 }, { radius: 18.6, ticks: 128 }];
+      ? [{ radius: 3.4, ticks: 42 }, { radius: 5.8, ticks: 56 }]
+      : [{ radius: 3.2, ticks: 56 }, { radius: 5.4, ticks: 72 }, { radius: 7.8, ticks: 88 }];
 
     configs.forEach((cfg, ringIndex) => {
       const verts = [];
       for (let i = 0; i < cfg.ticks; i++) {
         if (i % 7 === 0) continue;
         const a = (i / cfg.ticks) * TAU;
-        const len = i % 8 === 0 ? 0.62 : i % 3 === 0 ? 0.42 : 0.24;
+        const len = i % 8 === 0 ? 0.46 : i % 3 === 0 ? 0.32 : 0.20;
         const inner = cfg.radius - len * 0.5;
         const outer = cfg.radius + len * 0.5;
         verts.push(
@@ -129,13 +116,13 @@ class RaphaelComputationRing {
       }
       const geo = new THREE.BufferGeometry();
       geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
-      const color = ringIndex === 0 ? RAPHAEL_GOLD_CORE : ringIndex === configs.length - 1 ? OPTICAL_TEAL : WARM_GOLD_NODE;
-      const mat = this.createLineMaterial(color, ringIndex === 0 ? 0.28 : ringIndex === configs.length - 1 ? 0.14 : 0.24);
+      const color = ringIndex === 0 ? RAPHAEL_GOLD_CORE : ringIndex === configs.length - 1 ? SPIRITRON_WHITE : WARM_GOLD_NODE;
+      const mat = this.createLineMaterial(color, ringIndex === 0 ? 0.22 : ringIndex === configs.length - 1 ? 0.12 : 0.18);
       const ticks = new THREE.LineSegments(geo, mat);
       ticks.renderOrder = 3;
-      ticks.rotation.set(ringIndex * 0.22, ringIndex * 0.12, ringIndex * 0.19);
+      ticks.rotation.z = ringIndex * 0.19;
       ticks.userData = {
-        speed: (0.012 + ringIndex * 0.009) * (ringIndex % 2 ? -1 : 1),
+        speed: (0.010 + ringIndex * 0.007) * (ringIndex % 2 ? -1 : 1),
         baseOpacity: mat.opacity,
         phase: ringIndex * 0.9,
       };
@@ -146,11 +133,11 @@ class RaphaelComputationRing {
 
   createBrokenArcs() {
     const THREE = this.THREE;
-    const count = this.profile.mobile || this.profile.lowPower ? 9 : 18;
+    const count = this.profile.mobile || this.profile.lowPower ? 7 : 10;
     for (let i = 0; i < count; i++) {
-      const radius = 6.4 + (i % 6) * 2.35 + Math.floor(i / 6) * 0.8;
+      const radius = 3.0 + (i % 4) * 1.2 + Math.floor(i / 4) * 0.32;
       const start = (i * 0.73) % TAU;
-      const span = 0.22 + (i % 4) * 0.12;
+      const span = 0.18 + (i % 4) * 0.08;
       const steps = 14;
       const verts = [];
       for (let j = 0; j < steps; j++) {
@@ -160,13 +147,13 @@ class RaphaelComputationRing {
       const geo = new THREE.BufferGeometry();
       geo.setAttribute("position", new THREE.Float32BufferAttribute(verts, 3));
       const coolArc = i % 8 === 5;
-      const color = coolArc ? OPTICAL_TEAL : i % 3 === 0 ? RAPHAEL_AMBER : WARM_GOLD_NODE;
-      const mat = this.createLineMaterial(color, coolArc ? 0.14 : 0.24);
+      const color = coolArc ? RAPHAEL_CYAN_SOFT : i % 3 === 0 ? RAPHAEL_AMBER : WARM_GOLD_NODE;
+      const mat = this.createLineMaterial(color, coolArc ? 0.08 : 0.14);
       const arc = new THREE.Line(geo, mat);
-      arc.rotation.set(i * 0.09, i * 0.13, i * 0.31);
+      arc.rotation.z = i * 0.31;
       arc.renderOrder = 3;
       arc.userData = {
-        speed: (0.024 + (i % 5) * 0.005) * (i % 2 ? -1 : 1),
+        speed: (0.018 + (i % 5) * 0.004) * (i % 2 ? -1 : 1),
         baseOpacity: mat.opacity,
         phase: i * 0.41,
       };
@@ -177,21 +164,20 @@ class RaphaelComputationRing {
 
   createGlyphMarks() {
     const THREE = this.THREE;
-    const count = this.profile.mobile || this.profile.lowPower ? 24 : 54;
-    const geo = new THREE.BoxGeometry(0.12, 0.68, 0.018);
+    const count = this.profile.mobile || this.profile.lowPower ? 18 : 32;
+    const geo = new THREE.BoxGeometry(0.08, 0.42, 0.014);
     for (let i = 0; i < count; i++) {
-      const radius = 9.2 + (i % 4) * 3.4;
+      const radius = 4.0 + (i % 3) * 1.35;
       const angle = (i / count) * TAU;
       const color = i % 12 === 0 ? SPIRITRON_WHITE : i % 9 === 0 ? RAPHAEL_CYAN_SOFT : i % 3 === 0 ? RAPHAEL_AMBER : WARM_GOLD_NODE;
-      const opacity = i % 12 === 0 ? 0.24 : i % 9 === 0 ? 0.12 : 0.22;
+      const opacity = i % 12 === 0 ? 0.16 : i % 9 === 0 ? 0.08 : 0.14;
       const mat = this.createMeshMaterial(color, opacity);
       const glyph = new THREE.Mesh(geo, mat);
       glyph.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0);
       glyph.rotation.z = angle + Math.PI / 2;
-      glyph.rotation.x = (i % 3 - 1) * 0.16;
       glyph.renderOrder = 4;
       glyph.userData = {
-        speed: (0.014 + (i % 6) * 0.003) * (i % 2 ? -1 : 1),
+        speed: (0.010 + (i % 6) * 0.002) * (i % 2 ? -1 : 1),
         baseOpacity: mat.opacity,
         phase: i * 0.27,
       };
@@ -202,7 +188,7 @@ class RaphaelComputationRing {
 
   createReducedStaticMarks() {
     const THREE = this.THREE;
-    const geo = new THREE.RingGeometry(7.8, 7.86, 96);
+    const geo = new THREE.RingGeometry(4.8, 4.86, 96);
     const mat = this.createMeshMaterial(WARM_GOLD_NODE, 0.065);
     const ring = new THREE.Mesh(geo, mat);
     ring.renderOrder = 2;
@@ -210,11 +196,8 @@ class RaphaelComputationRing {
     this.rings.push(ring);
   }
 
-  update(dt, time, state) {
-    if (this.core?.group) {
-      this.group.position.copy(this.core.group.position);
-      this.group.scale.setScalar((this.profile.mobile ? 0.82 : 1.05) * (1 + state.warp * 0.16));
-    }
+  update(dt, time, state = {}) {
+    if (this.core?.group) this.group.position.copy(this.core.group.position);
 
     const energy = Math.min(1, state.energy || 0);
     const warp = Math.min(1, state.warp || 0);
@@ -222,28 +205,28 @@ class RaphaelComputationRing {
     const pulse = state.stepped?.pulse ?? 1;
     const stepIndex = state.stepped?.stepIndex ?? 0;
     const stepped = phase === 'idle' ? Math.floor(time * 8) / 8 : stepIndex + pulse;
-    const stepBoost = phase === 'idle' ? 0 : pulse * 0.18 + stepIndex * 0.018;
-    const phaseBoost = phase === 'idle' ? 1 : 1 + pulse * 0.62;
+    const stepBoost = phase === 'idle' ? 0 : pulse * 0.14 + stepIndex * 0.014;
+    const phaseBoost = phase === 'idle' ? 1 : 1 + pulse * 0.42;
     const motionScale = state.handoff ? 0.42 : 1;
 
     for (const ring of this.rings) {
-      ring.rotation.z += dt * (ring.userData.speed || 0.006) * (1 + warp * 3.2) * phaseBoost * motionScale;
-      ring.material.opacity = (ring.userData.baseOpacity || 0.05) * (0.8 + energy * 0.45 + warp * 0.55 + stepBoost);
+      ring.rotation.z += dt * (ring.userData.speed || 0.006) * (1 + warp * 2.2) * phaseBoost * motionScale;
+      ring.material.opacity = (ring.userData.baseOpacity || 0.05) * (0.75 + energy * 0.32 + warp * 0.30 + stepBoost);
     }
 
     for (const ticks of this.tickGroups) {
-      ticks.rotation.z += dt * ticks.userData.speed * (1 + warp * 4) * phaseBoost * motionScale;
-      ticks.material.opacity = ticks.userData.baseOpacity * (0.72 + energy * 0.45 + Math.sin(stepped * 3 + ticks.userData.phase) * 0.12 + stepBoost);
+      ticks.rotation.z += dt * ticks.userData.speed * (1 + warp * 2.6) * phaseBoost * motionScale;
+      ticks.material.opacity = ticks.userData.baseOpacity * (0.68 + energy * 0.36 + Math.sin(stepped * 3 + ticks.userData.phase) * 0.08 + stepBoost);
     }
 
     for (const arc of this.arcLines) {
-      arc.rotation.z += dt * arc.userData.speed * (1 + warp * 5.2) * phaseBoost * motionScale;
-      arc.material.opacity = arc.userData.baseOpacity * (0.58 + energy * 0.55 + Math.sin(stepped * 4 + arc.userData.phase) * 0.22 + stepBoost);
+      arc.rotation.z += dt * arc.userData.speed * (1 + warp * 3.2) * phaseBoost * motionScale;
+      arc.material.opacity = arc.userData.baseOpacity * (0.54 + energy * 0.42 + Math.sin(stepped * 4 + arc.userData.phase) * 0.14 + stepBoost);
     }
 
     for (const glyph of this.glyphs) {
-      glyph.rotation.z += dt * glyph.userData.speed * (1 + warp * 2.4) * phaseBoost * motionScale;
-      glyph.material.opacity = glyph.userData.baseOpacity * (0.65 + energy * 0.5 + Math.sin(stepped * 5 + glyph.userData.phase) * 0.18 + stepBoost);
+      glyph.rotation.z += dt * glyph.userData.speed * (1 + warp * 1.8) * phaseBoost * motionScale;
+      glyph.material.opacity = glyph.userData.baseOpacity * (0.60 + energy * 0.38 + Math.sin(stepped * 5 + glyph.userData.phase) * 0.12 + stepBoost);
     }
   }
 }

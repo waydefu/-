@@ -12,6 +12,7 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Use VFX events to coordinate loader exit: `worldforge:vfx-ready`, `worldforge:vfx-full`, `worldforge:vfx-fallback`.
 - Keep Firebase/Auth/API/history data contracts unchanged.
 - Current VFX direction: this is a magic-circle appraisal core, not a singularity. Remove all oversized plastic ellipse orbits; replace them with rune/tick rings. Use a rune crystal core and one unified framing formula for desktop/mobile.
+- Residual desktop orbit source: `RaphaelComputationRing` must stay compact and flat; no large 18.x radius rings and no X/Y tilted `rotation.set(...)` orbit rings.
 - Mobile model selector direction: expand choices to the left of the trigger so they do not cover the analyze button or draft sync text.
 
 ## Completed
@@ -35,12 +36,14 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Follow-up: changed the mobile model selector from a vertical upward rail to a left-opening fan and updated the visual guard for that behavior.
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, a NUL-byte source scan, and Browser geometry sanity for the open mobile selector.
 - Follow-up: deployed Hosting for the mobile selector left-opening fix and passed live smoke against https://project-7276420283723642146.web.app.
+- Follow-up: compacted `RaphaelComputationRing` into a flat rune ring, removing the residual 18.x-radius tilted orbit rings that still looked like oversized desktop ellipses.
+- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and Browser VFX sanity after 30s reached `body.vfx-full` with a visible 1366x768 canvas.
 
 ## In Progress
-- None.
+- Remove residual desktop oversized ellipse rings from the computation layer, then deploy.
 
 ## Next Step
-Done. Monitor live mobile behavior after cache refresh.
+Run source/visual checks, commit, deploy Hosting, then run live smoke.
 
 ## Files Changed
 - `TASKS.md`
