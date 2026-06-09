@@ -129,6 +129,7 @@ test.describe("Great Sage visual baseline", () => {
         } : null;
       };
       return {
+        analyze: box(document.getElementById("analyzeBtn")),
         clear: box(document.getElementById("clearBtn")),
         spark: box(document.querySelector(".spark-switch .track")),
         model: box(document.getElementById("modelDial")),
@@ -144,9 +145,11 @@ test.describe("Great Sage visual baseline", () => {
     expect(Math.round(after?.width || 0)).toBe(Math.round(before?.width || 0));
     expect(Math.round(after?.height || 0)).toBe(Math.round(before?.height || 0));
     for (const label of geometry.labels) {
+      expect(label?.left || 0).toBeGreaterThanOrEqual(0);
+      expect(label?.right || 0).toBeLessThanOrEqual((geometry.model?.left || 0) + 2);
+      expect(overlaps(label, geometry.analyze)).toBe(false);
       expect(overlaps(label, geometry.clear)).toBe(false);
       expect(overlaps(label, geometry.spark)).toBe(false);
-      expect(label?.bottom || 0).toBeLessThanOrEqual(geometry.model?.top || 0);
     }
   });
 

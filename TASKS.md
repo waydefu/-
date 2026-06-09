@@ -12,6 +12,7 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Use VFX events to coordinate loader exit: `worldforge:vfx-ready`, `worldforge:vfx-full`, `worldforge:vfx-fallback`.
 - Keep Firebase/Auth/API/history data contracts unchanged.
 - Current VFX direction: this is a magic-circle appraisal core, not a singularity. Remove all oversized plastic ellipse orbits; replace them with rune/tick rings. Use a rune crystal core and one unified framing formula for desktop/mobile.
+- Mobile model selector direction: expand choices to the left of the trigger so they do not cover the analyze button or draft sync text.
 
 ## Completed
 - Read README and inspected current VFX, loader, action controls, and model selector.
@@ -31,12 +32,14 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Follow-up: refactored the Great Sage VFX into a magic-circle appraisal core: removed the oversized ellipse orbits and low-poly shell, added a rune crystal core, and balanced the desktop/mobile framing.
 - Follow-up: tuned the reference glyph rings into lower-opacity rune/tick rings with only minor cool calibration accents.
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, and a NUL-byte source scan.
+- Follow-up: changed the mobile model selector from a vertical upward rail to a left-opening fan and updated the visual guard for that behavior.
+- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, a NUL-byte source scan, and Browser geometry sanity for the open mobile selector.
 
 ## In Progress
-- None.
+- Deploy mobile model selector left-opening follow-up.
 
 ## Next Step
-Done. Deploy only if requested.
+Run checks, commit, deploy Hosting, then run live smoke.
 
 ## Files Changed
 - `TASKS.md`

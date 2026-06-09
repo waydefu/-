@@ -529,22 +529,26 @@ button { font: inherit; color: inherit; }
   .review-controls { gap: 10px; align-items: flex-end; }
   .model-dial { align-self: flex-end; overflow: visible; }
   .model-dial::before {
-    width: 48px; height: 144px; top: auto; bottom: 52px;
-    border-bottom-color: rgba(214,178,90,0.0); border-radius: 999px;
-    transform: translateX(-50%) translateY(12px) scaleY(0.82);
+    left: auto; right: 52px; top: 0; bottom: auto; width: 48px; height: 144px;
+    border-bottom-color: rgba(214,178,90,0.18); border-radius: 999px;
+    transform: translateX(18px) scaleY(0.82);
+    transform-origin: center top;
   }
   .model-dial.is-open::before {
-    border-color: rgba(214,178,90,0.34); border-bottom-color: rgba(214,178,90,0.18);
-    transform: translateX(-50%) translateY(0) scaleY(1);
-    box-shadow: 0 -8px 24px rgba(214,166,77,0.12), inset 0 0 14px rgba(214,166,77,0.08);
+    border-color: rgba(214,178,90,0.34); border-bottom-color: rgba(214,178,90,0.20);
+    transform: translateX(0) scaleY(1);
+    box-shadow: -8px 0 24px rgba(214,166,77,0.12), inset 0 0 14px rgba(214,166,77,0.08);
   }
   .md-circle { position: absolute; left: 0; bottom: 0; }
-  .md-subs { inset: auto 0 56px 0; height: 144px; }
-  .md-sub { top: auto; left: 0; }
-  .md-subs .md-sub:nth-of-type(1) { bottom: 96px; }
-  .md-subs .md-sub:nth-of-type(2) { bottom: 48px; }
-  .md-subs .md-sub:nth-of-type(3) { bottom: 0; }
-  .md-sub-trigger ~ label { transform: translateY(18px) scale(0.38) rotate(-18deg); }
+  .md-subs {
+    inset: 0 54px auto auto; width: 50px; height: 142px;
+    transform: none;
+  }
+  .md-sub { top: auto; left: auto; }
+  .md-subs .md-sub:nth-of-type(1) { right: 0; top: 0; }
+  .md-subs .md-sub:nth-of-type(2) { right: 0; top: 46px; }
+  .md-subs .md-sub:nth-of-type(3) { right: 0; top: 92px; }
+  .md-sub-trigger ~ label { transform: translateX(24px) scale(0.38) rotate(18deg); }
   .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(1) label,
   .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label,
   .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label {
