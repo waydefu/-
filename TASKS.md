@@ -38,12 +38,13 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Follow-up: deployed Hosting for the mobile selector left-opening fix and passed live smoke against https://project-7276420283723642146.web.app.
 - Follow-up: compacted `RaphaelComputationRing` into a flat rune ring, removing the residual 18.x-radius tilted orbit rings that still looked like oversized desktop ellipses.
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and Browser VFX sanity after 30s reached `body.vfx-full` with a visible 1366x768 canvas.
+- Follow-up: deployed Hosting for the compact desktop computation ring fix and passed live smoke against https://project-7276420283723642146.web.app.
 
 ## In Progress
-- Remove residual desktop oversized ellipse rings from the computation layer, then deploy.
+- None.
 
 ## Next Step
-Run source/visual checks, commit, deploy Hosting, then run live smoke.
+Done. Ask for a fresh desktop screenshot after cache refresh if the live browser still shows old assets.
 
 ## Files Changed
 - `TASKS.md`
@@ -78,6 +79,14 @@ Run source/visual checks, commit, deploy Hosting, then run live smoke.
 - Mobile selector left-opening follow-up: Browser geometry sanity passed on a 390px local preview.
 - Mobile selector left-opening follow-up: `firebase deploy --only hosting` passed.
 - Mobile selector left-opening follow-up: `npm run smoke:hosting` passed.
+- Desktop orbit cleanup follow-up: `npm run check:frontend` passed.
+- Desktop orbit cleanup follow-up: `npm test` passed.
+- Desktop orbit cleanup follow-up: `npm run test:visual` passed.
+- Desktop orbit cleanup follow-up: `git diff --check` passed with existing CRLF warnings only.
+- Desktop orbit cleanup follow-up: NUL-byte source scan found no matches.
+- Desktop orbit cleanup follow-up: Browser VFX sanity reached `body.vfx-full` after 30s with a visible 1366x768 canvas; CDP screenshot capture timed out on this machine.
+- Desktop orbit cleanup follow-up: `firebase deploy --only hosting` passed.
+- Desktop orbit cleanup follow-up: `npm run smoke:hosting` passed.
 
 ## Notes For Continuation
 If context is compacted or interrupted: read `README.md`, this `TASKS.md`, then run `git status --short` before continuing.
