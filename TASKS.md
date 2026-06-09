@@ -34,12 +34,13 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, and a NUL-byte source scan.
 - Follow-up: changed the mobile model selector from a vertical upward rail to a left-opening fan and updated the visual guard for that behavior.
 - Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, a NUL-byte source scan, and Browser geometry sanity for the open mobile selector.
+- Follow-up: deployed Hosting for the mobile selector left-opening fix and passed live smoke against https://project-7276420283723642146.web.app.
 
 ## In Progress
-- Deploy mobile model selector left-opening follow-up.
+- None.
 
 ## Next Step
-Run checks, commit, deploy Hosting, then run live smoke.
+Done. Monitor live mobile behavior after cache refresh.
 
 ## Files Changed
 - `TASKS.md`
@@ -66,6 +67,14 @@ Run checks, commit, deploy Hosting, then run live smoke.
 - Current VFX follow-up: `git diff --check` passed with existing CRLF warnings only.
 - Current VFX follow-up: NUL-byte source scan found no matches.
 - Current VFX follow-up: Browser sanity on `http://127.0.0.1:5179/` reached `body.vfx-full` after 30s with a visible 1366x768 canvas and no horizontal overflow; CDP screenshot capture timed out on this machine.
+- Mobile selector left-opening follow-up: `npm run check:frontend` passed.
+- Mobile selector left-opening follow-up: `npm test` passed.
+- Mobile selector left-opening follow-up: `npm run test:visual` passed.
+- Mobile selector left-opening follow-up: `git diff --check` passed with existing CRLF warnings only.
+- Mobile selector left-opening follow-up: NUL-byte source scan found no matches.
+- Mobile selector left-opening follow-up: Browser geometry sanity passed on a 390px local preview.
+- Mobile selector left-opening follow-up: `firebase deploy --only hosting` passed.
+- Mobile selector left-opening follow-up: `npm run smoke:hosting` passed.
 
 ## Notes For Continuation
 If context is compacted or interrupted: read `README.md`, this `TASKS.md`, then run `git status --short` before continuing.
