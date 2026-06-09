@@ -24,12 +24,15 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Added source guard tests for loader/VFX event contracts.
 - Added visual behavior tests to prevent command-row layout shift from clear/logout/model controls.
 - Verification passed: `npm run check`, `npm test`, `npm run test:visual`, `npm run test:a11y`, and `git diff --check`.
+- Follow-up: optimized the mobile model selector into a vertical rune rail so the three choices open above the trigger without overlapping clear-draft or thinking spark controls.
+- Follow-up: hardened visual helpers for history/logout open states by disabling helper-driven modal animation, fixing opacity timing drift on slower machines.
+- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and `git diff --check`.
 
 ## In Progress
 - None.
 
 ## Next Step
-Done. Deployment, smoke, commit, ignored attachments, and NUL cleanup are complete.
+Done. Selector follow-up is committed. Deploy only if requested.
 
 ## Files Changed
 - `TASKS.md`

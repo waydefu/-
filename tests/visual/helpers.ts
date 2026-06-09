@@ -149,6 +149,7 @@ export async function openHistoryDrawer(page: Page) {
     if (panel) {
       panel.classList.remove("is-closing");
       panel.classList.add("is-open");
+      panel.style.animation = "none";
       panel.style.opacity = "1";
       panel.style.pointerEvents = "auto";
       panel.style.transform = "translate(-50%, -50%) scaleX(1) scaleY(1)";
@@ -190,6 +191,7 @@ export async function openLogoutConfirm(page: Page) {
       dialog.removeAttribute("hidden");
       dialog.classList.remove("is-closing");
       dialog.classList.add("is-open");
+      dialog.style.animation = "none";
       dialog.style.opacity = "1";
       dialog.style.pointerEvents = "auto";
       dialog.style.transform = "translate(-50%, -50%) scaleX(1) scaleY(1)";
