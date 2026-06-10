@@ -1,14 +1,17 @@
 // @ts-nocheck
-// Great Sage WebGL core: rune crystal + balanced magic-circle rings.
-// Keep this module self-contained and alpha-safe so the CSS fallback remains visible.
+// 大賢者鑑定系統 — WebGL 奇觀核心（電影色彩 + UnrealBloom + 細緻 glyph 環 + 發光軌道環 + 發光粒子）
+// 安全準則：
+//  - 每幀 clear（alpha 0 透明，CSS 背景透出）；只用 additive / 透明合成（永不填黑底）。
+//  - three 用 full URL import；bloom addon 動態 import 靠 importmap 解內部 'three'；失敗 → catch → 退回基礎奇觀。
+//  - combine shader 輸出 base.a（透明保真）→ bloom 不可能填黑底。
+//  - context-lost preventDefault + 停（CSS fallback）；dispose 無 leak。
 import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js";
 
 const GOLD = 0xd6a64d;
 const GOLD_HOT = 0xffe6a6;
 const ADDON_BASE = "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/";
-const TAU = Math.PI * 2;
-const SIGIL_TEXT = " GREAT SAGE // APPRAISAL CORE // FORMULA MATRIX // ";
 
+/** 徑向光暈貼圖（中心亮 → 邊緣透明）；additive，用作中央光爆 / 發光電子。 */
 function makeRadialTexture() {
   const s = 256;
   const cv = document.createElement("canvas"); cv.width = cv.height = s;
@@ -25,103 +28,25 @@ function makeRadialTexture() {
   return tex;
 }
 
-function drawCircularText(ctx, text, radius, fontSize, color, start = -Math.PI / 2) {
-  const chars = text.split("");
-  const step = TAU / Math.max(1, chars.length);
-  ctx.save();
-  ctx.font = `700 ${fontSize}px Georgia, "Times New Roman", serif`;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.fillStyle = color;
-  ctx.shadowColor = color;
-  ctx.shadowBlur = fontSize * 0.22;
-  for (let i = 0; i < chars.length; i++) {
-    const a = start + i * step;
-    ctx.save();
-    ctx.translate(Math.cos(a) * radius, Math.sin(a) * radius);
-    ctx.rotate(a + Math.PI / 2);
-    ctx.fillText(chars[i], 0, 0);
-    ctx.restore();
-  }
-  ctx.restore();
-}
-
-function makeCoreSigilTexture(kind = "front") {
-  const s = 768;
+/** 柔光環貼圖（寬暈 + 細亮芯，shadowBlur 製造發光）→ 軌道環不再像塑膠管。 */
+function makeGlowRingTexture(css) {
+  const s = 1024;  // 高解析：貼到大平面也不模糊
   const cv = document.createElement("canvas"); cv.width = cv.height = s;
   const tex = new THREE.CanvasTexture(cv);
   tex.colorSpace = THREE.SRGBColorSpace;
   const ctx = cv.getContext("2d");
   if (!ctx) return tex;
   ctx.translate(s / 2, s / 2);
-  ctx.globalCompositeOperation = "lighter";
   ctx.lineCap = "round";
-
-  const gold = "rgba(255, 226, 152, 0.72)";
-  const hot = "rgba(255, 246, 224, 0.56)";
-  const ember = "rgba(214, 166, 77, 0.42)";
-  const coreR = kind === "rear" ? s * 0.23 : s * 0.26;
-  const outerR = kind === "rear" ? s * 0.35 : s * 0.39;
-
-  ctx.strokeStyle = ember;
-  ctx.shadowColor = "rgba(214, 166, 77, 0.48)";
-  ctx.shadowBlur = 16;
-  ctx.lineWidth = 2.2;
-  for (const r of [coreR * 0.62, coreR, outerR]) {
-    ctx.beginPath();
-    ctx.arc(0, 0, r, 0, TAU);
-    ctx.stroke();
-  }
-
-  ctx.shadowBlur = 10;
-  ctx.strokeStyle = gold;
-  ctx.lineWidth = 2.8;
-  for (let i = 0; i < 6; i++) {
-    const a = i * TAU / 6 + (kind === "rear" ? Math.PI / 6 : 0);
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * coreR * 0.38, Math.sin(a) * coreR * 0.38);
-    ctx.lineTo(Math.cos(a) * outerR * 0.92, Math.sin(a) * outerR * 0.92);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = hot;
-  ctx.lineWidth = 2;
-  for (let i = 0; i < 42; i++) {
-    if (i % 5 === 0) continue;
-    const a = i * TAU / 42;
-    const len = i % 7 === 0 ? 30 : 17;
-    ctx.beginPath();
-    ctx.moveTo(Math.cos(a) * (outerR - len), Math.sin(a) * (outerR - len));
-    ctx.lineTo(Math.cos(a) * outerR, Math.sin(a) * outerR);
-    ctx.stroke();
-  }
-
-  ctx.strokeStyle = gold;
-  ctx.lineWidth = 5;
-  ctx.shadowBlur = 18;
-  for (let i = 0; i < 10; i++) {
-    const start = i * 0.66 + (kind === "rear" ? 0.21 : 0);
-    const span = 0.12 + (i % 3) * 0.055;
-    ctx.beginPath();
-    ctx.arc(0, 0, outerR + (i % 2) * 28, start, start + span);
-    ctx.stroke();
-  }
-
-  drawCircularText(ctx, SIGIL_TEXT.repeat(2), outerR + 34, 22, "rgba(255, 239, 190, 0.58)", kind === "rear" ? Math.PI / 3 : -Math.PI / 2);
+  // 細亮線（不畫大光暈；發光交給 bloom）
+  ctx.shadowColor = css; ctx.shadowBlur = 6;
+  ctx.strokeStyle = css; ctx.lineWidth = 3.2;
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.42, 0, Math.PI * 2); ctx.stroke();
+  ctx.shadowBlur = 2; ctx.strokeStyle = "#fff6e0"; ctx.lineWidth = 1.2; // 細白芯
+  ctx.beginPath(); ctx.arc(0, 0, s * 0.42, 0, Math.PI * 2); ctx.stroke();
+  ctx.globalAlpha = 1;
   tex.needsUpdate = true;
   return tex;
-}
-
-function computeFrameProfile(w, h) {
-  const aspect = w / Math.max(1, h);
-  const mobile = w < 720;
-  const wide = aspect > 1.55;
-  return {
-    cameraZ: mobile ? 10.4 : wide ? 9.65 : 9.25,
-    groupScale: mobile ? 0.95 : wide ? 0.78 : 0.84,
-    groupX: 0,
-    groupY: mobile ? 0.08 : 0.0,
-  };
 }
 
 export class GreatSageCore {
@@ -144,12 +69,13 @@ export class GreatSageCore {
     this._onRestored = () => { if (!this.disposed) this.start(); };
     this.px = 0; this.py = 0; this.pxT = 0; this.pyT = 0;
     this._onPointer = (ev) => {
-      this.pxT = ((ev.clientX / window.innerWidth) - 0.5) * 0.28;
-      this.pyT = ((ev.clientY / window.innerHeight) - 0.5) * 0.24;
+      this.pxT = ((ev.clientX / window.innerWidth) - 0.5) * 0.5;
+      this.pyT = ((ev.clientY / window.innerHeight) - 0.5) * 0.5;
     };
 
     this.renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true, powerPreference: "high-performance", failIfMajorPerformanceCaveat: false });
     this.renderer.setClearColor(0x000000, 0);
+    // 自適應 DPR：基準上限 + 動態縮放（嚴重掉幀才降，防手機 context-lost；不動特效）
     this._basePR = Math.min(window.devicePixelRatio || 1, mobile ? 2.0 : 2.5);
     this._renderScale = 1; this._frames = 0; this._fpsT = performance.now();
     this.renderer.setPixelRatio(this._basePR);
@@ -167,11 +93,11 @@ export class GreatSageCore {
 
     this._build();
     this.resize();
-    this._initBloom();
-    this._initGlyphRing();
-    this._initMagicule();
-    this._initCompRing();
-    this._initGsap();
+    this._initBloom();      // bloom 後製（addon 動態載入）
+    this._initGlyphRing();  // 細緻符文環
+    this._initMagicule();   // shader 發光粒子場
+    this._initCompRing();   // 大賢者計算環（同心環 + 刻線 + 破弧 + 符文標記）
+    this._initGsap();       // GSAP 鏡頭導演（電影級進場 dolly + 待機微漂）
 
     canvas.addEventListener("webglcontextlost", this._onLost, false);
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
@@ -193,9 +119,9 @@ export class GreatSageCore {
 
   _build() {
     this._disposables = [];
-    this.coreSigils = [];
 
-    const coreGeo = new THREE.SphereGeometry(1.72, 64, 32);
+    // 奇點核心（取自 arcane-core 精華：shader rim-glow + 脈動 + 星芒，additive）+ 線框外殼
+    const coreGeo = new THREE.IcosahedronGeometry(1.8, 2);
     const coreMat = new THREE.ShaderMaterial({
       transparent: true, depthWrite: false, depthTest: false, blending: THREE.AdditiveBlending,
       uniforms: {
@@ -207,59 +133,61 @@ export class GreatSageCore {
       vertexShader:
         "varying vec3 vNormal; varying vec3 vPosition; uniform float uTime; uniform float uWarp;" +
         "void main(){ vNormal = normalize(normalMatrix * normal); vec3 p = position;" +
-        " float pulse = 1.0 + 0.025*sin(uTime*1.5) + 0.05*uWarp; p *= pulse; vPosition = p;" +
+        " float pulse = 1.0 + 0.04*sin(uTime*1.6) + 0.06*uWarp; p *= pulse; vPosition = p;" +
         " gl_Position = projectionMatrix * modelViewMatrix * vec4(p,1.0); }",
       fragmentShader:
         "precision highp float; varying vec3 vNormal; varying vec3 vPosition;" +
         "uniform float uTime; uniform float uEnergy; uniform float uWarp; uniform vec3 uColor1; uniform vec3 uColor2; uniform vec3 uRimColor;" +
-        "void main(){ vec3 n = normalize(vNormal); vec3 p = normalize(vPosition); float rim = pow(1.0 - abs(dot(n,p)), 2.25);" +
-        " float radius = length(vPosition.xy); float dist = length(vPosition); float angle = atan(vPosition.y, vPosition.x);" +
-        " float pulse = 0.5 + 0.5*sin(uTime*1.35 + radius*3.0); float core = 1.0 - smoothstep(0.72, 2.05, dist);" +
-        " float ring = pow(1.0 - abs(sin(radius*8.2 - uTime*1.05)), 16.0) * (1.0 - smoothstep(0.22, 1.72, radius));" +
-        " float spokes = pow(abs(cos(angle*6.0 + uTime*0.10)), 28.0) * (1.0 - smoothstep(0.2, 1.68, radius));" +
-        " float lattice = pow(abs(cos(angle*12.0 - uTime*0.07)), 24.0) * (1.0 - smoothstep(0.18, 1.20, radius));" +
-        " float seal = ring*0.34 + spokes*0.18 + lattice*0.08; vec3 col = mix(uColor1, uColor2, 0.28 + pulse*0.14 + uEnergy*0.12);" +
-        " col += uColor1*(core*0.52 + (1.0-rim)*0.12); col += uColor2*(core*0.30 + seal*0.32); col += uRimColor*(rim*0.22 + seal*0.14 + uWarp*0.04);" +
-        " col *= 0.55 + 0.10*pulse; float alpha = 0.12 + rim*0.13 + core*0.15 + seal*0.13 + uEnergy*0.06 + uWarp*0.08;" +
-        " gl_FragColor = vec4(clamp(col,0.0,1.0), clamp(alpha,0.0,0.48)); }",
+        "void main(){ float rim = 1.0 - abs(dot(vNormal, normalize(vPosition))); float glow = pow(rim, 2.8);" +
+        " float pulse = 0.5 + 0.5*sin(uTime*1.35 + length(vPosition)*2.0); float core = 1.0 - smoothstep(1.0, 2.45, length(vPosition));" +
+        " float angle = atan(vPosition.y, vPosition.x); float star = pow(abs(cos(angle*8.0 + uTime*0.22)), 16.0) * smoothstep(1.9, 0.18, length(vPosition.xy));" +
+        " vec3 col = mix(uColor1, uColor2, 0.30 + pulse*0.16 + uEnergy*0.10); col += uColor1*(core*0.72 + (1.0-rim)*0.22);" +
+        " col += uColor2*(core*0.34 + glow*0.10); col += uRimColor*(core*0.24 + star*0.32 + glow*0.12 + uWarp*0.04); col *= 0.58 + 0.12*pulse;" +
+        " float alpha = 0.15 + glow*0.12 + core*0.16 + star*0.1 + uEnergy*0.06 + uWarp*0.08;" +
+        " gl_FragColor = vec4(clamp(col,0.0,1.0), clamp(alpha,0.0,0.5)); }",
     });
     this.core = new THREE.Mesh(coreGeo, coreMat);
-    this.core.scale.setScalar(0.56);
+    this.core.scale.setScalar(0.5);
     this.group.add(this.core);
-    this._disposables.push(coreGeo, coreMat);
+    const shellGeo = new THREE.IcosahedronGeometry(2.6, 1);
+    const shellMat = new THREE.MeshBasicMaterial({ color: 0xffb84d, wireframe: true, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
+    this.shell = new THREE.Mesh(shellGeo, shellMat);
+    this.shell.scale.setScalar(0.55);
+    this.group.add(this.shell);
+    this._disposables.push(coreGeo, coreMat, shellGeo, shellMat);
 
+    // 中央光爆（additive 徑向光暈 sprite）
     const glowTex = makeRadialTexture();
-    const glowMat = new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.18, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
+    const glowMat = new THREE.SpriteMaterial({ map: glowTex, color: 0xffffff, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
     this.glow = new THREE.Sprite(glowMat);
-    this.glow.scale.set(4.8, 4.8, 1);
+    this.glow.scale.set(5.4, 5.4, 1);
     this.group.add(this.glow);
     this._disposables.push(glowTex, glowMat);
 
-    const sigilGeo = new THREE.PlaneGeometry(4.3, 4.3);
-    this._disposables.push(sigilGeo);
-    [
-      { kind: "rear", z: -0.24, scale: 1.08, opacity: 0.17, speed: -0.0024, order: 4 },
-      { kind: "front", z: 0.18, scale: 0.86, opacity: 0.23, speed: 0.0032, order: 9 },
-    ].forEach((cfg) => {
-      const tex = makeCoreSigilTexture(cfg.kind);
-      const mat = new THREE.MeshBasicMaterial({
-        map: tex,
-        transparent: true,
-        opacity: cfg.opacity,
-        blending: THREE.AdditiveBlending,
-        depthWrite: false,
-        depthTest: false,
-        side: THREE.DoubleSide,
-      });
-      const mesh = new THREE.Mesh(sigilGeo, mat);
-      mesh.position.z = cfg.z;
-      mesh.scale.setScalar(cfg.scale);
-      mesh.renderOrder = cfg.order;
-      mesh.userData = { speed: cfg.speed, baseOpacity: cfg.opacity };
-      this.group.add(mesh);
-      this.coreSigils.push(mesh);
-      this._disposables.push(tex, mat);
-    });
+    // 發光軌道環：CanvasTexture 柔光環（非塑膠）+ 不同傾斜軸 + 發光電子（一道青藍）
+    this.orbits = [];
+    const orbitDefs = [
+      { d: 8.4, ax: [1.4, 0.0, 0.0], css: "#ffd47a", spd: 0.004 },     // 繞 X（水平橢圓）
+      { d: 9.2, ax: [0.0, 1.4, 0.0], css: "#2f6fd0", spd: -0.005 },    // 繞 Y（垂直橢圓，深藍）
+      { d: 7.8, ax: [0.95, 0.0, 0.95], css: "#e8a020", spd: 0.0045 },  // XZ 斜
+      { d: 8.8, ax: [0.0, 0.95, 0.95], css: "#ffe6a6", spd: -0.0038 }, // YZ 斜
+    ];
+    for (const o of orbitDefs) {
+      const rtex = makeGlowRingTexture(o.css);
+      rtex.anisotropy = this.renderer.capabilities.getMaxAnisotropy(); // 斜視角不糊
+      const geo = new THREE.PlaneGeometry(o.d, o.d);
+      const mat = new THREE.MeshBasicMaterial({ map: rtex, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false, side: THREE.DoubleSide });
+      const ring = new THREE.Mesh(geo, mat);
+      ring.rotation.set(o.ax[0], o.ax[1], o.ax[2]);
+      const etex = makeRadialTexture();
+      const eMat = new THREE.SpriteMaterial({ map: etex, color: new THREE.Color(o.css), transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false });
+      const electron = new THREE.Sprite(eMat);
+      electron.scale.set(0.5, 0.5, 1);
+      ring.add(electron);
+      this.group.add(ring);
+      this.orbits.push({ ring, electron, r: o.d * 0.42, spd: o.spd, phase: Math.random() * 6.283 });
+      this._disposables.push(rtex, geo, mat, etex, eMat);
+    }
   }
 
   async _initBloom() {
@@ -271,13 +199,13 @@ export class GreatSageCore {
       ]);
       if (this.disposed) return;
       const w = window.innerWidth, h = window.innerHeight;
-      this.baseTarget = new THREE.WebGLRenderTarget(1, 1, { samples: this.mobile ? 0 : 4 });
+      this.baseTarget = new THREE.WebGLRenderTarget(1, 1, { samples: this.mobile ? 0 : 4 }); // MSAA 4×：邊緣銳化（保 alpha、不破透明）
       this.bloomComposer = new EffectComposer(this.renderer);
       this.bloomComposer.renderToScreen = false;
       const rp = new RenderPass(this.scene, this.camera);
       rp.clearAlpha = 0;
       this.bloomComposer.addPass(rp);
-      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.32, 0.48, 0.58);
+      this.bloomPass = new UnrealBloomPass(new THREE.Vector2(w, h), 0.3, 0.5, 0.6);
       this.bloomComposer.addPass(this.bloomPass);
       this.combineMat = new THREE.ShaderMaterial({
         uniforms: { baseTexture: { value: null }, bloomTexture: { value: null } },
@@ -295,12 +223,13 @@ export class GreatSageCore {
       this.bloomReady = true;
       this.resize();
     } catch (e) {
-      console.info("[FLG] Bloom fallback: " + (e?.message || e));
+      console.info("[FLG] Bloom 未啟用（保留基礎奇觀）：" + (e?.message || e));
     } finally {
       this._markDetailLoaded("bloom");
     }
   }
 
+  // 細緻 glyph 符文環（已 recolor 金；scale 0.34、降亮顯細節）
   async _initGlyphRing() {
     try {
       const { ReferenceGlyphRing } = await import("../webgl/reference-glyph-ring.js");
@@ -309,16 +238,17 @@ export class GreatSageCore {
       this.glyphInst = new ReferenceGlyphRing(THREE, this.group, profile, null);
       if (this.glyphInst?.group) {
         this.glyphInst.group.scale.setScalar(0.34);
-        this.glyphInst.group.rotation.x = -0.28;
+        this.glyphInst.group.rotation.x = -0.34;
       }
-      this.glyphInst?.layers?.forEach((l) => { if (l.userData) l.userData.baseOpacity *= 0.72; });
+      this.glyphInst?.layers?.forEach((l) => { if (l.userData) l.userData.baseOpacity *= 0.55; });
     } catch (e) {
-      console.info("[FLG] Glyph layer fallback: " + (e?.message || e));
+      console.info("[FLG] Glyph 環未啟用：" + (e?.message || e));
     } finally {
       this._markDetailLoaded("glyph");
     }
   }
 
+  // shader 發光粒子場（soft core + hot 中心輝光；取代 sprite 塑膠點）
   async _initMagicule() {
     try {
       const { MagiculeParticleField } = await import("../webgl/magicule-particles.js");
@@ -326,30 +256,32 @@ export class GreatSageCore {
       const profile = { reduced: false, mobile: this.mobile, lowPower: false };
       this.mpInst = new MagiculeParticleField(THREE, this.group, profile, null);
       if (this.mpInst?.material) {
-        this.mpInst.material.uniforms.uOpacity.value = this.mobile ? 0.45 : 0.54;
-        this.mpInst.material.uniforms.uSize.value = this.mobile ? 0.5 : 0.6;
+        this.mpInst.material.uniforms.uOpacity.value = this.mobile ? 0.5 : 0.6;  // 小光點需足夠 alpha
+        this.mpInst.material.uniforms.uSize.value = this.mobile ? 0.5 : 0.6;     // 一粒的小光點
       }
     } catch (e) {
-      console.info("[FLG] Particle layer fallback: " + (e?.message || e));
+      console.info("[FLG] 發光粒子未啟用：" + (e?.message || e));
     } finally {
       this._markDetailLoaded("magicule");
     }
   }
 
+  // 大賢者計算環（同心環 + 刻線環 + 破弧 + 符文標記；分析計算視覺語彙）
   async _initCompRing() {
     try {
       const { RaphaelComputationRing } = await import("../webgl/raphael-computation-ring.js");
       if (this.disposed) return;
       const profile = { reduced: false, mobile: this.mobile, lowPower: false };
       this.compInst = new RaphaelComputationRing(THREE, this.group, profile, null);
-      if (this.compInst?.group) this.compInst.group.scale.setScalar(0.34);
+      if (this.compInst?.group) this.compInst.group.scale.setScalar(0.32); // 縮入視野
     } catch (e) {
-      console.info("[FLG] Computation ring fallback: " + (e?.message || e));
+      console.info("[FLG] 計算環未啟用：" + (e?.message || e));
     } finally {
       this._markDetailLoaded("computation");
     }
   }
 
+  // GSAP 鏡頭導演：電影級進場 dolly（由遠拉近）+ 待機微漂（x/y；避開 resize 設定的 z）
   async _initGsap() {
     try {
       const mod = await import("https://cdn.jsdelivr.net/npm/gsap@3.12.5/+esm");
@@ -358,13 +290,13 @@ export class GreatSageCore {
       if (!gsap?.to) return;
       this.gsap = gsap;
       const baseZ = this.camera.position.z;
-      this.camera.position.z = baseZ + 5.8;
+      this.camera.position.z = baseZ + 7;
       gsap.to(this.camera.position, { z: baseZ, duration: 2.8, ease: "power3.out" });
-      gsap.fromTo(this.camera.rotation, { z: 0.08 }, { z: 0, duration: 3.0, ease: "power2.out" });
-      gsap.to(this.camera.position, { x: 0.06, duration: 9, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
-      gsap.to(this.camera.position, { y: 0.04, duration: 11, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
+      gsap.fromTo(this.camera.rotation, { z: 0.1 }, { z: 0, duration: 3.0, ease: "power2.out" });
+      gsap.to(this.camera.position, { x: 0.25, duration: 9, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
+      gsap.to(this.camera.position, { y: 0.16, duration: 11, ease: "sine.inOut", yoyo: true, repeat: -1, delay: 2.8 });
     } catch (e) {
-      console.info("[FLG] GSAP fallback: " + (e?.message || e));
+      console.info("[FLG] GSAP 鏡頭未啟用：" + (e?.message || e));
     }
   }
 
@@ -373,13 +305,10 @@ export class GreatSageCore {
   resize() {
     if (this.disposed) return;
     const w = window.innerWidth, h = window.innerHeight;
-    const frame = computeFrameProfile(w, h);
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
-    this.camera.position.z = frame.cameraZ;
+    this.camera.position.z = (w < 720 ? 10.5 : 8.6);
     this.camera.updateProjectionMatrix();
-    this.group.position.set(frame.groupX, frame.groupY, 0);
-    this.group.scale.setScalar(frame.groupScale);
     if (this.bloomReady) {
       const dpr = this.renderer.getPixelRatio();
       this.baseTarget.setSize(Math.floor(w * dpr), Math.floor(h * dpr));
@@ -406,13 +335,10 @@ export class GreatSageCore {
   start() {
     if (this.running || this.disposed) return;
     this.running = true;
-    let last = performance.now();
-    const loop = (now = performance.now()) => {
+    const loop = () => {
       if (!this.running || this.disposed) return;
-      const dt = Math.min(0.033, Math.max(0.001, (now - last) / 1000));
-      last = now;
-      const frameFactor = dt * 60;
-      this.t += dt;
+      this.t += 0.016;
+      // 自適應 DPR：每秒檢查 FPS，嚴重掉幀降 render scale、回穩才升（唯一效能旋鈕，不動特效）
       this._frames++;
       const nowMs = performance.now();
       if (nowMs - this._fpsT >= 1000) {
@@ -423,31 +349,29 @@ export class GreatSageCore {
         else if (fps > 56 && ns < 1) ns = Math.min(1, ns + 0.08);
         if (ns !== this._renderScale) { this._renderScale = ns; this.renderer.setPixelRatio(this._basePR * ns); this.resize(); }
       }
-
-      const energyEase = 1 - Math.pow(1 - 0.05, frameFactor);
-      this.energy += (this.energyTarget - this.energy) * energyEase;
+      this.energy += (this.energyTarget - this.energy) * 0.05;
       const e = this.energy;
       const m = this.calm ? 0.28 : 1;
-      this.core.rotation.y += (0.0015 + e * 0.0035) * m * frameFactor;
-      this.core.rotation.x += 0.0007 * m * frameFactor;
+      this.core.rotation.y += (0.0016 + e * 0.004) * m;
+      this.core.rotation.x += 0.0008 * m;
+      this.shell.rotation.y -= (0.0011 + e * 0.003) * m;
       if (this.core.material.uniforms) { this.core.material.uniforms.uTime.value = this.t; this.core.material.uniforms.uEnergy.value = e; }
-      const gp = 4.8 + Math.sin(this.t * 1.45) * 0.16 + e * 0.72;
+      const gp = 5.4 + Math.sin(this.t * 1.6) * 0.2 + e * 0.9;
       this.glow.scale.set(gp, gp, 1);
-      this.glow.material.opacity = 0.18 + e * 0.07;
-      for (const sigil of this.coreSigils) {
-        sigil.rotation.z += sigil.userData.speed * m * frameFactor;
-        sigil.material.opacity = sigil.userData.baseOpacity * (0.86 + Math.sin(this.t * 2.2 + sigil.position.z * 6) * 0.06 + e * 0.22);
+      this.glow.material.opacity = 0.2 + e * 0.08;
+      for (const o of this.orbits) {
+        o.ring.rotation.z += o.spd * m;                              // 各環沿自身傾斜軸旋轉
+        o.phase += (0.014 + e * 0.025) * m;
+        o.electron.position.set(Math.cos(o.phase) * o.r, Math.sin(o.phase) * o.r, 0); // 發光電子繞行
       }
-
-      if (this.glyphInst) this.glyphInst.update(0.04 * frameFactor, this.t, { energy: e });
-      if (this.mpInst) this.mpInst.update(dt, this.t, { energy: e });
-      if (this.compInst) this.compInst.update(dt, this.t, { energy: e, warp: 0 });
-      const pointerEase = 1 - Math.pow(1 - 0.045, frameFactor);
-      this.px += (this.pxT - this.px) * pointerEase;
-      this.py += (this.pyT - this.py) * pointerEase;
+      if (this.glyphInst) this.glyphInst.update(0.04, this.t, { energy: e });
+      if (this.mpInst) this.mpInst.update(0.016, this.t, { energy: e });
+      if (this.compInst) this.compInst.update(0.016, this.t, { energy: e, warp: 0 });
+      this.px += (this.pxT - this.px) * 0.045;
+      this.py += (this.pyT - this.py) * 0.045;
       this.group.rotation.y = this.px;
       this.group.rotation.x = this.py;
-      if (this.bloomPass) this.bloomPass.strength = 0.32 + e * 0.34;
+      if (this.bloomPass) this.bloomPass.strength = 0.3 + e * 0.4; // 分析時能量衝擊（收斂，不過曝）
 
       if (this.bloomReady) {
         this._renderBloom();

@@ -11,9 +11,6 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Use the existing `bootLoader`; do not add a second loading page.
 - Use VFX events to coordinate loader exit: `worldforge:vfx-ready`, `worldforge:vfx-full`, `worldforge:vfx-fallback`.
 - Keep Firebase/Auth/API/history data contracts unchanged.
-- Current VFX direction: this is a magic-circle appraisal core, not a singularity. Remove all oversized plastic ellipse orbits; replace them with rune/tick rings. Use a rune crystal core and one unified framing formula for desktop/mobile.
-- Residual desktop orbit source: `RaphaelComputationRing` must stay compact and flat; no large 18.x radius rings and no X/Y tilted `rotation.set(...)` orbit rings.
-- Mobile model selector direction: expand choices to the left of the trigger so they do not cover the analyze button or draft sync text.
 
 ## Completed
 - Read README and inspected current VFX, loader, action controls, and model selector.
@@ -27,30 +24,17 @@ Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, n
 - Added source guard tests for loader/VFX event contracts.
 - Added visual behavior tests to prevent command-row layout shift from clear/logout/model controls.
 - Verification passed: `npm run check`, `npm test`, `npm run test:visual`, `npm run test:a11y`, and `git diff --check`.
-- Follow-up: optimized the mobile model selector into a vertical rune rail so the three choices open above the trigger without overlapping clear-draft or thinking spark controls.
-- Follow-up: hardened visual helpers for history/logout open states by disabling helper-driven modal animation, fixing opacity timing drift on slower machines.
-- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and `git diff --check`.
-- Follow-up: refactored the Great Sage VFX into a magic-circle appraisal core: removed the oversized ellipse orbits and low-poly shell, added a rune crystal core, and balanced the desktop/mobile framing.
-- Follow-up: tuned the reference glyph rings into lower-opacity rune/tick rings with only minor cool calibration accents.
-- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, and a NUL-byte source scan.
-- Follow-up: changed the mobile model selector from a vertical upward rail to a left-opening fan and updated the visual guard for that behavior.
-- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, `git diff --check`, a NUL-byte source scan, and Browser geometry sanity for the open mobile selector.
-- Follow-up: deployed Hosting for the mobile selector left-opening fix and passed live smoke against https://project-7276420283723642146.web.app.
-- Follow-up: compacted `RaphaelComputationRing` into a flat rune ring, removing the residual 18.x-radius tilted orbit rings that still looked like oversized desktop ellipses.
-- Follow-up verification passed: `npm run check:frontend`, `npm test`, `npm run test:visual`, and Browser VFX sanity after 30s reached `body.vfx-full` with a visible 1366x768 canvas.
-- Follow-up: deployed Hosting for the compact desktop computation ring fix and passed live smoke against https://project-7276420283723642146.web.app.
 
 ## In Progress
 - None.
 
 ## Next Step
-Done. Ask for a fresh desktop screenshot after cache refresh if the live browser still shows old assets.
+Done. Deployment, smoke, commit, ignored attachments, and NUL cleanup are complete.
 
 ## Files Changed
 - `TASKS.md`
 - `public/js/effects/effects-manager.js`
 - `public/js/effects/great-sage-core.js`
-- `public/js/webgl/reference-glyph-ring.js`
 - `public/js/main.js`
 - `public/js/app/review-controls.js`
 - `public/css/app.css`
@@ -64,29 +48,6 @@ Done. Ask for a fresh desktop screenshot after cache refresh if the live browser
 - `npm run test:visual` — passed after updating the expected mobile workbench snapshot.
 - `npm run test:a11y` — passed.
 - `git diff --check` — passed with existing CRLF warnings only.
-
-- Current VFX follow-up: `npm run check:frontend` passed.
-- Current VFX follow-up: `npm test` passed.
-- Current VFX follow-up: `npm run test:visual` passed.
-- Current VFX follow-up: `git diff --check` passed with existing CRLF warnings only.
-- Current VFX follow-up: NUL-byte source scan found no matches.
-- Current VFX follow-up: Browser sanity on `http://127.0.0.1:5179/` reached `body.vfx-full` after 30s with a visible 1366x768 canvas and no horizontal overflow; CDP screenshot capture timed out on this machine.
-- Mobile selector left-opening follow-up: `npm run check:frontend` passed.
-- Mobile selector left-opening follow-up: `npm test` passed.
-- Mobile selector left-opening follow-up: `npm run test:visual` passed.
-- Mobile selector left-opening follow-up: `git diff --check` passed with existing CRLF warnings only.
-- Mobile selector left-opening follow-up: NUL-byte source scan found no matches.
-- Mobile selector left-opening follow-up: Browser geometry sanity passed on a 390px local preview.
-- Mobile selector left-opening follow-up: `firebase deploy --only hosting` passed.
-- Mobile selector left-opening follow-up: `npm run smoke:hosting` passed.
-- Desktop orbit cleanup follow-up: `npm run check:frontend` passed.
-- Desktop orbit cleanup follow-up: `npm test` passed.
-- Desktop orbit cleanup follow-up: `npm run test:visual` passed.
-- Desktop orbit cleanup follow-up: `git diff --check` passed with existing CRLF warnings only.
-- Desktop orbit cleanup follow-up: NUL-byte source scan found no matches.
-- Desktop orbit cleanup follow-up: Browser VFX sanity reached `body.vfx-full` after 30s with a visible 1366x768 canvas; CDP screenshot capture timed out on this machine.
-- Desktop orbit cleanup follow-up: `firebase deploy --only hosting` passed.
-- Desktop orbit cleanup follow-up: `npm run smoke:hosting` passed.
 
 ## Notes For Continuation
 If context is compacted or interrupted: read `README.md`, this `TASKS.md`, then run `git status --short` before continuing.
