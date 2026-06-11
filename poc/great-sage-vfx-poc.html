@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>大賢者 — 程序化魔法陣 VFX PoC</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #050403; overflow: hidden; }
+  #c { display: block; width: 100vw; height: 100vh; }
+  .hud { position: fixed; left: 14px; top: 12px; font: 600 13px/1.55 system-ui, "Segoe UI", sans-serif;
+         color: #e7c977; text-shadow: 0 1px 4px #000; pointer-events: none; max-width: 70vw; }
+  .hud b { color: #fff6e0; }
+  .hud .k { color: #9fb6e0; font-weight: 700; }
+  .hud #fps { color: #9fe0a0; }
+  .tip { position: fixed; right: 14px; bottom: 12px; font: 500 12px/1.5 system-ui, sans-serif;
+         color: #cbb072; opacity: .85; text-shadow: 0 1px 4px #000; pointer-events: none; }
+  .err { position: fixed; inset: 0; display: none; place-items: center; color: #ffd9b0;
+         font: 600 15px/1.7 system-ui, sans-serif; text-align: center; padding: 24px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="hud">
+  <div><b>程序化 SDF 魔法陣</b> — PoC（震撼主引擎：奧術核 + SDF 符文環 + 選擇性 Bloom）</div>
+  <div>FPS <span id="fps">–</span> · 純 GLSL、零貼圖、零 build · <span class="k">B</span> = Bloom 開/關　<span class="k">Space</span> = 能量脈衝</div>
+</div>
+<div class="tip">擺在線上舊版旁邊比 → 看是否輾壓</div>
+<div class="err" id="err"></div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+  }
+}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+try {
+  const canvas = document.getElementById('c');
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.92;
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.Camera();
+
+  const uniforms = {
+    uTime:  { value: 0 },
+    uRes:   { value: new THREE.Vector2(1, 1) },
+    uPulse: { value: 0 },
+  };
+
+  const vert = `void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }`;
+
+  const frag = `
+  precision highp float;
+  uniform float uTime;
+  uniform vec2  uRes;
+  uniform float uPulse;
+  #define TAU 6.28318530718
+
+  mat2 rot(float a){ float c=cos(a), s=sin(a); return mat2(c,-s,s,c); }
+  float hash(vec2 p){ p=fract(p*vec2(123.34,456.21)); p+=dot(p,p+45.32); return fract(p.x*p.y); }
+  float noise(vec2 p){
+    vec2 i=floor(p), f=fract(p);
+    float a=hash(i), b=hash(i+vec2(1.,0.)), c=hash(i+vec2(0.,1.)), d=hash(i+vec2(1.,1.));
+    vec2 u=f*f*(3.-2.*f);
+    return mix(mix(a,b,u.x), mix(c,d,u.x), u.y);
+  }
+  float fbm(vec2 p){ float v=0., a=.5; for(int i=0;i<4;i++){ v+=a*noise(p); p=rot(0.5)*p*2.02; a*=.5; } return v; }
+  float glow(float d, float w){ return (w*w)/(d*d + w*w); }   // bounded soft glow
+
+  void main(){
+    vec2 uv = (gl_FragCoord.xy*2.0 - uRes) / uRes.y;
+    float t = uTime;
+    float pulse = uPulse;
+
+    vec3 gold = vec3(1.0, 0.76, 0.34);
+    vec3 hot  = vec3(1.0, 0.93, 0.78);
+    vec3 ember= vec3(1.0, 0.52, 0.20);
+    vec3 blue = vec3(0.34, 0.56, 1.0);
+    vec3 col = vec3(0.0);
+
+    // ── 1. 能量底場（域變形 fbm 靈氣）──
+    vec2 q = uv*1.3;
+    float warp  = fbm(q*1.4 + vec2(t*0.05, -t*0.04));
+    float field = fbm(q + warp*1.2 + vec2(0.0, t*0.03));
+    col += gold  * 0.13  * field*field;
+    col += ember * 0.06  * fbm(q*2.4 - t*0.05);
+    col += blue  * 0.03  * pow(field, 3.0);
+
+    // ── 2. 魔法陣符文環（軌道進動傾斜感）──
+    float rings = 0.0, ticks = 0.0;
+    for(int i=0;i<5;i++){
+      float fi=float(i);
+      float r = 0.40 + fi*0.155;
+      float spin = t*(0.05+fi*0.028) * (mod(fi,2.0)<0.5 ? 1.0 : -1.0);
+      vec2 pr = rot(spin)*uv;
+      pr.y /= (0.86 + 0.14*sin(t*0.4 + fi*1.3));   // 偽 3D 傾斜進動
+      float d = abs(length(pr) - r);
+      rings += glow(d, 0.0045) * (0.5 - fi*0.04);
+      float a = atan(pr.y, pr.x);
+      float dash = 0.5 + 0.5*cos(a*(36.0+fi*14.0) + t*(mod(fi,2.0)<0.5?0.6:-0.6));
+      ticks += glow(d, 0.0032) * smoothstep(0.6,0.95,dash) * step(d,0.06);
+    }
+    col += gold * rings * 0.5;
+    col += hot  * ticks * 0.5;
+
+    // 內圈密刻度
+    {
+      float d=abs(length(uv)-0.34);
+      float a=atan(uv.y,uv.x);
+      float dash=0.5+0.5*cos(a*120.0);
+      col += gold * glow(d,0.0028) * smoothstep(0.5,0.9,dash) * step(d,0.04) * 0.5;
+    }
+
+    // ── 3. 冷色斷弧（深藍 accent）──
+    for(int i=0;i<6;i++){
+      float fi=float(i);
+      float r=0.30+fi*0.13;
+      float spin=t*0.18*(mod(fi,2.0)<0.5?1.0:-1.0)+fi*1.1;
+      vec2 pr=rot(spin)*uv;
+      float d=abs(length(pr)-r);
+      float a=atan(pr.y,pr.x);
+      float gap=step(0.0,cos(a*3.0+fi));
+      col += blue * glow(d,0.0026) * gap * step(d,0.05) * 0.35;
+    }
+
+    // 六芒星（神聖幾何）
+    {
+      vec2 p = rot(t*0.035)*uv;
+      float star=1e9;
+      for(int k=0;k<6;k++){
+        float a=float(k)/6.0*TAU;       vec2 v1=vec2(cos(a),sin(a))*0.62;
+        float a2=float(k+2)/6.0*TAU;    vec2 v2=vec2(cos(a2),sin(a2))*0.62;
+        vec2 pa=p-v1, ba=v2-v1;
+        float h=clamp(dot(pa,ba)/dot(ba,ba),0.,1.);
+        star=min(star, length(pa-ba*h));
+      }
+      col += hot * glow(star,0.0030) * 0.22;
+    }
+
+    // ── 4. 奧術核（發光 + 內部符印 + 脈動；受控不 flashbang）──
+    float cd=length(uv);
+    float cp=0.5+0.5*sin(t*1.5);
+    float shim=fbm(rot(t*0.3)*uv*7.0 + t*0.2);
+    float core = glow(cd, 0.085+0.02*cp) * (0.55+0.6*shim);
+    col += mix(gold, ember, 0.30) * core * (1.0+pulse*1.4);
+    // 內部符印：旋轉八瓣咒紋
+    float ca = atan(uv.y, uv.x);
+    float petal = 0.5+0.5*cos(ca*8.0 - t*0.8);
+    col += hot * glow(abs(cd-0.085),0.012) * (0.4+0.6*petal) * 0.9;
+    // 受控高光中心（壓住、不整片白）
+    col += mix(hot,gold,0.25) * smoothstep(0.055,0.0,cd) * (0.85+cp*0.35+pulse*1.5);
+    // 核心外環
+    col += gold * glow(abs(cd-0.165),0.006) * (0.7+pulse);
+
+    // 脈衝衝擊波環
+    if(pulse>0.001){
+      float rr=(1.0-pulse)*1.4;
+      col += hot * glow(abs(cd-rr),0.01) * pulse*1.2;
+    }
+
+    // 暈影 + 底場微抬
+    col *= smoothstep(1.7,0.25,length(uv));
+    col += gold*0.012*field;
+
+    gl_FragColor = vec4(col, 1.0);
+  }
+  `;
+
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([-1,-1,0, 3,-1,0, -1,3,0]), 3));
+  const mat = new THREE.ShaderMaterial({ vertexShader: vert, fragmentShader: frag, uniforms, depthWrite: false, depthTest: false });
+  const mesh = new THREE.Mesh(geo, mat);
+  mesh.frustumCulled = false;
+  scene.add(mesh);
+
+  const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
+  const composer = new EffectComposer(renderer, rt);
+  composer.addPass(new RenderPass(scene, camera));
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.72, 0.5, 0.62); // strength, radius, threshold
+  composer.addPass(bloom);
+  composer.addPass(new OutputPass());
+
+  function resize(){
+    const dpr = Math.min(window.devicePixelRatio || 1, 1.3);
+    const w = window.innerWidth, h = window.innerHeight;
+    renderer.setPixelRatio(dpr); renderer.setSize(w, h);
+    composer.setPixelRatio(dpr); composer.setSize(w, h);
+    bloom.setSize(w * dpr, h * dpr);
+    uniforms.uRes.value.set(w * dpr, h * dpr);
+  }
+  window.addEventListener('resize', resize); resize();
+
+  let pulse = 0;
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'b' || e.key === 'B') { bloom.enabled = !bloom.enabled; }
+    if (e.code === 'Space') { e.preventDefault(); pulse = 1; }
+  });
+
+  const fpsEl = document.getElementById('fps');
+  let last = performance.now(), acc = 0, frames = 0;
+  function tick(now){
+    const dt = Math.min(0.05, (now - last) / 1000); last = now;
+    uniforms.uTime.value += dt;
+    pulse *= 0.94; uniforms.uPulse.value = pulse;
+    composer.render();
+    acc += dt; frames++;
+    if (acc >= 0.5) { fpsEl.textContent = Math.round(frames / acc); acc = 0; frames = 0; }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+} catch (err) {
+  const e = document.getElementById('err');
+  e.style.display = 'grid';
+  e.textContent = 'PoC 載入失敗：' + (err && err.message ? err.message : err) +
+    '（若是 file:// 擋了 CDN 模組，改用本機伺服器開：在專案根目錄跑 npx serve 或 python -m http.server，再開 /poc/great-sage-vfx-poc.html）';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>SAGE CORE IGNITION — 智慧鑑定核心點火（預覽 v6 · 共用引擎 · 不降級）</title>
+<style>
+  html, body { margin:0; height:100%; background:#050403; overflow:hidden; }
+  #c { display:block; width:100vw; height:100vh; }
+  .ui { position:fixed; inset:0; pointer-events:none; font-family:system-ui,"Segoe UI",sans-serif; }
+  .title { position:absolute; top:18px; left:50%; transform:translateX(-50%); text-align:center; }
+  .title h1 { margin:0; font:700 clamp(15px,2.2vw,22px)/1.2 Georgia,serif; letter-spacing:.42em; color:#f0d488;
+              text-shadow:0 0 18px rgba(214,166,77,.45), 0 1px 4px #000; }
+  .title p { margin:4px 0 0; font:600 10.5px/1.5 system-ui; letter-spacing:.22em; color:rgba(231,201,119,.66); text-shadow:0 1px 4px #000; }
+  #fpsbox { position:absolute; left:14px; top:12px; font:600 12px/1.5 system-ui; color:#9fe0a0; text-shadow:0 1px 4px #000; }
+  #fpsbox span { color:#cbb072; }
+  #labelRing { position:absolute; left:50%; top:50%; width:0; height:0; animation:lrspin 240s linear infinite; }
+  #labelRing span { position:absolute; left:0; top:0; transform:rotate(var(--a)) translateY(-37.5vmin);
+    font:600 9px/1 system-ui; letter-spacing:.30em; color:rgba(231,201,119,.34); text-shadow:0 0 6px rgba(214,166,77,.25); white-space:nowrap; }
+  @keyframes lrspin { to { transform:rotate(360deg); } }
+  #chips { position:absolute; left:16px; bottom:16px; display:grid; gap:6px; }
+  .chip { font:600 10px/1 system-ui; letter-spacing:.18em; color:#cfe8d8; opacity:.22; transition:opacity .3s, color .3s; text-shadow:0 1px 4px #000; }
+  .chip.on { opacity:1; color:#9fe0c8; text-shadow:0 0 10px rgba(80,220,180,.5); }
+  .chip i { font-style:normal; color:rgba(231,201,119,.8); margin-left:8px; letter-spacing:.05em; }
+  #banner { position:absolute; left:50%; bottom:96px; transform:translateX(-50%); font:700 13px/1 Georgia,serif;
+            letter-spacing:.34em; color:#fff2cf; text-shadow:0 0 16px rgba(255,220,150,.6),0 1px 4px #000;
+            opacity:0; transition:opacity .35s; white-space:nowrap; }
+  #banner.fail { color:#ffb29a; text-shadow:0 0 16px rgba(255,90,40,.6),0 1px 4px #000; }
+  #btns { position:absolute; left:50%; bottom:42px; transform:translateX(-50%); display:flex; gap:8px; pointer-events:auto; }
+  .pbtn { background:linear-gradient(180deg,#221912,#120d07); border:1px solid rgba(214,178,90,.45); color:#e7c977;
+          padding:7px 14px; border-radius:999px; font:600 12px/1 system-ui; letter-spacing:.08em; cursor:pointer;
+          transition:border-color .2s, box-shadow .2s; }
+  .pbtn:hover { border-color:#f0d488; box-shadow:0 0 14px rgba(214,166,77,.35); }
+  .err { position:fixed; inset:0; display:none; place-items:center; color:#ffd9b0; font:600 14px/1.7 system-ui; text-align:center; padding:24px; }
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div class="ui">
+  <div id="fpsbox">FPS <b id="fps">–</b> <span>· B=Bloom C=後製 Space=脈衝 · 1~6=階段 · 不降級</span></div>
+  <div class="title">
+    <h1>SAGE CORE IGNITION</h1>
+    <p>智慧鑑定核心點火 · MANUSCRIPT APPRAISAL ENGINE ONLINE · 手稿鑑定引擎已上線</p>
+  </div>
+  <div id="labelRing">
+    <span style="--a:0deg">SAGE</span><span style="--a:36deg">INDEX</span><span style="--a:72deg">SCRIPTUM</span>
+    <span style="--a:108deg">ORACLE</span><span style="--a:144deg">MEMORY</span><span style="--a:180deg">CAUSALITY</span>
+    <span style="--a:216deg">STYLE</span><span style="--a:252deg">WORLD</span><span style="--a:288deg">TRACE</span>
+    <span style="--a:324deg">APPRAISAL</span>
+  </div>
+  <div id="chips">
+    <div class="chip">STYLE TRACE<i>語感追蹤</i></div>
+    <div class="chip">WORLD INDEX<i>世界觀索引</i></div>
+    <div class="chip">CHARACTER LOCK<i>角色一致性</i></div>
+    <div class="chip">CAUSALITY CHECK<i>因果檢查</i></div>
+    <div class="chip">REVISION OUTPUT<i>修改輸出</i></div>
+  </div>
+  <div id="banner"></div>
+  <div id="btns">
+    <button class="pbtn" data-p="ignition">點火</button>
+    <button class="pbtn" data-p="computing">演算</button>
+    <button class="pbtn" data-p="operational">待運</button>
+    <button class="pbtn" data-p="complete">完成</button>
+    <button class="pbtn" data-p="failed">失敗</button>
+    <button class="pbtn" data-p="idle">休眠</button>
+  </div>
+</div>
+<div class="err" id="err"></div>
+
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
+}}
+</script>
+<script type="module">
+import * as THREE from 'three';
+import { GPUComputationRenderer } from 'three/addons/misc/GPUComputationRenderer.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { buildSageVfx } from '../public/js/effects/sage-vfx.js';
+
+try {
+  const canvas = document.getElementById('c');
+  const vfx = buildSageVfx({
+    THREE, GPUComputationRenderer, EffectComposer, RenderPass, UnrealBloomPass, ShaderPass, OutputPass,
+    canvas, quality: 'ultra', calm: false, afterIgnition: 'computing',
+  });
+  const resize = () => vfx.setSize(window.innerWidth, window.innerHeight);
+  window.addEventListener('resize', resize); resize();
+
+  // 預覽 UI：橫幅 + 模組狀態條
+  const banner = document.getElementById('banner');
+  const chips = [...document.querySelectorAll('.chip')];
+  let chipTimer = 0;
+  const showBanner = (txt, fail) => { banner.textContent = txt; banner.classList.toggle('fail', !!fail); banner.style.opacity = txt ? 1 : 0; };
+  const chipsOff = () => { chips.forEach((c) => c.classList.remove('on')); clearInterval(chipTimer); };
+  const chipsCycle = () => { chipsOff(); let i = 0; chipTimer = setInterval(() => { chips.forEach((c, k) => c.classList.toggle('on', k <= i % 6)); i++; }, 420); };
+  function phaseUi(p) {
+    if (p === 'idle') { showBanner(''); chipsOff(); }
+    if (p === 'ignition') { showBanner('SAGE CORE IGNITION · 智慧鑑定核心點火'); setTimeout(() => { if (vfx.phaseName() === 'computing') phaseUi('computing'); }, 1000); }
+    if (p === 'operational') { showBanner(''); chipsOff(); }
+    if (p === 'computing') { showBanner('ANALYZING · 高速演算中'); chipsCycle(); }
+    if (p === 'complete') { showBanner('APPRAISAL COMPLETE · 鑑定完成'); chipsOff(); chips.forEach((c) => c.classList.add('on')); }
+    if (p === 'failed') { showBanner('PARSE FAILED · 解析失敗', true); chipsOff(); setTimeout(() => { if (vfx.phaseName() !== 'failed') showBanner(''); }, 900); }
+  }
+  const setPhase = (p) => { vfx.setPhase(p); phaseUi(p); };
+  document.querySelectorAll('.pbtn').forEach((b) => b.addEventListener('click', (e) => { e.stopPropagation(); setPhase(b.dataset.p); }));
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'b' || e.key === 'B') vfx.toggleBloom();
+    if (e.key === 'c' || e.key === 'C') vfx.toggleCinematic();
+    if (e.code === 'Space') { e.preventDefault(); vfx.pulse(); }
+    if (e.key >= '1' && e.key <= '6') setPhase(['ignition','computing','operational','complete','failed','idle'][+e.key - 1]);
+  });
+  canvas.addEventListener('pointerdown', () => vfx.pulse());
+  setTimeout(() => setPhase('ignition'), 900);   // 開場自動點火
+
+  const fpsEl = document.getElementById('fps');
+  let last = performance.now(), acc = 0, frames = 0;
+  function tick(now) {
+    const dt = Math.min(0.033, (now - last) / 1000); last = now;
+    vfx.frame(dt);
+    acc += dt; frames++;
+    if (acc >= 0.5) { fpsEl.textContent = Math.round(frames / acc); acc = 0; frames = 0; }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+} catch (err) {
+  const e = document.getElementById('err'); e.style.display = 'grid';
+  e.textContent = 'VFX Lab 載入失敗：' + (err && err.message ? err.message : err) +
+    '（注意：本頁需經 HTTP 伺服器開啟；file:// 會擋相對模組匯入）';
+  console.error(err);
+}
+</script>
+</body>
+</html>
