@@ -234,7 +234,15 @@ button { font: inherit; color: inherit; }
 .continue-application:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 
 /* ═══ 載入頁（typewriter by dilmurod_3869）→ 黑金；3 秒後淡出進入登入頁 ═══ */
-.boot-loader { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, #100c07, #050403 72%); transition: opacity 0.6s var(--ease-out); }
+.boot-loader { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center;
+  /* Sage 啟動 veil：低亮核心 + 極淡外圈 + 微青綠霧（與 critical inline 同款，外部 CSS 到位後加強） */
+  background:
+    radial-gradient(circle at 50% 44%, rgba(255,230,166,0.13), rgba(214,166,77,0.05) 16%, transparent 32%),
+    radial-gradient(circle at 50% 44%, transparent 22.5%, rgba(214,178,90,0.08) 23.5%, transparent 25.5%),
+    radial-gradient(circle at 50% 44%, transparent 33%, rgba(214,178,90,0.04) 34%, transparent 36.5%),
+    radial-gradient(circle at 50% 44%, rgba(46,84,76,0.10), transparent 58%),
+    radial-gradient(circle at 50% 45%, #100c07, #050403 72%);
+  transition: opacity 0.6s var(--ease-out); }
 .boot-loader.is-done { opacity: 0; pointer-events: none; }
 .typewriter { --blue: #d6a64d; --blue-dark: #5a3e12; --key: #fff6e0; --paper: #f4eede; --text: #b8a88a; --tool: #ffc56c; --duration: 3s; position: relative; animation: bounce05 var(--duration) linear infinite; }
 .typewriter .slide { width: 92px; height: 20px; border-radius: 3px; margin-left: 14px; transform: translateX(14px); background: linear-gradient(var(--blue), var(--blue-dark)); animation: slide05 var(--duration) ease infinite; }
@@ -335,30 +343,11 @@ button { font: inherit; color: inherit; }
   .review-controls { order: 3; margin-left: auto; }
   .review-controls { gap: 10px; align-items: flex-end; }
   .spark-switch { font-size: 17px; }
-  /* Orbit Dial 手機左開（不蓋啟動鈕/草稿）— 移植自 958b8dd */
-  .model-dial { align-self: flex-end; overflow: visible; }
-  .model-dial::before {
-    left: auto; right: 52px; top: 0; bottom: auto; width: 48px; height: 144px;
-    border-bottom-color: rgba(214,178,90,0.18); border-radius: 999px;
-    transform: translateX(18px) scaleY(0.82); transform-origin: center top;
-  }
-  .model-dial.is-open::before {
-    border-color: rgba(214,178,90,0.34); border-bottom-color: rgba(214,178,90,0.20);
-    transform: translateX(0) scaleY(1);
-    box-shadow: -8px 0 24px rgba(214,166,77,0.12), inset 0 0 14px rgba(214,166,77,0.08);
-  }
-  .md-circle { position: absolute; left: 0; bottom: 0; }
-  .md-subs { inset: 0 54px auto auto; width: 50px; height: 142px; transform: none; }
-  .md-sub { top: auto; left: auto; }
-  .md-subs .md-sub:nth-of-type(1) { right: 0; top: 0; }
-  .md-subs .md-sub:nth-of-type(2) { right: 0; top: 46px; }
-  .md-subs .md-sub:nth-of-type(3) { right: 0; top: 92px; }
-  .md-sub-trigger ~ label { transform: translateX(24px) scale(0.38) rotate(18deg); }
-  .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(1) label,
-  .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label,
-  .md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label {
-    transform: translate(0, 0) scale(1) rotate(0deg); opacity: 1;
-  }
+  /* MODEL CORE SLOT 手機：面板向上開、靠右、不被裁切 */
+  .ms-face { padding: 0 10px; }
+  .ms-eyebrow { font-size: 8px; }
+  .ms-current { font-size: 11.5px; }
+  .ms-panel { right: 0; min-width: 230px; }
 }
 
 /* ═══ 結果區 ═══ */
@@ -452,61 +441,60 @@ button { font: inherit; color: inherit; }
 /* ════════ 審稿控制：模型放射選單 + 思考開關（黑金） ════════ */
 .review-controls { display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto; }
 
-/* 模型放射選單：Arcane Orbit Dial（固定尺寸，不推擠操作列） */
-.model-dial { position: relative; width: 50px; height: 50px; flex: 0 0 50px; z-index: 20; }
-.model-dial::before {
-  content: ""; position: absolute; left: 50%; top: 50%; width: 126px; height: 88px;
-  border: 1px solid rgba(214,178,90,0.0); border-bottom-color: transparent; border-radius: 999px 999px 0 0;
-  opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(0.82);
-  transition: opacity 0.28s var(--ease-out), transform 0.28s var(--ease-out), border-color 0.28s var(--ease-out);
+/* MODEL CORE SLOT 模型核心槽（Ultra Pass3 §十：暗金玻璃槽 + 浮空黑金面板） */
+.model-slot { position: relative; flex: 0 0 auto; z-index: 21; }
+.ms-face {
+  display: inline-flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 14px 0 12px;
+  background: linear-gradient(180deg, rgba(42,33,20,0.92), rgba(18,13,7,0.96));
+  border: 1px solid rgba(214,178,90,0.5); border-radius: 12px; cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 0 10px rgba(214,178,90,0.08);
+  transition: border-color 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
 }
-.model-dial.is-open::before {
-  opacity: 1; border-color: rgba(214,178,90,0.34); border-bottom-color: transparent;
-  transform: translate(-50%, -58%) scale(1);
-  box-shadow: 0 -10px 28px rgba(214,166,77,0.12);
+.ms-face:hover { border-color: rgba(240,212,136,0.85); box-shadow: 0 0 16px rgba(214,166,77,0.30), inset 0 0 12px rgba(214,178,90,0.14); }
+.ms-face:focus-visible { outline: 2px solid #f0d488; outline-offset: 2px; }
+.ms-node {
+  width: 9px; height: 9px; border-radius: 50%; flex: 0 0 auto;
+  background: radial-gradient(circle at 35% 30%, #fff6e0, #d6a64d 60%, #6b4f1c);
+  box-shadow: 0 0 8px rgba(255,230,166,0.65);
 }
-.md-trigger, .md-sub-trigger { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-.md-circle {
-  display: flex; align-items: center; justify-content: center;
-  width: 50px; height: 50px; border-radius: 50%; position: relative; z-index: 2;
-  background: radial-gradient(circle at 50% 28%, #2a2114, #16110a);
-  border: 1px solid rgba(214, 178, 90, 0.5);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.45), inset 0 0 8px rgba(214,178,90,0.12);
-  color: #e7c977; font-weight: 700; font-size: 1rem; cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+.ms-text { display: grid; line-height: 1.25; text-align: left; min-width: 0; }
+.ms-eyebrow { font-family: var(--font-mono); font-size: 8.5px; letter-spacing: 0.26em; color: rgba(231,201,119,0.62); font-weight: 600; }
+.ms-current { font-size: 12.5px; font-weight: 700; color: #fff1cf; white-space: nowrap; }
+.ms-tri { width: 0; height: 0; border-left: 5px solid transparent; border-right: 5px solid transparent; border-top: 6px solid #d6a64d; flex: 0 0 auto; transition: transform 0.25s var(--ease-out); }
+.model-slot.is-open .ms-tri { transform: rotate(180deg); }
+.model-slot.is-open .ms-face { border-color: #f0d488; box-shadow: 0 0 0 1px rgba(240,212,136,0.4), 0 0 18px rgba(214,166,77,0.30); }
+.ms-panel {
+  position: absolute; right: 0; bottom: calc(100% + 10px); min-width: 248px; z-index: var(--z-drawer);
+  display: grid; gap: 4px; padding: 8px;
+  background: linear-gradient(180deg, rgba(22,16,9,0.97), rgba(10,7,4,0.98));
+  border: 1px solid rgba(214,178,90,0.5); border-radius: 12px;
+  box-shadow: 0 14px 36px rgba(0,0,0,0.55), 0 0 22px rgba(214,166,77,0.14);
+  opacity: 0; transform: translateY(8px); pointer-events: none;
+  transition: opacity 0.22s var(--ease-out), transform 0.22s var(--ease-out);
 }
-.md-circle::before, .md-circle::after {
-  content: ""; position: absolute; inset: 5px; border-radius: 50%; pointer-events: none;
-  border: 1px solid rgba(255,230,166,0.18); transition: transform 0.35s var(--ease-out), opacity 0.28s var(--ease-out);
+.model-slot.is-open .ms-panel { opacity: 1; transform: translateY(0); pointer-events: auto; }
+.ms-opt {
+  position: relative; display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  border: 1px solid transparent; border-radius: 9px; cursor: pointer; overflow: hidden;
+  transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
 }
-.md-circle::after { inset: 10px; border-style: dashed; opacity: 0.55; }
-.md-circle:hover { box-shadow: 0 6px 16px rgba(0,0,0,0.5), inset 0 0 10px rgba(214,178,90,0.22); }
-.md-circle:active { transform: scale(0.92); }
-.md-trigger:focus-visible ~ .md-circle { outline: 2px solid var(--c-gold); outline-offset: 2px; }
-.md-trigger:checked ~ .md-circle { box-shadow: 0 0 0 2px rgba(214,178,90,0.55), 0 0 22px rgba(214,166,77,0.28), 0 6px 16px rgba(0,0,0,0.5); }
-.md-trigger:checked ~ .md-circle::before { transform: rotate(45deg); opacity: 0.9; }
-.md-trigger:checked ~ .md-circle::after { transform: rotate(-38deg); opacity: 0.8; }
-
-.md-subs { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.model-dial.is-open .md-subs { pointer-events: auto; }
-.md-sub { position: absolute; top: 0; left: 0; width: 50px; height: 50px; }
-.md-sub-trigger ~ label {
-  display: flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; margin: 4px; border-radius: 50%;
-  background: radial-gradient(circle at 50% 28%, #241c10, #100c07);
-  border: 1px solid rgba(214,178,90,0.35); color: #cbb072;
-  font-size: 0.92rem; font-weight: 600; cursor: pointer; opacity: 0; transform: scale(0.4);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.36);
-  transition: transform 0.34s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.26s var(--ease-out), box-shadow 0.2s ease, color 0.2s ease, background 0.2s ease, border-color 0.2s ease;
-  pointer-events: none;
+.ms-opt input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.ms-opt .ms-node { opacity: 0.45; box-shadow: none; transition: opacity 0.2s, box-shadow 0.2s; }
+.ms-opt .ms-name { font-size: 12.5px; font-weight: 700; color: #e8dcc0; }
+.ms-opt .ms-name i { font-style: normal; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; color: rgba(231,201,119,0.6); margin-left: 6px; }
+.ms-opt .ms-desc { display: block; font-size: 10.5px; color: var(--c-text-muted); margin-top: 2px; }
+.ms-opt:hover { background: linear-gradient(90deg, rgba(214,166,77,0.14), rgba(214,166,77,0.03)); border-color: rgba(214,178,90,0.30); }
+.ms-opt:has(input:focus-visible) { outline: 2px solid #f0d488; outline-offset: -2px; }
+.ms-opt:has(input:checked) { border-color: rgba(240,212,136,0.65); background: linear-gradient(90deg, rgba(240,212,136,0.12), rgba(214,166,77,0.04)); }
+.ms-opt:has(input:checked) .ms-node { opacity: 1; box-shadow: 0 0 9px rgba(255,230,166,0.8); }
+.ms-opt:has(input:checked) .ms-name { color: #fff6e0; }
+.ms-sync {
+  position: absolute; right: 0; bottom: calc(100% + 4px); white-space: nowrap; pointer-events: none;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.2em; color: #9fe0c8;
+  text-shadow: 0 0 8px rgba(80,220,180,0.5); opacity: 0; transition: opacity 0.25s var(--ease-out);
 }
-.md-sub-trigger:checked ~ label { color: #1a130a; background: radial-gradient(circle at 50% 28%, #f0d488, #d6b25a); border-color: #f0d488; }
-.md-sub-trigger ~ label:hover, .md-sub-trigger:focus-visible ~ label { box-shadow: 0 0 14px rgba(214,178,90,0.62), 0 6px 18px rgba(0,0,0,0.42); color: #fff1bd; }
-.md-sub-trigger:focus-visible ~ label { outline: 2px solid var(--c-gold); outline-offset: 2px; }
-.md-trigger:checked ~ .md-subs .md-sub label { pointer-events: auto; }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(1) label { transform: translate(0, -62px) scale(1); opacity: 1; transition-delay: 0.04s; }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(2) label { transform: translate(-58px, -36px) scale(1); opacity: 1; transition-delay: 0.10s; }
-.md-trigger:checked ~ .md-subs .md-sub:nth-of-type(3) label { transform: translate(58px, -36px) scale(1); opacity: 1; transition-delay: 0.16s; }
+.ms-sync.is-on { opacity: 1; }
+.ms-sync.is-fail { color: #ffb29a; text-shadow: 0 0 8px rgba(255,90,40,0.5); }
 
 /* 思考開關（spark-switch · 依使用者範例配色 · 滑動 warp） */
 .spark-switch { display: inline-block; font-size: 20px; flex: 0 0 auto; transition: opacity 0.2s ease; }
@@ -550,3 +538,44 @@ button { font: inherit; color: inherit; }
 @keyframes spk-drift { 0% { transform: translateX(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(-6em); opacity: 0; } }
 @keyframes spk-warp { 0% { transform: translateX(0) scaleX(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateX(-6em) scaleX(2); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .spark-switch .star { animation: none !important; opacity: 0; } }
+
+/* ════════ Ultra Pass3：首屏揭示順序 + 控制台化登入卡 + 全站統一 ════════ */
+/* veil → VFX 第一幀 → canvas 淡入(由 core 設 opacity) → 卡片/工作區淡入 */
+.auth-screen, .app-main, .app-header { opacity: 0; transition: opacity 0.7s var(--ease-out) 0.25s; animation: ultraRevealFailsafe 0s 7s forwards; }
+body.vfx-ready .auth-screen, body.vfx-full .auth-screen, body.vfx-fallback .auth-screen,
+body.vfx-ready .app-main,  body.vfx-full .app-main,  body.vfx-fallback .app-main,
+body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-header { opacity: 1; }
+@keyframes ultraRevealFailsafe { to { opacity: 1; } }   /* 任何 JS 失敗 7s 後保底可見 */
+
+/* 登入卡＝鑑定核心控制台：四角鎖扣 + 內框刻度 + 柔背光 */
+.auth-card { position: relative; }
+.auth-card::before {
+  content: ""; position: absolute; inset: 9px; pointer-events: none; border-radius: 8px;
+  border: 1px dashed rgba(214,178,90,0.18);
+}
+.card-lock { position: absolute; width: 16px; height: 16px; pointer-events: none; opacity: 0.85; }
+.card-lock.lk-tl { top: -1px; left: -1px; border-top: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
+.card-lock.lk-tr { top: -1px; right: -1px; border-top: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
+.card-lock.lk-bl { bottom: -1px; left: -1px; border-bottom: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
+.card-lock.lk-br { bottom: -1px; right: -1px; border-bottom: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
+.card-lock::after { content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%;
+  background: #ffe6a6; box-shadow: 0 0 7px rgba(255,230,166,0.8); }
+.card-lock.lk-tl::after { top: 2px; left: 2px; } .card-lock.lk-tr::after { top: 2px; right: 2px; }
+.card-lock.lk-bl::after { bottom: 2px; left: 2px; } .card-lock.lk-br::after { bottom: 2px; right: 2px; }
+.auth-card:hover .card-lock { opacity: 1; }
+
+/* 授權閘門標 + 狀態燈 */
+.gate-tag { display: flex; align-items: center; justify-content: center; gap: 8px;
+  font-family: var(--font-mono); font-size: 9.5px; letter-spacing: 0.30em; color: rgba(231,201,119,0.62); margin: var(--s-4) 0 var(--s-2); }
+.gate-lamp { width: 7px; height: 7px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6e0, #d6a64d 65%);
+  box-shadow: 0 0 8px rgba(255,230,166,0.7); animation: gateLamp 2.6s ease-in-out infinite; }
+@keyframes gateLamp { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
+
+/* 工作區面板統一：細角刻 + 暗金材質感（不搶內容） */
+.panel { position: relative; }
+.panel > .panel-head::before, .panel > .panel-head::after {
+  content: ""; position: absolute; width: 12px; height: 12px; pointer-events: none; opacity: 0.5;
+}
+.panel > .panel-head::before { top: 5px; left: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-left: 1px solid rgba(214,166,77,0.6); }
+.panel > .panel-head::after { top: 5px; right: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-right: 1px solid rgba(214,166,77,0.6); }

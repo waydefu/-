@@ -102,20 +102,17 @@ test.describe("Great Sage visual baseline", () => {
     expect(afterClearHover.analyze.width).toBeGreaterThan(90);
   });
 
-  test("model orbit selector opens without layout shift", async ({ page }) => {
+  test("model core slot opens without layout shift", async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await waitForLoginReady(page);
     await enterOperationalWorkbench(page);
 
     const before = await page.locator(".actions-row").boundingBox();
-    await page.evaluate(() => {
-      const trigger = document.getElementById("modelDialOpen") as HTMLInputElement | null;
-      const dial = document.getElementById("modelDial");
-      if (trigger) trigger.checked = true;
-      dial?.classList.add("is-open");
-    });
+    await page.locator("#modelSlotBtn").click();
+    await expect(page.locator("#modelDial")).toHaveClass(/is-open/);
+    await expect(page.locator("#modelPanel")).toBeVisible();
     const after = await page.locator(".actions-row").boundingBox();
-    const choices = await page.locator(".md-trigger:checked ~ .md-subs .md-sub label").count();
+    const choices = await page.locator('#modelPanel input[name="modelPick"]').count();
 
     expect(choices).toBe(3);
     expect(Math.round(after?.width || 0)).toBe(Math.round(before?.width || 0));

@@ -61,7 +61,7 @@ async function load() {
     canvas.addEventListener("webglcontextlost", () => disposeCore("context lost", { fallback: true }), { once: true });
     core = new GreatSageCore(canvas, { mobile, calm: calmMode });
     core.start();
-    canvas.style.opacity = "1";   // 淡入（CSS transition）
+    // canvas 揭示交給 core：第一幀 render 完成才淡入（Ultra Pass3 首屏防閃）
     bindLifecycle();
     setVfxState("ready", { source: "webgl", mobile, calm: calmMode });
   } catch (error) {

@@ -86,3 +86,17 @@ Backend context (unchanged this batch): production LLM path is NVIDIA NIM multi-
   2. `public/js/webgl/*` 六檔已無人 import → 死碼候選，待使用者確認後刪 + 同步 README。
   3. 手機降級先不做（使用者令）；QUALITY 等級已預留（sage-vfx.js：ultra/high/medium/low/static），要降只改 great-sage-core.js 的 quality 參數。
   4. 本機預覽：`scripts/dev-static-server.mjs` + `.claude/launch.json`（vfx-static, port 8123）→ 開 `/poc/vfx-lab.html`。
+
+## Ultra Pass 3 桌機高規格版 (Claude, 2026-06-11b)
+規格：`docs/SAGE_CORE_ULTRA_PASS3.md`（原文=桌面 2026611提示詞.txt 第二版）。只做 Ultra，QUALITY 降級結構保留未實作。
+- **首屏防閃**：index.html critical inline = Sage veil（深黑+暗金核+外圈輪廓+微青綠，外部 CSS 未到也不露普通背景）；`#sageCanvas` 預設 opacity:0，唯一揭示路徑=GreatSageCore **第一幀 render 完成**（effects-manager 的提早揭示已移除）；auth-screen/app-main/header 由 body.vfx-* 類別 gating 淡入 + 7s CSS 動畫保底（JS 全掛也可見）。
+- **3D 軌道系統**：sage-vfx.js 新增 `orbitSys()`（主帶外亮內暗+內外緣線+簇狀刻度+節點星體(光球+暈+微環)+切線拖尾+前後深度(前亮粗/後暗細被霧吃)）；五型：A 主金12°/B 青綠-24°/C 白金內圈8°/D 暗金遠景32°霧遮/E 斷裂-36°分群。
+- **環距重排**（Pass3 §四半徑表）：封印 0.235｜內符文 0.46｜主法陣 0.70-0.86｜主咒文 0.90｜資料流 0.98-1.18｜軌道 1.05-1.45｜殘符 1.22-1.38｜青綠結界 1.43-1.53｜外圓 1.62｜碎片群落 1.50-1.92。
+- **轉速分層**：資料流×2.4、內符文×2、封印刻度×1.4、主骨架×1.2、點火瞬間 rotMult 2.0。
+- **後製重做**：exposure 0.95、bloom 0.42/0.33/0.78（高門檻小半徑）、cinematic=核心熱浪折射(中心小範圍)+filmic+黑位下壓+飽和1.12 回補+暗角不死黑(floor 0.30)+grain 0.020+CA 0.0008。
+- **滑鼠視差**：uPx/uPy 三層位移（遠 0.085/軌道 0.040/塵 -0.05），core 餵入、lab 同步。
+- **工作區退場**：新相位 ambient(power 0.30)；`worldforge:auth-changed` → standing 切換 operational↔ambient；complete/failed 回 standing。
+- **MODEL CORE SLOT**：取代放射選單。`#modelSlotBtn`+浮空 `#modelPanel`(z-drawer、向上開、不被裁切)+三選項(自動/深度 Kimi/快速 Groq，含節點+描述)+MODEL SYNC 同步閃；radio `name="modelPick"` 值流不變 → AppState/analyze-api/API 模型值不破；思考開關僅 Kimi 啟用照舊。
+- **UI 統一**：登入卡=控制台（四角鎖扣+內框虛線刻度+角落節點燈）、AUTHORIZATION GATE 授權閘門標+呼吸狀態燈、panel 頭部角刻。
+- 驗證：npm test 26/26；preview=穩態 vfx-full/canvas gating 結構保證/主站截圖(環距+卡片控制台)/模型槽開合+切換 Kimi(label/SYNC/思考開關/radio 全對)+零 console error；deploy+smoke 7/7。
+- 殘餘風險：visual snapshots 仍過期（待 `--update-snapshots`）；首幀 gating 的 pre-load 瞬間無法用 eval 實測（結構性保證）；橘紅失敗態與 god-ray 完成態未在 preview 實測（lab 可按 4/5 鍵驗）。

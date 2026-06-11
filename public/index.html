@@ -43,9 +43,17 @@
   }
   </script>
 
-  <!-- critical inline：首屏即定底色，避免任何閃白/閃黑（style-src 'unsafe-inline' 已放行） -->
+  <!-- critical inline：首屏即為 Sage 啟動 veil（深黑+暗金+微青綠），外部 CSS 未到也絕不露普通背景 -->
   <style>
-    html { background: #04060c; }
+    html { background: #050403; }
+    body { margin: 0; background: radial-gradient(120% 90% at 50% 42%, #0c0906 0%, #050403 70%); }
+    #bootLoader { position: fixed; inset: 0; z-index: 200;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(255,230,166,0.12), rgba(214,166,77,0.05) 16%, transparent 32%),
+        radial-gradient(circle at 50% 44%, transparent 22.5%, rgba(214,166,77,0.07) 23.5%, transparent 25.5%),
+        radial-gradient(circle at 50% 44%, rgba(46,84,76,0.10), transparent 58%),
+        radial-gradient(circle at 50% 44%, #0e0a06 0%, #050403 78%); }
+    #sageCanvas { opacity: 0; }                     /* WebGL 第一幀 ready 前不顯示 */
     body:not(.is-authed) .app-header, body:not(.is-authed) .app-main { display: none; }
     body.is-authed #authScreen { display: none; }
   </style>
@@ -73,9 +81,12 @@
   <!-- ════════ 登入畫面 ════════ -->
   <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
     <section class="auth-card sao-pop">
+      <i class="card-lock lk-tl" aria-hidden="true"></i><i class="card-lock lk-tr" aria-hidden="true"></i>
+      <i class="card-lock lk-bl" aria-hidden="true"></i><i class="card-lock lk-br" aria-hidden="true"></i>
       <p class="auth-eyebrow">GREAT SAGE · APPRAISAL ENGINE</p>
       <h1 class="auth-title" id="authTitle">大賢者鑑定核心</h1>
       <p class="auth-copy">西方奇幻小說 AI 編修系統。完成 Google 授權後，貼上手稿即可取得全文重寫、審查摘要與世界觀／敘事邏輯校準。</p>
+      <p class="gate-tag" aria-hidden="true">AUTHORIZATION GATE · 授權閘門<span class="gate-lamp"></span></p>
       <div class="login-3d">
         <button class="btn btn-primary btn-lg login-platform" type="button" id="googleLoginBtn">
           <span class="login-face">
@@ -166,14 +177,24 @@
                 <svg class="clear-svg" viewBox="0 0 448 512" aria-hidden="true"><path d="M135.2 17.7L128 32H32C14.3 32 0 46.3 0 64S14.3 96 32 96H416c17.7 0 32-14.3 32-32s-14.3-32-32-32H320l-7.2-14.3C307.4 6.8 296.3 0 284.2 0H163.8c-12.1 0-23.2 6.8-28.6 17.7zM416 128H32L53.2 467c1.6 25.3 22.6 45 47.9 45H346.9c25.3 0 46.3-19.7 47.9-45L416 128z"></path></svg>
               </button>
               <div class="review-controls" role="group" aria-label="模型與思考模式">
-                <div class="model-dial" id="modelDial">
-                  <input type="checkbox" id="modelDialOpen" class="md-trigger" aria-label="展開模型選擇">
-                  <label for="modelDialOpen" class="md-circle" title="選擇模型"><span class="md-current" id="modelCurrent">自</span></label>
-                  <div class="md-subs">
-                    <span class="md-sub"><input value="auto" name="modelPick" type="radio" id="mdAuto" class="md-sub-trigger" checked><label for="mdAuto" title="自動（依字數切深／快）">自</label></span>
-                    <span class="md-sub"><input value="kimi" name="modelPick" type="radio" id="mdKimi" class="md-sub-trigger"><label for="mdKimi" title="Kimi 深度">深</label></span>
-                    <span class="md-sub"><input value="groq" name="modelPick" type="radio" id="mdGroq" class="md-sub-trigger"><label for="mdGroq" title="Groq 快速（弱模型，少字規則）">快</label></span>
+                <div class="model-slot" id="modelDial">
+                  <button class="ms-face" type="button" id="modelSlotBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="模型核心槽">
+                    <span class="ms-node" aria-hidden="true"></span>
+                    <span class="ms-text"><b class="ms-eyebrow">MODEL CORE</b><span class="ms-current" id="modelCurrent">自動核心 AUTO</span></span>
+                    <span class="ms-tri" aria-hidden="true"></span>
+                  </button>
+                  <div class="ms-panel" id="modelPanel" role="listbox" aria-label="選擇模型核心">
+                    <label class="ms-opt" role="option"><input value="auto" name="modelPick" type="radio" id="mdAuto" checked>
+                      <span class="ms-node" aria-hidden="true"></span>
+                      <span class="ms-text"><span class="ms-name">自動核心 <i>AUTO LINK</i></span><span class="ms-desc">依字數自動切換 深核／快核</span></span></label>
+                    <label class="ms-opt" role="option"><input value="kimi" name="modelPick" type="radio" id="mdKimi">
+                      <span class="ms-node" aria-hidden="true"></span>
+                      <span class="ms-text"><span class="ms-name">深度核心 <i>DEEP CORE</i></span><span class="ms-desc">Kimi K2.6 · 繁中深度審稿</span></span></label>
+                    <label class="ms-opt" role="option"><input value="groq" name="modelPick" type="radio" id="mdGroq">
+                      <span class="ms-node" aria-hidden="true"></span>
+                      <span class="ms-text"><span class="ms-name">快速核心 <i>SWIFT CORE</i></span><span class="ms-desc">Groq Llama · 秒回快審</span></span></label>
                   </div>
+                  <span class="ms-sync" id="modelSync" aria-live="polite"></span>
                 </div>
                 <label class="spark-switch" id="thinkToggle" title="思考模式（選 Kimi 時生效）">
                   <input type="checkbox" id="thinkInput" checked aria-label="思考模式">

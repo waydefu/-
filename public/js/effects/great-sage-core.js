@@ -30,11 +30,26 @@ export class GreatSageCore {
     this._onRestored = () => { if (!this.disposed) this.start(); };
     this._onAnalysisStart = () => this.vfx?.setPhase("computing");
     this._onAnalysisComplete = () => this.vfx?.setPhase("complete");
+    // 滑鼠視差（克制；前中遠由 shader 分層位移）
+    this.px = 0; this.py = 0; this.pxT = 0; this.pyT = 0;
+    this._onPointer = (ev) => {
+      this.pxT = ((ev.clientX / window.innerWidth) - 0.5) * 0.6;
+      this.pyT = (0.5 - (ev.clientY / window.innerHeight)) * 0.6;
+    };
+    // 工作區 VFX 退場（Pass3 §九：登入頁 60-80%、工作區 20-35%）
+    this._standing = document.body.classList.contains("is-authed") ? "ambient" : "operational";
+    this._onAuth = (e) => {
+      this._standing = e?.detail?.user ? "ambient" : "operational";
+      this.vfx?.setStanding(this._standing);
+      if (this.vfx && this.vfx.phaseName() !== "computing") this.vfx.setPhase(this._standing);
+    };
     canvas.addEventListener("webglcontextlost", this._onLost, false);
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
     window.addEventListener("resize", this._onResize, { passive: true });
+    window.addEventListener("pointermove", this._onPointer, { passive: true });
     window.addEventListener("worldforge:analysis-start", this._onAnalysisStart);
     window.addEventListener("worldforge:analysis-complete", this._onAnalysisComplete);
+    window.addEventListener("worldforge:auth-changed", this._onAuth);
   }
 
   _markDetailLoaded(name) {
@@ -69,9 +84,9 @@ export class GreatSageCore {
       ShaderPass: spMod.ShaderPass,
       OutputPass: opMod.OutputPass,
       canvas: this.canvas,
-      quality: "ultra",          // 使用者令：先不降級（QUALITY 等級已預留，要降只改這裡）
+      quality: "ultra",          // 使用者令：只做 Ultra（QUALITY 等級已預留，要降只改這裡）
       calm: this.calm,
-      afterIgnition: "operational",
+      afterIgnition: this._standing,
     });
     this.vfx.setSize(window.innerWidth, window.innerHeight);
     this.bloomReady = true;
@@ -107,8 +122,15 @@ export class GreatSageCore {
       const dt = Math.min(0.033, (now - this._last) / 1000);
       this._last = now;
       if (this.vfx) {
+        this.px += (this.pxT - this.px) * Math.min(1, dt * 3);
+        this.py += (this.pyT - this.py) * Math.min(1, dt * 3);
+        this.vfx.setPointer(this.px, this.py);
         this.vfx.frame(dt);
-        if (!this._glyphMarked) { this._glyphMarked = true; this._markDetailLoaded("glyph"); } // 首幀渲染成功
+        if (!this._glyphMarked) {
+          this._glyphMarked = true;
+          this._markDetailLoaded("glyph");          // 首幀渲染成功
+          this.canvas.style.opacity = "1";          // 第一幀 ready 才揭示（CSS 0.9s 淡入）
+        }
         // 自適應 render scale：嚴重掉幀降、回穩升（floor 0.6）
         this._frames++;
         if (now - this._fpsT >= 1000) {
@@ -138,8 +160,10 @@ export class GreatSageCore {
     this.canvas.removeEventListener("webglcontextlost", this._onLost);
     this.canvas.removeEventListener("webglcontextrestored", this._onRestored);
     window.removeEventListener("resize", this._onResize);
+    window.removeEventListener("pointermove", this._onPointer);
     window.removeEventListener("worldforge:analysis-start", this._onAnalysisStart);
     window.removeEventListener("worldforge:analysis-complete", this._onAnalysisComplete);
+    window.removeEventListener("worldforge:auth-changed", this._onAuth);
     try { this.vfx?.dispose(); } catch {}
     this.vfx = null;
   }

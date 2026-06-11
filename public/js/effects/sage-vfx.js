@@ -13,7 +13,7 @@ export const QUALITY = {
 
 const BG_FRAG = `
 precision highp float;
-uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps;
+uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy;
 uniform vec2 uRes;
 #define TAU 6.28318530718
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
@@ -98,12 +98,43 @@ float latchAt(vec2 p,vec2 c,float aRot,float s){
 float arcFrags(vec2 p,float seed){
   float a2=atan(p.y,p.x); if(a2<0.0)a2+=TAU; float rr=length(p); float acc=0.0;
   for(int i=0;i<6;i++){ float fi=float(i);
-    float r=0.56+0.20*h11(fi+seed);
+    float r=0.67+0.17*h11(fi+seed);
     float s=h11(fi*3.1+seed)*TAU; float sp=0.4+1.2*h11(fi*5.7+seed);
     float da=mod(a2-s+TAU,TAU);
     float win=step(da,sp)*smoothstep(0.0,0.12,da)*smoothstep(sp,sp-0.12,da);
     acc+=glow(abs(rr-r),0.0016)*win; }
   return acc;
+}
+// ── 3D 軌道系統（Pass3 §三：主帶+內外緣線+簇狀刻度+節點星體(暈+微環)+切線拖尾+前後遮擋）──
+vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float nodeN,vec3 cA,vec3 cB,float broken,float amp){
+  vec2 q=rot(phi)*p; q.y/=max(abs(cosT),0.18);
+  float r=length(q); if(abs(r-R)>0.22) return vec3(0.0);
+  float th=atan(q.y,q.x);
+  float depth=sin(th)*sinT;                                  // 沿軌深度（+後 −前）
+  float front=smoothstep(0.45,-0.45,depth);                  // 1=前景 0=後景
+  float fogOc=mix(0.34,1.0,front);                           // 後半被霧吃
+  float w=0.018*(0.75+0.55*front);                           // 前粗後細
+  float d=r-R;
+  float band=smoothstep(w,w*0.18,abs(d))*(0.30+0.50*smoothstep(-w,w,d));   // 主帶：外緣亮內側暗
+  float eIn=glow(abs(d+w),0.0015);                           // 內緣細金線
+  float eOut=glow(abs(d-w),0.0018);                          // 外緣亮線
+  float cf=(th+aOff)*R*14.0; float cell=floor(cf);
+  float clus=step(0.45,fbm2(vec2(cell*0.13,R*7.0)));         // 簇狀刻度（密疏分群）
+  float tick=smoothstep(0.5,0.15,abs(fract(cf)-0.5))*clus*step(abs(d),w*1.35);
+  float gap=broken>0.5?step(0.35,fbm2(vec2((th+aOff)*1.8,R*3.0))):1.0;     // E 型斷裂
+  vec3 col=(cA*band*0.45+cA*eIn*0.30+cB*eOut*0.55+cB*tick*0.30)*gap;
+  for(int i=0;i<6;i++){ if(float(i)>=nodeN) break;           // 節點星體
+    float a=aOff+float(i)/nodeN*TAU+h11(R*31.0+float(i))*0.9;
+    vec2 np=vec2(cos(a),sin(a))*R;
+    float nd=length(q-np);
+    if(nd<0.16){
+      float nf=smoothstep(0.45,-0.45,sin(a)*sinT);           // 節點自身前後
+      float ns=0.013*(0.65+0.70*nf);
+      col+=cB*(glow(nd,ns)*1.15+glow(nd,ns*3.0)*0.22)*(0.45+0.85*nf);     // 光球+外暈
+      col+=cA*glow(abs(nd-ns*2.4),0.0035)*0.40*(0.3+0.7*nf); }            // 微型環
+    float db=mod(a-th+TAU,TAU);                              // 切線拖尾（節點後方）
+    col+=cA*glow(abs(d),w*0.5)*exp(-db*7.5)*step(0.02,db)*0.75*(0.35+0.65*front); }
+  return col*amp*fogOc;
 }
 float raysLayer(float ang,float rad,float seed,float sharp){
   float acc=0.0;
@@ -120,6 +151,9 @@ void main(){
   vec2 uv=(gl_FragCoord.xy*2.0-uRes)/uRes.y;
   float t=uTime,RT=uRT,P=uPower,I=uIgnite,F=uFail,FL=uFlash,C=uComplete,pulse=uPulse;
   float rad=length(uv); float ang=atan(uv.y,uv.x+1e-6);
+  vec2 po=vec2(uPx,uPy);                 // 滑鼠視差：遠景動最多、中景小、核心不動
+  vec2 uvF=uv+po*0.085;                  // 遠景（霧/殘影/光斑/遠軌道）
+  vec2 uvP=uv+po*0.040;                  // 軌道層
   vec3 gold=vec3(1.0,0.78,0.38),amber=vec3(1.0,0.62,0.22),plat=vec3(1.0,0.97,0.90),
        teal=vec3(0.30,0.82,0.74),emberR=vec3(1.0,0.30,0.12);
   // 階段門（點火 內→外）
@@ -140,19 +174,19 @@ void main(){
   vec3 edgeCol=mix(vec3(0.026,0.020,0.011),mix(vec3(0.010,0.020,0.016),vec3(0.009,0.012,0.022),0.5+0.5*sin(ang*2.0+1.0)),0.6);
   vec3 col=mix(vec3(0.016,0.013,0.009),edgeCol,edge);
   col+=vec3(0.0035)*hash21(uv*917.3+floor(t*1.5));
-  float dust=hash21(floor(uv*110.0)+floor(t*1.1)*0.37);
-  col+=vec3(0.020,0.017,0.012)*step(0.997,dust);                       // 魔力粉塵（收斂，避免星空）
+  float dust=hash21(floor((uv-po*0.05)*110.0)+floor(t*1.1)*0.37);
+  col+=vec3(0.015,0.013,0.009)*step(0.9985,dust);                      // 魔力粉塵（再減量，去星空感）
   col*=1.0-0.16*step(0.9965,hash21(floor(uv*64.0)+7.7))*edge;          // 墨跡灰塵（暗點）
-  vec2 q=uv*1.1;
+  vec2 q=uvF*1.1;
   vec2 w1=vec2(fbm2(q+RT*0.020),fbm2(q+vec2(5.2,1.3)-RT*0.016));
   float fog=fbm2(q+2.6*w1);
   float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;
   col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.16;                          // 羊皮紙霧
-  float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.55,0.95,rad)*smoothstep(1.45,1.1,rad);
+  float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.60,1.00,rad)*smoothstep(1.80,1.30,rad);
   col+=vec3(0.28,0.18,0.06)*smokeMid*0.22;                              // 暗金資料煙
   float tFog=fbm2(q*1.4-w1+vec2(0.0,RT*0.012));
   col+=teal*0.045*tFog*tFog*smoothstep(0.7,1.4,rad);                    // 青綠索引霧
-  { vec2 tp=rot(0.02*sin(RT*0.05))*uv;                                  // 漂浮文字殘影（不可讀）
+  { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀）
     for(int r=0;r<3;r++){ float fr=float(r);
       float y0=-0.62+fr*0.55+0.04*sin(RT*0.1+fr*2.0);
       float dy=abs(tp.y-y0);
@@ -170,7 +204,7 @@ void main(){
     col+=vec3(0.35,0.27,0.14)*fr1*step(0.40,fbm2(uv*3.0+5.0))*0.06; }
   for(int i=0;i<4;i++){ float fi=float(i);                               // 失焦光斑（資料霧焦外）
     vec2 bp=rot(RT*0.01*(h11(fi+3.0)-0.5))*vec2(h11(fi*7.1)-0.5,h11(fi*13.3)-0.5)*2.6;
-    float g2=exp(-dot(uv-bp,uv-bp)*(2.2+3.0*h11(fi+5.0)));
+    float g2=exp(-dot(uvF-bp,uvF-bp)*(2.2+3.0*h11(fi+5.0)));
     vec3 bc=fi<1.5?vec3(0.30,0.20,0.06):(fi<2.5?vec3(0.06,0.16,0.12):vec3(0.18,0.05,0.03));
     col+=bc*g2*0.05; }
 
@@ -179,14 +213,14 @@ void main(){
     float seg=step(0.25,fbm2(vec2(a2*2.2,7.7)));
     vec3 oc=mix(gold*0.5,teal*0.5,step(0.62,h11(floor(a2*3.0)+2.0)));
     oc=mix(oc,emberR*0.55,step(0.86,h11(floor(a2*5.0)+9.0)));
-    col+=oc*glow(abs(length(pr)-1.28),0.0045)*seg*0.45*outerAmp; }
-  { vec2 pr=rot(-RT*0.009+F*0.012*sin(t*28.0))*uv; float rr=length(pr);  // 9 類碎片
-    if(rr>1.00&&rr<1.46){
+    col+=oc*glow(abs(length(pr)-1.62),0.0045)*seg*0.45*outerAmp; }
+  { vec2 pr=rot(-RT*0.009+F*0.012*sin(t*28.0))*uvF; float rr=length(pr); // 9 類碎片（遠景群落）
+    if(rr>1.50&&rr<1.92){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*120.0; float cell=floor(cf);
       float hh=h11(cell*1.31);
-      if(hh>0.30){
-        float cr=1.06+h11(cell+5.0)*0.34;
+      if(hh>0.30&&fbm2(vec2(cell*0.07,3.7))>0.42){
+        float cr=1.56+h11(cell+5.0)*0.30;
         vec2 g=vec2((fract(cf)-0.5)*(TAU*cr/120.0), rr-cr)/0.018;
         float ty=floor(h11(cell+9.0)*9.0);
         float d=1e9; float amp=1.0; vec3 fc=gold;
@@ -201,85 +235,94 @@ void main(){
         float blink=0.55+0.45*sin(t*(0.8+2.0*h11(cell+7.0))+cell);
         fc=mix(fc,emberR,F*step(0.55,h11(cell+13.0)));
         col+=fc*glow(d,0.10)*amp*blink*0.38*outerAmp*(1.0+F*1.2); } } }
-  { vec2 pr=rot(RT*0.004)*uv; float a2=atan(pr.y,pr.x);                   // 青綠索引結界（退場化）
+  { vec2 pr=rot(RT*0.005)*uvF; float a2=atan(pr.y,pr.x);                  // 青綠索引結界（再退場：更外、更暗、缺口霧化）
     float gaps=step(0.30,fbm2(vec2(a2*2.3+9.0,2.0)));
     float breathe=0.85+0.15*sin(t*0.35);
-    float occl=1.0-0.35*smokeMid;
-    col+=teal*glow(abs(length(pr)-1.19),0.016)*0.12*gaps*(0.55+0.45*tFog)*breathe*occl*tealAmp;
-    col+=gold*glow(abs(length(pr)-1.155),0.0035)*0.18*gaps*tealAmp;
-    col+=teal*nodes(pr,1.19,9.0,0.0)*0.20*tealAmp;
+    float occl=1.0-0.45*smokeMid;
+    col+=teal*glow(abs(length(pr)-1.48),0.016)*0.085*gaps*(0.55+0.45*tFog)*breathe*occl*tealAmp;
+    col+=gold*glow(abs(length(pr)-1.43),0.0035)*0.13*gaps*tealAmp;
+    col+=teal*nodes(pr,1.48,9.0,0.0)*0.14*tealAmp;
     float cf2=(a2<0.0?a2+TAU:a2)/TAU*70.0; float cell2=floor(cf2);
     float bar=step(0.55,h11(cell2*1.7))*step(abs(fract(cf2)-0.5),0.12+0.2*h11(cell2+3.0));
-    col+=mix(teal,gold,h11(cell2+5.0))*bar*smoothstep(0.012,0.004,abs(length(pr)-1.215))*0.22*tealAmp; }
+    col+=mix(teal,gold,h11(cell2+5.0))*bar*smoothstep(0.012,0.004,abs(length(pr)-1.53))*0.16*tealAmp; }
   if(FL>0.01) col+=plat*glow(abs(rad-(1.0-FL)*1.55),0.012)*FL*0.45;       // 點火折射波外擴
 
   // ═ 三 資料軌道（最快層）
-  { vec2 pr=rot(-RT*0.16)*uv; float rr=length(pr);
-    if(rr>0.88&&rr<1.05){
+  { vec2 pr=rot(-RT*0.38)*uv; float rr=length(pr);                        // 資料流（×2.4 加速＝演算主動態）
+    if(rr>0.98&&rr<1.18){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*110.0; float cell=floor(cf); float fx=abs(fract(cf)-0.5);
       float on=step(0.40,h11(cell*1.9));
-      float bar=on*step(fx,0.10+0.32*h11(cell+3.3))*smoothstep(0.013,0.004,abs(rr-(0.93+0.07*h11(cell+5.5))));
+      float bar=on*step(fx,0.10+0.32*h11(cell+3.3))*smoothstep(0.013,0.004,abs(rr-(1.04+0.10*h11(cell+5.5))));
       vec3 dc=mix(gold,teal,step(0.55,h11(cell+7.0))); dc=mix(dc,plat,step(0.86,h11(cell+9.0)));
       col+=dc*bar*(0.25+0.45*P)*(0.6+0.4*sin(t*3.0+cell*2.0))*outerGate; } }
-  { vec2 pr=rot(RT*0.11)*uv; float rr=length(pr);
-    if(rr>0.74&&rr<0.92){
+  { vec2 pr=rot(RT*0.26)*uv; float rr=length(pr);
+    if(rr>1.00&&rr<1.16){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*64.0; float cell=floor(cf);
       if(h11(cell*2.3)>0.55){
-        vec2 g=rot(0.5*(h11(cell+2.0)-0.5)+0.35)*vec2((fract(cf)-0.5)*(TAU*0.83/64.0), rr-(0.78+0.10*h11(cell+1.0)));
+        vec2 g=rot(0.5*(h11(cell+2.0)-0.5)+0.35)*vec2((fract(cf)-0.5)*(TAU*1.08/64.0), rr-(1.04+0.10*h11(cell+1.0)));
         col+=mix(teal,gold,h11(cell+4.0))*glow(sdSeg(g,vec2(-0.030,0.0),vec2(0.030,0.0)),0.0035)*0.45*P*outerGate; } } }
 
+  // ═ 3D 軌道系統（五型；不同傾角/深度/速度/方向；穿霧有遮擋；視差層 uvP/uvF）
+  { float orbGate=smoothstep(0.45,0.75,I)*mix(0.25,1.0,P);
+    col+=orbitSys(uvP,1.08, 0.978, 0.208, 0.35,  RT*0.060, 5.0, gold,      plat,      0.0, 0.85)*orbGate;  // A 主黃金 12° 中快
+    col+=orbitSys(uvP,1.24, 0.913,-0.407, 1.90, -RT*0.030, 4.0, teal*0.80, teal,      0.0, 0.55)*orbGate;  // B 青綠索引 -24° 慢
+    col+=orbitSys(uv, 0.40, 0.990, 0.139, 2.60,  RT*0.085, 3.0, plat,      plat,      0.0, 0.70)*sealGate; // C 白金封印 8° 精準
+    col+=orbitSys(uvF,1.40, 0.848, 0.530, 0.95,  RT*0.022, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*orbGate;  // D 暗金遠景 32° 慢（霧遮）
+    col+=orbitSys(uvP,1.16, 0.809,-0.588, 4.10, -RT*0.075, 6.0, amber,     gold,      1.0, 0.75)*orbGate;  // E 斷裂資料 -36° 快 分群
+  }
+
   // ═ 四 中圈主法陣（古代魔法機械盤，16 小層）
-  col*=1.0-0.16*smoothstep(0.048,0.020,abs(rad-0.665))*midGate;          // 暗槽環
-  { vec2 pr=rot(RT*0.012)*uv; float rr=length(pr); float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
+  col*=1.0-0.16*smoothstep(0.058,0.024,abs(rad-0.76))*midGate;           // 暗槽環（環距拉大）
+  { vec2 pr=rot(RT*0.0145)*uv; float rr=length(pr); float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
     float L=0.0;
-    L+=glow(abs(rr-0.615),0.0017)*0.85;                                   // 第一主圓
-    L+=glow(abs(rr-0.715),0.0015)*0.55*step(0.18,fbm2(vec2(a2*2.5,4.4))); // 第二主圓（微斷）
+    L+=glow(abs(rr-0.70),0.0017)*0.85;                                    // 第一主圓（0.64-0.86 區）
+    L+=glow(abs(rr-0.82),0.0015)*0.55*step(0.18,fbm2(vec2(a2*2.5,4.4)));  // 第二主圓（微斷）
     float NS=9.0; float sc=floor(a2/TAU*NS); float sf=fract(a2/TAU*NS);
     float so=h11(sc+31.0); float arcseg=step(sf,0.55+0.4*h11(sc+37.0))*step(0.25,so);
     float bri=mix(0.25,1.0,step(0.6,so));
-    L+=smoothstep(0.040,0.0,abs(rr-0.665)-0.030)*0.040*arcseg*bri;        // 模組分區淡填
-    L+=glow(abs(rr-0.648),0.0013)*arcseg*bri*0.5;
+    L+=smoothstep(0.050,0.0,abs(rr-0.76)-0.038)*0.040*arcseg*bri;         // 模組分區淡填
+    L+=glow(abs(rr-0.735),0.0013)*arcseg*bri*0.5;
     col+=gold*L*0.55*mainAmp;
-    col+=plat*tickRing(pr,0.585,240.0,0.0035,0.018,3.3)*0.45*mainAmp;     // 微刻度（內）
-    col+=gold*tickRing(pr,0.742,200.0,0.0035,0.015,8.8)*0.38*mainAmp;     // 微刻度（外）
-    col+=mix(plat,teal,step(0.5,h11(sc+77.0)))*nodes(pr,0.615,9.0,0.0)*0.7*mainAmp; // 節點光珠
+    col+=plat*tickRing(pr,0.66,240.0,0.0035,0.018,3.3)*0.45*mainAmp;      // 微刻度（內）
+    col+=gold*tickRing(pr,0.845,200.0,0.0035,0.015,8.8)*0.38*mainAmp;     // 微刻度（外）
+    col+=mix(plat,teal,step(0.5,h11(sc+77.0)))*nodes(pr,0.70,9.0,0.0)*0.7*mainAmp; // 節點光珠
     float nb=floor(a2/TAU*NS+0.5)/NS*TAU;                                  // 起點鎖扣（亮）/ 終點鎖扣（暗）
-    col+=plat*latchAt(pr,vec2(cos(nb),sin(nb))*0.665,nb+1.5708,0.016)*0.8*mainAmp;
-    col+=gold*latchAt(pr,vec2(cos(nb-0.10),sin(nb-0.10))*0.665,nb-0.10+1.5708,0.011)*0.35*mainAmp;
-    float act=floor(mod(t*0.55,NS));                                       // 模組底光（演算輪播）
+    col+=plat*latchAt(pr,vec2(cos(nb),sin(nb))*0.76,nb+1.5708,0.016)*0.8*mainAmp;
+    col+=gold*latchAt(pr,vec2(cos(nb-0.10),sin(nb-0.10))*0.76,nb-0.10+1.5708,0.011)*0.35*mainAmp;
+    float act=floor(mod(t*0.8,NS));                                        // 模組底光（演算輪播加速）
     float daA=mod(a2-act/NS*TAU+TAU,TAU);
-    if(daA<TAU/NS) col+=gold*0.020*smoothstep(0.060,0.012,abs(rr-0.665))*computing*midGate; }
-  { vec2 pr=rot(-RT*0.016)*uv; float rr=length(pr);                        // 齒輪細環（可缺齒）
-    if(abs(rr-0.565)<0.010){
+    if(daA<TAU/NS) col+=gold*0.020*smoothstep(0.075,0.014,abs(rr-0.76))*computing*midGate; }
+  { vec2 pr=rot(-RT*0.022)*uv; float rr=length(pr);                        // 齒輪細環（可缺齒）
+    if(abs(rr-0.645)<0.010){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*180.0; float cell=floor(cf);
-      col+=gold*step(fract(cf),0.55)*step(0.12,h11(cell*1.3))*smoothstep(0.010,0.004,abs(rr-0.565))*0.18*mainAmp; } }
+      col+=gold*step(fract(cf),0.55)*step(0.12,h11(cell*1.3))*smoothstep(0.010,0.004,abs(rr-0.645))*0.18*mainAmp; } }
   for(int i=0;i<2;i++){ float fi=float(i);                                 // 偏心校準弧
-    vec2 pe=rot(RT*(0.010+0.004*fi))*uv-vec2(0.014,-0.009)*(fi+1.0)*0.8;
+    vec2 pe=rot(RT*(0.012+0.005*fi))*uv-vec2(0.014,-0.009)*(fi+1.0)*0.8;
     float aE=atan(pe.y,pe.x);
-    col+=amber*glow(abs(length(pe)-(0.70+0.045*fi)),0.0016)
+    col+=amber*glow(abs(length(pe)-(0.78+0.055*fi)),0.0016)
         *smoothstep(0.1,0.45,cos(aE-fi*2.4-RT*0.05))*0.28*mainAmp; }
-  col+=gold*arcFrags(rot(RT*0.020)*uv,2.0)*0.34*mainAmp;                   // 斷裂短弧 順/逆
-  col+=amber*arcFrags(rot(-RT*0.026)*uv,11.0)*0.27*mainAmp;
+  col+=gold*arcFrags(rot(RT*0.024)*uv,2.0)*0.34*mainAmp;                   // 斷裂短弧 順/逆
+  col+=amber*arcFrags(rot(-RT*0.031)*uv,11.0)*0.27*mainAmp;
   { float bridges=0.0;                                                     // 環間細橋（演算亮）
     for(int i=0;i<18;i++){ float ai=float(i)/18.0*TAU+RT*0.008;
       vec2 dir=vec2(cos(ai),sin(ai));
       float along=dot(uv,dir); float dperp=abs(dot(uv,vec2(-dir.y,dir.x)));
-      if(along>0.30&&along<0.585){
+      if(along>0.40&&along<0.64){
         float blink=0.30+0.70*max(0.0,sin(t*2.2+float(i)*1.7))*computing;
-        bridges+=glow(dperp,0.0010)*smoothstep(0.30,0.34,along)*smoothstep(0.585,0.55,along)*blink; } }
+        bridges+=glow(dperp,0.0010)*smoothstep(0.40,0.44,along)*smoothstep(0.64,0.60,along)*blink; } }
     col+=gold*bridges*0.30*mainAmp; }
   for(int i=0;i<4;i++){ float fi=float(i);                                 // 資料讀取條
-    float si=floor(h11(fi+44.0)*9.0); float a0=si/9.0*TAU+RT*0.012;
-    float head=fract(t*0.22+fi*0.31); float span=head*(TAU/9.0)*0.8;
+    float si=floor(h11(fi+44.0)*9.0); float a0=si/9.0*TAU+RT*0.0145;
+    float head=fract(t*0.30+fi*0.31); float span=head*(TAU/9.0)*0.8;
     float da=mod(ang-a0+TAU,TAU);
-    if(da<span) col+=mix(gold*0.5,plat,da/max(span,0.001))*glow(abs(rad-0.692),0.0022)*0.45*computing*midGate;
-    col+=plat*glow(length(uv-vec2(cos(a0+span),sin(a0+span))*0.692),0.004)*0.4*computing*midGate; }
+    if(da<span) col+=mix(gold*0.5,plat,da/max(span,0.001))*glow(abs(rad-0.80),0.0022)*0.45*computing*midGate;
+    col+=plat*glow(length(uv-vec2(cos(a0+span),sin(a0+span))*0.80),0.004)*0.4*computing*midGate; }
   { float subd=0.0;                                                        // 子圓盤節點 ×4
-    for(int i=0;i<4;i++){ float ai=1.5708*float(i)+0.7854+RT*0.012;
-      vec2 c=vec2(cos(ai),sin(ai))*0.52; vec2 qd=uv-c;
+    for(int i=0;i<4;i++){ float ai=1.5708*float(i)+0.7854+RT*0.0145;
+      vec2 c=vec2(cos(ai),sin(ai))*0.59; vec2 qd=uv-c;
       if(dot(qd,qd)<0.0036){
         float d=abs(length(qd)-0.024);
         d=min(d,length(qd)-0.006);
@@ -289,28 +332,28 @@ void main(){
     col+=gold*subd*0.5*mainAmp; }
   { vec2 pr=rot(0.3927)*uv;                                                // 八方長定位刻度
     float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
-    float fx=abs(fract(a2/TAU*8.0)-0.5)*(TAU*0.615/8.0);
-    col+=plat*smoothstep(0.0040,0.0014,fx)*smoothstep(0.055,0.020,abs(length(pr)-0.760))*0.6*mainAmp;
-    col+=gold*nodes(pr,0.806,8.0,0.0)*0.5*mainAmp; }
+    float fx=abs(fract(a2/TAU*8.0)-0.5)*(TAU*0.70/8.0);
+    col+=plat*smoothstep(0.0040,0.0014,fx)*smoothstep(0.055,0.020,abs(length(pr)-0.88))*0.6*mainAmp;
+    col+=gold*nodes(pr,0.945,8.0,0.0)*0.5*mainAmp; }
 
   // ═ 五 符文語法系統（內→外點亮 + 掃描 + 完成收束）
   float scan=1.0+1.6*pow(0.5+0.5*cos(ang-RT*0.9),24.0)*computing;
   float blinkA=mix(0.62+0.38*sin(t*1.3+ang*5.0),0.95,C);
-  { vec2 pr=rot(RT*0.030)*uv;                                              // 核心短符（線族 白金）
-    col+=plat*runeRingT(pr,0.345,72.0,7.0,0.022,0.0,F)*smoothstep(0.15,0.35,I)*scan*blinkA*0.85*mix(0.4,1.0,P); }
-  { vec2 pr=rot(-RT*0.018)*uv; pr.y/=(0.96+0.04*sin(RT*0.15));             // 主咒文環（混族 琥珀）
-    col+=mix(gold,amber,0.4)*runeRingT(pr,0.50,44.0,23.0,0.034,-1.0,F)*smoothstep(0.40,0.65,I)*scan*blinkA*0.80*mix(0.4,1.0,P); }
-  { vec2 pr=rot(-RT*0.014)*uv; float rr=length(pr);                        // 外圈殘符
-    if(rr>0.80&&rr<0.99){
+  { vec2 pr=rot(RT*0.062)*uv;                                              // 核心短符（線族 白金；×2 讀取感）
+    col+=plat*runeRingT(pr,0.46,64.0,7.0,0.024,0.0,F)*smoothstep(0.15,0.35,I)*scan*blinkA*0.85*mix(0.4,1.0,P); }
+  { vec2 pr=rot(-RT*0.022)*uv; pr.y/=(0.96+0.04*sin(RT*0.15));             // 主咒文環（混族 琥珀）
+    col+=mix(gold,amber,0.4)*runeRingT(pr,0.90,72.0,23.0,0.040,-1.0,F)*smoothstep(0.40,0.65,I)*scan*blinkA*0.80*mix(0.4,1.0,P); }
+  { vec2 pr=rot(-RT*0.016)*uv; float rr=length(pr);                        // 外圈殘符
+    if(rr>1.22&&rr<1.38){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
-      float cf=a2/TAU*110.0; float cell=floor(cf);
+      float cf=a2/TAU*130.0; float cell=floor(cf);
       if(h11(cell*1.3+5.0)>0.5){
-        vec2 g=vec2((fract(cf)-0.5)*(TAU*0.89/110.0), rr-(0.83+0.12*h11(cell+9.0)))/0.020;
+        vec2 g=vec2((fract(cf)-0.5)*(TAU*1.30/130.0), rr-(1.25+0.10*h11(cell+9.0)))/0.020;
         if(abs(g.y)<1.5)
           col+=mix(gold,teal,0.25)*glow(glyphFam(g,cell*2.7+11.0,floor(h11(cell+4.0)*4.99)),0.11)
               *(0.3+0.7*fbm2(vec2(a2*2.0,RT*0.05)))*smoothstep(0.55,0.85,I)*0.45*mix(0.4,1.0,P); } } }
-  for(int i=0;i<4;i++){ float ai=1.5708*float(i)+RT*0.030;                 // 節點符（鎖扣族 亮）
-    vec2 c=vec2(cos(ai),sin(ai))*0.345; vec2 g=(uv-c)/0.020;
+  for(int i=0;i<4;i++){ float ai=1.5708*float(i)+RT*0.062;                 // 節點符（鎖扣族 亮）
+    vec2 c=vec2(cos(ai),sin(ai))*0.46; vec2 g=(uv-c)/0.020;
     if(dot(g,g)<4.0) col+=plat*glow(glyphFam(g,float(i)*7.7+3.0,4.0),0.10)*1.2*smoothstep(0.30,0.50,I)*mix(0.4,1.0,P); }
 
   // ═ 內圈封印穩定器（9 小層）
@@ -320,7 +363,7 @@ void main(){
   col+=plat*glow(abs(rad-0.242),0.0050)*0.22*sealGate;                     // 外側淡光（厚度）
   col+=gold*glow(abs(rad-0.256),0.012)*0.14*sealGate;                      // 封印外暈
   col+=vec3(1.0,0.93,0.80)*smoothstep(0.235,0.10,rad)*0.08*(0.6+0.4*cp)*sealGate; // 封印內暈
-  { vec2 pr=rot(RT*0.05)*uv;                                               // 精密數值刻度
+  { vec2 pr=rot(RT*0.07)*uv;                                               // 精密數值刻度（×1.4）
     col+=plat*tickRing(pr,0.274,120.0,0.0020,0.0090,5.5)*(0.40+0.30*cp)*sealGate; }
   for(int i=0;i<4;i++){ float fi=float(i);                                 // 四向鎖定節點（依序）
     float on=smoothstep(0.28+0.13*fi,0.37+0.13*fi,I);
@@ -332,7 +375,7 @@ void main(){
     col+=gold*glow(length(uv-c),0.0030)*(0.18+0.30*max(0.0,sin(t*3.0+fi*2.0))*computing)*sealGate; }
   { vec2 pr=rot(RT*0.02)*uv;                                               // 內側微型符文槽（刻入感）
     col+=plat*runeRingT(pr,0.212,64.0,15.0,0.011,0.0,F)*0.28*sealGate; }
-  { vec2 pr=rot(RT*0.035)*uv; float aS=atan(pr.y,pr.x);                    // 旋轉保護罩
+  { vec2 pr=rot(RT*0.05)*uv; float aS=atan(pr.y,pr.x);                     // 旋轉保護罩
     col+=plat*glow(abs(length(pr)-0.185),0.012)*smoothstep(0.0,0.4,cos(aS*2.0))*0.05*sealGate; }
   for(int k=0;k<3;k++){ float fk=float(k);                                 // 壓縮同心紋（斷續、外推）
     float ph=fract(t*0.18+fk*0.33);
@@ -369,7 +412,7 @@ void main(){
         +(fl8*smoothstep(0.55,0.07,rad)+fl20*smoothstep(0.38,0.06,rad))*(0.18+0.55*coreAmp)); }
 
   // ═ 八 因果放射線（7 類）
-  float rayOcc=1.0-0.45*smoothstep(0.56,0.62,rad)*smoothstep(0.76,0.70,rad); // 穿中圈衰減
+  float rayOcc=1.0-0.45*smoothstep(0.64,0.70,rad)*smoothstep(0.86,0.80,rad); // 穿中圈衰減
   { float holy=0.0;                                                        // 主聖光束 5（點火/完成瞬強）
     for(int i=0;i<5;i++){ float fi=float(i);
       float a0=fi/5.0*TAU+0.35+RT*0.010;
@@ -383,17 +426,17 @@ void main(){
     float aL=RT*0.012+fi/6.0*TAU+0.26;
     vec2 dir=vec2(cos(aL),sin(aL));
     float along=dot(uv,dir); float dperp=abs(dot(uv,vec2(-dir.y,dir.x)));
-    if(along>0.20&&along<0.64){
+    if(along>0.28&&along<0.70){
       float brk=1.0-F*step(0.4,h11(fi+8.0));                               // 失敗：資料線斷裂
-      col+=teal*glow(dperp,0.0014)*0.22*P*smoothstep(0.20,0.27,along)*smoothstep(0.64,0.56,along)*brk*midGate;
-      col+=teal*glow(length(uv-dir*(0.22+fract(t*0.30+fi*0.37)*0.40)),0.006)*0.40*P*brk*midGate; } }
+      col+=teal*glow(dperp,0.0014)*0.22*P*smoothstep(0.28,0.35,along)*smoothstep(0.70,0.62,along)*brk*midGate;
+      col+=teal*glow(length(uv-dir*(0.30+fract(t*0.30+fi*0.37)*0.40)),0.006)*0.40*P*brk*midGate; } }
   for(int i=0;i<3;i++){ float fi=float(i);                                 // 模組因果弧線
     float aA=h11(fi+21.0)*TAU+RT*0.012; float aB=aA+1.2+h11(fi+22.0)*1.5;
     float da=mod(ang-aA+TAU,TAU); float spanC=mod(aB-aA+TAU,TAU);
     if(da<spanC){
       float win=smoothstep(0.0,0.25,da)*smoothstep(spanC,spanC-0.25,da);
-      col+=mix(teal,gold,0.5)*glow(abs(rad-0.755),0.0014)*win*0.22*computing*midGate;
-      col+=plat*glow(length(uv-vec2(cos(aA+fract(t*0.4+fi*0.3)*spanC),sin(aA+fract(t*0.4+fi*0.3)*spanC))*0.755),0.005)*0.35*computing*midGate; } }
+      col+=mix(teal,gold,0.5)*glow(abs(rad-0.92),0.0014)*win*0.22*computing*midGate;
+      col+=plat*glow(length(uv-vec2(cos(aA+fract(t*0.4+fi*0.3)*spanC),sin(aA+fract(t*0.4+fi*0.3)*spanC))*0.92),0.005)*0.35*computing*midGate; } }
   { float d=abs(mod(ang-(-1.5708)+3.14159,TAU)-3.14159);                   // 完成：輸出方向亮起（向下）
     col+=plat*exp(-d*d*900.0)*smoothstep(0.20,0.40,rad)*smoothstep(1.20,0.60,rad)*0.50*C; }
   if(F>0.01){ for(int i=0;i<3;i++){ float fi=float(i);                     // 失敗：橘紅裂線
@@ -497,11 +540,19 @@ precision highp float; uniform sampler2D tDiffuse; uniform float uTime; uniform 
 float hash21(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
 void main(){
   vec2 uv=vUv; vec2 cc=uv-0.5; float r=length(cc);
-  float ca=0.0011*r; vec3 col;
+  // 核心熱浪折射（僅中心小範圍：扭曲法陣、DOM UI 不受影響）
+  vec2 du=vec2(sin(uv.y*70.0+uTime*2.3),cos(uv.x*70.0-uTime*1.9))*0.0016*smoothstep(0.20,0.04,r);
+  uv+=du; cc=uv-0.5;
+  float ca=0.0008*r; vec3 col;                                   // 極輕色差（不髒文字）
   col.r=texture2D(tDiffuse,uv+cc*ca).r; col.g=texture2D(tDiffuse,uv).g; col.b=texture2D(tDiffuse,uv-cc*ca).b;
-  col=col/(col+vec3(0.9))*1.9; col*=vec3(1.06,1.0,0.94); col+=vec3(0.0,0.012,0.03)*(1.0-col);
-  float g=hash21(gl_FragCoord.xy+floor(uTime*40.0)); col+=(g-0.5)*0.026;
-  col*=smoothstep(1.10,0.34,r);
+  // 對比保留：filmic 壓縮 + 黑位下壓 + 飽和回補（金=琥珀/白金不灰黃、青綠退後）
+  col=col/(col+vec3(1.05))*2.05;
+  col=pow(max(col,vec3(0.0)),vec3(1.06));
+  float l=dot(col,vec3(0.2126,0.7152,0.0722));
+  col=mix(vec3(l),col,1.12);
+  col*=vec3(1.05,1.0,0.94); col+=vec3(0.0,0.010,0.024)*(1.0-col);
+  float g=hash21(gl_FragCoord.xy+floor(uTime*40.0)); col+=(g-0.5)*0.020;  // 細微顆粒
+  col*=0.30+0.70*smoothstep(1.06,0.30,r);                        // 暗角不死黑
   gl_FragColor=vec4(col,1.0);
 }`;
 
@@ -517,7 +568,7 @@ export function buildSageVfx(deps) {
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: "high-performance" });
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
+  renderer.toneMappingExposure = 0.95;   // Pass3 §七：降過曝、保白金核心
   const basePR = Math.min(window.devicePixelRatio || 1, Q.dprCap);
   let renderScale = 1;
   renderer.setPixelRatio(basePR);
@@ -529,6 +580,7 @@ export function buildSageVfx(deps) {
   const U = {
     uTime:{value:0}, uRT:{value:0}, uRes:{value:uRes}, uSteps:{value:Q.steps},
     uPower:{value:0.18}, uIgnite:{value:0}, uFail:{value:0}, uFlash:{value:0}, uComplete:{value:0}, uPulse:{value:0},
+    uPx:{value:0}, uPy:{value:0},
   };
 
   // 背景大著色器
@@ -572,7 +624,7 @@ export function buildSageVfx(deps) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.48, 0.40, 0.72);
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.42, 0.33, 0.78);  // Pass3 §七：高門檻小半徑（只核心/節點/星芒）
   composer.addPass(bloom);
   const cinematic = new ShaderPass({
     uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:uRes} },
@@ -582,17 +634,19 @@ export function buildSageVfx(deps) {
   composer.addPass(cinematic);
   composer.addPass(new OutputPass());
 
-  // 階段狀態機（規格 十一 + Pass2 §9）
+  // 階段狀態機（規格 十一 + Pass2 §9 + Pass3 §五/§九：standing=待機相位，登入頁 operational／工作區 ambient）
+  let standing = afterIgnition;
   const PH = { name:"idle", power:0.18, powerT:0.18, ignite:0, igniteT:0, fail:0, flash:0, complete:0,
-               rotMult:0.45, rotMultT:0.45, rt:0, timer:0, after:null, pulse:0, t:0 };
+               rotMult:0.55, rotMultT:0.55, rt:0, timer:0, after:null, pulse:0, t:0, px:0, py:0, pxT:0, pyT:0 };
   function setPhase(p) {
     PH.name = p; PH.timer = 0; PH.after = null;
-    if (p === "idle")        { PH.powerT=0.18; PH.igniteT=0.12; PH.rotMultT=0.45; }
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.5; PH.flash=1; PH.after=[0.95, afterIgnition]; }
-    if (p === "operational") { PH.powerT=0.45; PH.igniteT=1; PH.rotMultT=0.9; }
-    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.6; }
-    if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.8; PH.after=[2.6, "operational"]; }
-    if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.0; PH.after=[0.85, "operational"]; }
+    if (p === "idle")        { PH.powerT=0.18; PH.igniteT=0.12; PH.rotMultT=0.55; }
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.after=[0.85, standing]; }
+    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.1; }
+    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=0.85; }  // 工作區：VFX 退 20-35%
+    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.8; }
+    if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.9; PH.after=[2.6, standing]; }
+    if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.after=[0.85, standing]; }
   }
   function frame(dt) {
     PH.t += dt; PH.timer += dt;
@@ -605,6 +659,9 @@ export function buildSageVfx(deps) {
     PH.rotMult += (PH.rotMultT - PH.rotMult) * Math.min(1, dt*2.0);
     PH.rt += dt * PH.rotMult * calmMul;
     PH.pulse *= 0.95;
+    PH.px += (PH.pxT - PH.px) * Math.min(1, dt * 3);
+    PH.py += (PH.pyT - PH.py) * Math.min(1, dt * 3);
+    U.uPx.value = PH.px; U.uPy.value = PH.py;
     U.uTime.value = PH.t; U.uRT.value = PH.rt;
     U.uPower.value = PH.power; U.uIgnite.value = PH.ignite; U.uFail.value = PH.fail;
     U.uFlash.value = PH.flash; U.uComplete.value = PH.complete; U.uPulse.value = PH.pulse;
@@ -640,6 +697,8 @@ export function buildSageVfx(deps) {
     setSize, setRenderScale, frame, setPhase, dispose,
     nudge(v) { PH.power = Math.min(1, PH.power + v); PH.pulse = 1; },
     pulse() { PH.pulse = 1; },
+    setPointer(x, y) { PH.pxT = x; PH.pyT = y; },
+    setStanding(name) { standing = name; },
     phaseName() { return PH.name; },
     toggleBloom() { bloom.enabled = !bloom.enabled; },
     toggleCinematic() { cinematic.enabled = !cinematic.enabled; },
