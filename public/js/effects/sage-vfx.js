@@ -185,13 +185,19 @@ void main(){
   vec2 w1=vec2(fbm2(q+RT*0.020),fbm2(q+vec2(5.2,1.3)-RT*0.016));
   float fog=fbm2(q+2.6*w1);
   float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;
-  col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.30*uFog;                     // 羊皮紙霧（uFog 相位驅動：夜燈濃→點火被環轉散→ambient 回穩）
-  float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.60,1.00,rad)*smoothstep(1.80,1.30,rad);
+  // ── Pass8 體積光影煙霧（重研究：噪聲密度 × 徑向受光 × god-ray 光柱＝有層次的光影煙）──
+  float smokeLit=mix(0.32,1.45,smoothstep(1.55,0.12,rad));              // 近核心被照亮、遠處沒入暗＝立體層次
+  float godray=0.50+0.50*fbm2(vec2(ang*2.6+sin(rad*3.0+RT*0.02),rad*1.3-RT*0.05)); // 光透過煙的明暗光柱
+  float lay=smokeLit*godray;
+  col+=vec3(0.46,0.30,0.14)*fog*fog*fogW*0.70*uFog*lay;                 // 羊皮紙霧（提亮+受光層次）
+  float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.55,1.00,rad)*smoothstep(1.90,1.20,rad);
   smokeMid*=uFog;
-  col+=vec3(0.28,0.18,0.06)*smokeMid*0.36;                              // 暗金資料煙（同步轉散）
-  col*=1.0-0.22*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨煙散）
+  col+=vec3(0.44,0.28,0.11)*smokeMid*0.72*lay;                          // 暗金資料煙（提亮+受光層次）
+  float wisp=fbm2(q*3.4-w1*2.0+vec2(RT*0.03,RT*0.018));                 // 細捲鬚煙絲（高頻層，增層次細節）
+  col+=vec3(0.40,0.27,0.12)*pow(wisp,2.2)*smoothstep(0.45,1.05,rad)*0.38*uFog*godray;
+  col*=1.0-0.20*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨煙散）
   float tFog=fbm2(q*1.4-w1+vec2(0.0,RT*0.012));
-  col+=teal*0.045*tFog*tFog*smoothstep(0.7,1.4,rad)*uFog;               // 青綠索引霧（同步轉散）
+  col+=teal*0.085*tFog*tFog*smoothstep(0.7,1.4,rad)*uFog*godray;        // 青綠索引霧（提亮+光柱調制）
   { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀；4 行、略亮）
     for(int r=0;r<4;r++){ float fr=float(r);
       float y0=-0.78+fr*0.50+0.04*sin(RT*0.1+fr*2.0);
@@ -519,8 +525,8 @@ void main(){
   vFam=h2(aRef+0.123); vDist=length(p);
   vec4 mv=modelViewMatrix*vec4(p,1.0);
   float fs=vFam<0.15?1.5:(vFam<0.45?0.8:(vFam<0.65?1.1:(vFam<0.82?0.48:(vFam<0.93?0.40:0.34))));  // 外三族縮小成紙塵
-  float bokeh=step(0.985,aRand)*4.0+1.0;
-  gl_PointSize=uSize*fs*bokeh*(0.35+aRand*0.9)*smoothstep(0.0,0.3,vLife)*(1.0+uPulse)/max(2.0,-mv.z);
+  // Pass8：移除 bokeh 放大（大散景圓盤被誤認貼圖）——全部小柔光點，發光交給 bloom
+  gl_PointSize=uSize*fs*(0.35+aRand*0.9)*smoothstep(0.0,0.3,vLife)*(1.0+uPulse)/max(2.0,-mv.z);
   gl_Position=projectionMatrix*mv;
 }`;
 
@@ -529,7 +535,7 @@ precision highp float;
 uniform float uPower,uFail;
 varying float vLife,vRand,vFam,vDist;
 void main(){
-  vec2 c=gl_PointCoord-0.5; float d=length(c); float a=smoothstep(0.5,0.0,d);
+  vec2 c=gl_PointCoord-0.5; float d=length(c); float a=exp(-d*d*9.0);   // Pass8 高斯柔邊（無 d=0.5 硬截止＝去貼圖圓邊）
   vec3 gold=vec3(1.0,0.78,0.36),amber=vec3(1.0,0.6,0.2),plat=vec3(1.0,0.96,0.84),teal=vec3(0.3,0.85,0.78);
   vec3 col; float amp;
   if(vFam<0.15){ col=mix(plat,gold,vRand); amp=0.4+0.9*uPower; }
@@ -540,8 +546,7 @@ void main(){
   else if(vFam<0.93){ col=vec3(0.42,0.31,0.18); amp=0.12; }
   else { col=vec3(0.36,0.28,0.17); amp=0.10; }
   col=mix(col,vec3(1.0,0.25,0.10),uFail*step(0.6,vRand));
-  float bokehA=mix(1.0,0.22,step(0.985,vRand));
-  gl_FragColor=vec4(col, a*(0.45+vRand*0.5)*smoothstep(0.0,0.3,vLife)*amp*bokehA);
+  gl_FragColor=vec4(col, a*(0.45+vRand*0.5)*smoothstep(0.0,0.3,vLife)*amp);
 }`;
 
 const CINE_FRAG = `
@@ -552,16 +557,16 @@ void main(){
   // 核心熱浪折射（僅中心小範圍：扭曲法陣、DOM UI 不受影響）
   vec2 du=vec2(sin(uv.y*70.0+uTime*2.3),cos(uv.x*70.0-uTime*1.9))*0.0016*smoothstep(0.20,0.04,r);
   uv+=du; cc=uv-0.5;
-  float ca=0.0008*r; vec3 col;                                   // 極輕色差（不髒文字）
+  float ca=0.0005*r; vec3 col;                                   // Pass8 色差再減輕（不髒文字/不糊煙）
   col.r=texture2D(tDiffuse,uv+cc*ca).r; col.g=texture2D(tDiffuse,uv).g; col.b=texture2D(tDiffuse,uv-cc*ca).b;
-  // 對比保留：filmic 壓縮 + 黑位下壓 + 飽和回補（金=琥珀/白金不灰黃、青綠退後）
+  // Pass8 後製鬆綁：filmic 保留但不再壓黑位（pow 0.97 抬暗部）→ 煙霧層次浮現、畫質不被壓掉
   col=col/(col+vec3(1.05))*2.05;
-  col=pow(max(col,vec3(0.0)),vec3(1.06));
+  col=pow(max(col,vec3(0.0)),vec3(0.97));
   float l=dot(col,vec3(0.2126,0.7152,0.0722));
   col=mix(vec3(l),col,1.12);
   col*=vec3(1.05,1.0,0.94); col+=vec3(0.0,0.010,0.024)*(1.0-col);
-  float g=hash21(gl_FragCoord.xy+floor(uTime*40.0)); col+=(g-0.5)*0.020;  // 細微顆粒
-  col*=0.30+0.70*smoothstep(1.06,0.30,r);                        // 暗角不死黑
+  float g=hash21(gl_FragCoord.xy+floor(uTime*40.0)); col+=(g-0.5)*0.012;  // 顆粒再減（降畫質干擾）
+  col*=0.50+0.50*smoothstep(1.10,0.34,r);                        // 暗角 floor 抬高（邊緣煙不死黑、層次看得見）
   gl_FragColor=vec4(col,1.0);
 }`;
 
