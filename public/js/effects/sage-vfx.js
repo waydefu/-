@@ -181,23 +181,23 @@ void main(){
   float dust=hash21(floor((uv-po*0.05)*110.0)+floor(t*1.1)*0.37);
   col+=vec3(0.015,0.013,0.009)*step(0.9985,dust);                      // 魔力粉塵（再減量，去星空感）
   col*=1.0-0.16*step(0.9965,hash21(floor(uv*64.0)+7.7))*edge;          // 墨跡灰塵（暗點）
-  vec2 q=uvF*1.1;
-  vec2 w1=vec2(fbm2(q+RT*0.020),fbm2(q+vec2(5.2,1.3)-RT*0.016));
-  float fog=fbm2(q+2.6*w1);
-  float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;
-  // ── Pass8 體積光影煙霧（重研究：噪聲密度 × 徑向受光 × god-ray 光柱＝有層次的光影煙）──
-  float smokeLit=mix(0.32,1.45,smoothstep(1.55,0.12,rad));              // 近核心被照亮、遠處沒入暗＝立體層次
-  float godray=0.50+0.50*fbm2(vec2(ang*2.6+sin(rad*3.0+RT*0.02),rad*1.3-RT*0.05)); // 光透過煙的明暗光柱
-  float lay=smokeLit*godray;
-  col+=vec3(0.46,0.30,0.14)*fog*fog*fogW*0.70*uFog*lay;                 // 羊皮紙霧（提亮+受光層次）
-  float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.55,1.00,rad)*smoothstep(1.90,1.20,rad);
-  smokeMid*=uFog;
-  col+=vec3(0.44,0.28,0.11)*smokeMid*0.72*lay;                          // 暗金資料煙（提亮+受光層次）
-  float wisp=fbm2(q*3.4-w1*2.0+vec2(RT*0.03,RT*0.018));                 // 細捲鬚煙絲（高頻層，增層次細節）
-  col+=vec3(0.40,0.27,0.12)*pow(wisp,2.2)*smoothstep(0.45,1.05,rad)*0.38*uFog*godray;
-  col*=1.0-0.20*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨煙散）
-  float tFog=fbm2(q*1.4-w1+vec2(0.0,RT*0.012));
-  col+=teal*0.085*tFog*tFog*smoothstep(0.7,1.4,rad)*uFog*godray;        // 青綠索引霧（提亮+光柱調制）
+  // ══ Pass9 分層雲霧系統（多來源研究：多 octave FBM 疊層=不規則雲形；遠中近三層遞減=景深；
+  //    uv 沿流場 advection 隨時間推動=散開漂移動效；徑向受光 smokeLit + god-ray 光柱=體積光影）══
+  float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;  // 高度權重（上薄下厚）
+  float smokeLit=mix(0.30,1.45,smoothstep(1.6,0.12,rad));              // 近核心被照亮、遠處沒入暗＝立體層次
+  float godray=0.50+0.50*fbm2(vec2(ang*2.6+sin(rad*3.0+RT*0.02),rad*1.3-RT*0.05)); // 光透過雲的明暗光柱
+  vec2 flow=vec2(fbm2(uvF*0.7+RT*0.018),fbm2(uvF*0.7+vec2(4.3,1.9)-RT*0.015));     // 共用流場（advection 散開基底）
+  // 遠層：大塊慢雲，視差大、暗、糊（景深後景）
+  float cFar=fbm2(uvF*1.0+flow*2.0+vec2(RT*0.010,0.0));
+  col+=vec3(0.34,0.22,0.10)*cFar*cFar*smoothstep(0.30,1.55,rad)*0.60*uFog*smokeLit;
+  // 中層：積雲主體團，中速、受光柱（景深中景）
+  float cMid=fbm2(uvP*1.7+flow*1.5-vec2(RT*0.016,RT*0.008));
+  col+=vec3(0.46,0.30,0.13)*cMid*cMid*fogW*0.66*uFog*smokeLit*godray;
+  // 近層：絲狀捲鬚，快、亮、視差小（景深前景）
+  float cNear=fbm2(uv*2.9+flow*1.0+vec2(RT*0.026,RT*0.012));
+  col+=vec3(0.42,0.28,0.12)*pow(cNear,2.4)*smoothstep(0.40,1.10,rad)*0.42*uFog*godray;
+  col*=1.0-0.20*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨雲動）
+  col+=teal*0.075*cMid*smoothstep(0.7,1.4,rad)*uFog*godray;             // 青綠索引（附在中層雲、隨之漂移）
   { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀；4 行、略亮）
     for(int r=0;r<4;r++){ float fr=float(r);
       float y0=-0.78+fr*0.50+0.04*sin(RT*0.1+fr*2.0);
@@ -250,8 +250,8 @@ void main(){
   { vec2 pr=rot(RT*0.005)*uvF; float a2=atan(pr.y,pr.x);                  // 青綠索引結界（再退場：更外、更暗、缺口霧化）
     float gaps=step(0.30,fbm2(vec2(a2*2.3+9.0,2.0)));
     float breathe=0.85+0.15*sin(t*0.35);
-    float occl=1.0-0.45*smokeMid;
-    col+=teal*glow(abs(length(pr)-1.48),0.016)*0.085*gaps*(0.55+0.45*tFog)*breathe*occl*tealAmp;
+    float occl=1.0-0.45*cMid;                                            // Pass9：被中層雲遮（雲散→結界更清晰）
+    col+=teal*glow(abs(length(pr)-1.48),0.016)*0.085*gaps*(0.55+0.45*cFar)*breathe*occl*tealAmp;
     col+=gold*glow(abs(length(pr)-1.43),0.0035)*0.13*gaps*tealAmp;
     col+=teal*nodes(pr,1.48,9.0,0.0)*0.14*tealAmp;
     float cf2=(a2<0.0?a2+TAU:a2)/TAU*70.0; float cell2=floor(cf2);
@@ -389,8 +389,8 @@ void main(){
     col+=gold*glow(length(uv-c),0.0030)*(0.18+0.30*max(0.0,sin(t*3.0+fi*2.0))*computing)*sealGate; }
   { vec2 pr=rot(RT*0.02)*uv;                                               // 內側微型符文槽（刻入感）
     col+=plat*runeRingT(pr,0.212,64.0,15.0,0.011,0.0,F)*0.28*sealGate; }
-  { vec2 pr=rot(RT*0.05)*uv; float aS=atan(pr.y,pr.x);                     // 旋轉保護罩
-    col+=plat*glow(abs(length(pr)-0.185),0.012)*smoothstep(0.0,0.4,cos(aS*2.0))*0.05*sealGate; }
+  { vec2 pr=rot(RT*0.05)*uv; float aS=atan(pr.y,pr.x);                     // 旋轉保護罩（Pass9 降至近無、不再強化泡泡輪廓）
+    col+=plat*glow(abs(length(pr)-0.185),0.012)*smoothstep(0.0,0.4,cos(aS*2.0))*0.02*sealGate; }
   for(int k=0;k<3;k++){ float fk=float(k);                                 // 壓縮同心紋（斷續、外推）
     float ph=fract(t*0.18+fk*0.33);
     float rrK=0.235+0.045*fk+0.06*ph+0.10*FL;
@@ -416,8 +416,7 @@ void main(){
   { float hp=smoothstep(0.55,0.9,P)+FL+F;                                  // 橘金熱量邊（高峰才顯）
     float r1=0.150+0.014*fbm2(vec2(ang*4.0+2.0,t*1.1));
     col+=amber*coreTint*glow(abs(rad-r1),0.0070)*0.40*min(hp,1.2)*(0.5+0.5*cp); }
-  col+=plat*glow(abs(rad-0.185),0.0024)*0.22*sealGate;                     // 透明折射膜（亮膜邊）
-  col*=1.0-0.20*glow(abs(rad-0.172),0.0070)*sealGate;                      //（膜內暗帶 → 球形感）
+  col+=mix(gold,plat,0.5)*coreTint*exp(-rad*rad*15.0)*0.42*coreAmp*sealGate; // Pass9 核心光散射 bleed：連續徑向柔暈取代泡泡膜邊（無硬球緣，發散交給 bloom）
   { float fl4=pow(abs(cos(ang+0.12)),1500.0)*1.1;                          // 星芒：4 主（平時收斂、點火/完成才放）
     float fl8=pow(abs(cos(ang*2.0+0.62)),350.0)*0.40;
     float fl20=pow(abs(cos(ang*5.0+0.21)),90.0)*0.16;
@@ -638,7 +637,7 @@ export function buildSageVfx(deps) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.52, 0.37, 0.72);  // Pass4：分區 bloom 加量（強度/半徑↑、門檻微降——節點/符文也入光）
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.56, 0.42, 0.72);  // Pass9：strength/radius↑ 配合核心柔暈+雲層發散更融（門檻不動避免雲過曝）
   composer.addPass(bloom);
   const cinematic = new ShaderPass({
     uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:uRes} },

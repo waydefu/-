@@ -1,5 +1,15 @@
 # S-Level Upgrade Tasks
 
+## PASS 9 移格子 + 去泡泡 + 光影整體 + 分層雲霧（2026-06-13f，已部署）
+使用者：①一排排格子移掉 ②外層泡泡光球改掉 ③光影整體優化 ④霧改「像雲層分層、不規則、+景深、+散開動效」。研究禁單一來源。
+- **研究（多來源）**：分層雲＝多 octave FBM 疊層（IQ dynclouds／Maxime Heckel／gameidea／shadertoy）；散開＝curl noise 流場 + advection 推 uv（Rombo／shaderbits UE4／HAL 論文）；景深＝遠中近層遞減 opacity+視差。
+- **A 移格子**：`.bg-grid { display:none }`（64px repeating-linear-gradient 網格＝橫條圖頂部那排；WebGL fallback 裝飾，與手稿空間非格線方向衝突；fallback 仍有暗場/金暈/暗角三層）。
+- **B 去泡泡**：移除核心 `rad-0.185` 折射膜亮邊(0.0024 細亮環＝泡泡外緣)+`rad-0.172` 膜內暗帶(球形感)；旋轉保護罩 0.05→0.02。改加**核心光散射 bleed** `exp(-rad²*15)` 連續徑向柔暈＝無硬球緣、發散交 bloom。
+- **C 光影整體**：核心 bleed 漫進周圍(融合非孤立亮點)；雲層套 smokeLit 徑向受光統一全場光影；bloom 0.52/0.37→0.56/0.42（strength/radius↑ 配核心柔暈+雲發散更融，門檻不動防雲過曝）。
+- **D 分層雲霧**（取代 Pass8 煙段）：共用 flow 流場(2 fbm，隨 RT＝advection 散開基底)；三層景深——遠層 cFar(uvF 視差大/暗/糊)、中層 cMid(uvP 積雲主體/受光柱)、近層 cNear(uv 視差小/絲狀捲鬚/快)；各層 fbm 多 octave＝不規則；青綠索引附中層隨雲漂移。煙散相位 uFog 不變。
+- 修坑：青綠結界段(line~253)殘留引用已刪的 smokeMid/tFog → 改 cMid/cFar（否則 shader 編譯失敗）。
+- 驗證：npm test 26/26；raw WebGL 直編 BG_FRAG 零警告（雲層/去泡泡/bleed/死變數無殘留全確認）；deploy+smoke+線上抽驗。WebGL 視覺（雲分層/散開/景深/去泡泡/光影）待線上實機。
+
 ## PASS 8 散景貼圖根治 + 體積光影煙霧 + 後製鬆綁（2026-06-13e，已部署）
 使用者「還是一樣」（光點仍有邊界一圈光像貼圖）+ 後製影響畫質壓掉煙霧、要前景很有層次的光影煙霧。
 - **根治貼圖青綠盤**：定位＝bokeh 散景粒子（P_VERT `step(0.985,aRand)*4.0` 放大 5 倍 + P_FRAG `smoothstep(0.5,0,d)` 在 d=0.5 硬截止＝可見圓邊，teal 向心粒放大後就是那個青綠盤）。
