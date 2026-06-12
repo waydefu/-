@@ -13,11 +13,11 @@ export const QUALITY = {
 
 const BG_FRAG = `
 precision highp float;
-uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy,uFog;
+uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy,uFog,uZoom;
 uniform vec2 uRes;
 #define TAU 6.28318530718
-// 出場自轉（Pass5c）：g=出場進度 0→1；初期多轉一整圈、ease-out 落入正常轉速＝「邊轉邊出 360°」
-#define SPIN(g) ((1.0-(g))*(1.0-(g))*TAU)
+// 出場自轉（Pass7）：g=出場進度 0→1；初期多轉 2.5 圈、ease-out 落入正常轉速＝「邊轉邊出、單環多轉幾圈」
+#define SPIN(g) ((1.0-(g))*(1.0-(g))*TAU*2.5)
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
 float h11(float n){ return fract(sin(n)*43758.5453); }
 float hash21(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
@@ -86,7 +86,7 @@ float nodes(vec2 p,float r,float N,float phase){
   float na=floor((a2+phase)/TAU*N+0.5)/N*TAU-phase;
   vec2 c=vec2(cos(na),sin(na))*r;
   float dl=length(p-c);
-  return glow(min(abs(dl-0.016),dl-0.005),0.0046);
+  return glow(dl,0.010);   // Pass7：純柔光球（去硬環，發光交給 bloom 後製，不再像貼圖）
 }
 float latchAt(vec2 p,vec2 c,float aRot,float s){
   vec2 q=rot(aRot)*(p-c);
@@ -135,7 +135,7 @@ vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float no
       float nf=smoothstep(0.50,-0.50,sin(a)*sinT);           // 節點自身前後
       float ns=0.017*(0.50+0.85*nf);
       col+=cB*(glow(nd,ns)*1.25+glow(nd,ns*3.2)*0.26)*(0.35+0.95*nf);     // 光球+外暈
-      col+=cA*glow(abs(nd-ns*2.4),0.0040)*0.45*(0.25+0.75*nf); }          // 微型環
+      col+=cA*glow(nd,ns*4.5)*0.22*(0.25+0.75*nf); }                      // Pass7：柔外暈取代硬微環（去貼圖感）
     float db=mod(a-th+TAU,TAU);                              // 切線彗尾（拉長）
     col+=cA*glow(abs(d),w*0.45)*exp(-db*4.2)*step(0.02,db)*0.85*(0.25+0.75*front); }
   return col*amp*fogOc;
@@ -152,7 +152,7 @@ float raysLayer(float ang,float rad,float seed,float sharp){
   return acc;
 }
 void main(){
-  vec2 uv=(gl_FragCoord.xy*2.0-uRes)/uRes.y;
+  vec2 uv=(gl_FragCoord.xy*2.0-uRes)/uRes.y*uZoom;   // Pass7 uZoom：手機拉遠（窄屏也看得到最外環）
   float t=uTime,RT=uRT,P=uPower,I=uIgnite,F=uFail,FL=uFlash,C=uComplete,pulse=uPulse;
   float rad=length(uv); float ang=atan(uv.y,uv.x+1e-6);
   vec2 po=vec2(uPx,uPy);                 // 滑鼠視差（Pass6 加大：層差=景深）：遠景動最多、中景小、核心不動
@@ -272,8 +272,8 @@ void main(){
 
   // ═ 3D 軌道系統（五型；Pass5c：逐一錯峰出場、各自帶 360° 出場自轉、出齊 ~2.6s）
   { float pAmp=mix(0.25,1.0,P);
-    float gC=smoothstep(0.10,0.26,I), gA=smoothstep(0.42,0.58,I), gB=smoothstep(0.56,0.72,I),
-          gE=smoothstep(0.68,0.84,I), gD=smoothstep(0.80,0.96,I);
+    float gC=smoothstep(0.00,0.28,I), gA=smoothstep(0.18,0.46,I), gB=smoothstep(0.36,0.64,I),
+          gE=smoothstep(0.54,0.82,I), gD=smoothstep(0.70,1.00,I);   // Pass7：起點拉開、窗加寬＝環一個個分明、不擠
     col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085+SPIN(gC),     3.0, plat,      plat,      0.0, 0.80)*gC*pAmp;  // C 白金封印 14°（第一個出；最近=最亮銳）
     col+=orbitSys(uvP,1.08, 0.927, 0.375, 0.35,  RT*0.060+SPIN(gA),     5.0, gold,      plat,      0.0, 0.85)*gA*pAmp;  // A 主黃金 22°
     col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030-SPIN(gB),     4.0, teal*0.80, teal,      0.0, 0.52)*gB*pAmp;  // B 青綠索引 -30°
@@ -490,7 +490,7 @@ void main(){
   float fam=h2(uv+0.123);
   vec3 c=curl(pos*0.26+uTime*0.04);
   vec3 vel;
-  if(fam<0.15){      vel=normalize(pos+0.0001)*(3.2+2.0*h2(uv+0.5))+c*0.3; life-=uDelta*1.1; }   // 核心火花
+  if(fam<0.15){      vel=normalize(pos+0.0001)*(1.5+1.0*h2(uv+0.5))+c*0.3; life-=uDelta*0.8; }   // 核心火花（Pass7 噴射減速：速度近半、存活拉長）
   else if(fam<0.45){ vel=-normalize(pos+0.0001)*0.85+vec3(-pos.z,0.0,pos.x)*0.22+c*0.55; life-=uDelta*0.10; } // 向心資料粒
   else if(fam<0.65){ vel=normalize(pos+0.0001)*(2.2+2.0*h2(uv+0.7))+c*0.5; life-=uDelta*(0.40+0.35*uPower); } // 離心結果粒
   else if(fam<0.82){ vel=vec3(-pos.z,0.0,pos.x)*0.30+c*0.25; life-=uDelta*0.07; }                 // 中圈軌道粒
@@ -589,7 +589,7 @@ export function buildSageVfx(deps) {
   const U = {
     uTime:{value:0}, uRT:{value:0}, uRes:{value:uRes}, uSteps:{value:Q.steps},
     uPower:{value:0.18}, uIgnite:{value:0}, uFail:{value:0}, uFlash:{value:0}, uComplete:{value:0}, uPulse:{value:0},
-    uPx:{value:0}, uPy:{value:0}, uFog:{value:1.15},
+    uPx:{value:0}, uPy:{value:0}, uFog:{value:1.15}, uZoom:{value:1.0},
   };
 
   // 背景大著色器
@@ -651,7 +651,7 @@ export function buildSageVfx(deps) {
     PH.name = p; PH.timer = 0; PH.after = null;
     // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
     if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.82; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（Pass6 基礎轉速再 +17%，含法陣環——全環吃 RT）
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[4.4, standing]; }  // 轉速由 frame 內曲線隨出場進度爬升 0.9→3.2；4.4s＝撐過 reveal(3.8) 後才減速
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[5.4, standing]; }  // 轉速由 frame 內曲線隨出場進度爬升 0.9→3.2；5.4s＝撐過 reveal(4.8) 後才減速
     if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.58; PH.fogT=0.90; }
     if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
     if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; }
@@ -662,7 +662,7 @@ export function buildSageVfx(deps) {
     PH.t += dt; PH.timer += dt;
     if (PH.after && PH.timer >= PH.after[0]) { const nx = PH.after[1]; PH.after = null; setPhase(nx); }
     PH.power  += (PH.powerT  - PH.power)  * Math.min(1, dt*4.0);
-    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*1.05);  // Pass6 再加長：環逐一出場全程 ~3.6s（沉浸感）
+    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.8);   // Pass7 再加長：環逐一出場 ~4.5s、單環多轉（沉浸、不擠）
     if (PH.name === "ignition") PH.rotMultT = 0.9 + 2.3*PH.ignite*PH.ignite;  // 轉速綁出場進度：第一環慢轉出 → 環越多整體越快 → 全齊衝 3.2
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
@@ -696,6 +696,9 @@ export function buildSageVfx(deps) {
     bloom.setSize(w * basePR * renderScale, h * basePR * renderScale);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     uRes.set(w * basePR * renderScale, h * basePR * renderScale);
+    // Pass7 自適應拉遠：窄屏（手機直式）放大 uv 範圍 → 最外環不被左右裁掉
+    const aspect = w / h;
+    U.uZoom.value = aspect < 0.65 ? 2.2 : aspect < 1.0 ? 1.7 : aspect < 1.3 ? 1.2 : 1.0;
     composer.render();   // resize 清空 drawing buffer；同一 task 內立即重繪，否則合成器端出透明 canvas → 閃出 CSS 漸層底
   }
   function setRenderScale(s) { renderScale = Math.max(0.5, Math.min(1, s)); setSize(window.innerWidth, window.innerHeight); }

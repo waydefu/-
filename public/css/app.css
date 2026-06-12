@@ -120,11 +120,9 @@ button { font: inherit; color: inherit; }
 .btn .btn-ico { width: 18px; height: 18px; flex: 0 0 auto; }
 
 .btn-primary {
-  --btn-bg: linear-gradient(115deg, transparent 38%, rgba(255,240,200,0.16) 50%, transparent 62%) no-repeat 220% 0 / 220% 100%,
-            linear-gradient(180deg, rgba(64, 58, 30, 0.6), rgba(28, 22, 12, 0.7));
+  --btn-bg: linear-gradient(180deg, rgba(64, 58, 30, 0.6), rgba(28, 22, 12, 0.7));
   --btn-bd: rgba(217, 196, 140, 0.6); --btn-fg: var(--c-gold-bright);
   font-family: var(--font-display); font-weight: 700; letter-spacing: 0.08em;
-  animation: btnSheen 7s var(--ease-out) infinite;   /* Pass6 流光掃過（keyframes 在檔尾 Pass6 區） */
 }
 .btn-primary:hover:not(:disabled) { --btn-bd: var(--c-gold); --btn-fg: #fff6dc; }
 .btn-lg { min-height: 56px; padding: 0 var(--s-6); font-size: var(--fs-body-lg); }
@@ -159,16 +157,10 @@ button { font: inherit; color: inherit; }
 .logout-btn:focus-visible { outline: 2px solid var(--c-gold); outline-offset: 2px; }
 
 /* 啟動鑑定 star button（by MuhammadHasann）→ 黑金 + hover 星星飛出 */
-.analyze-star { position: relative; overflow: visible;
-  background: linear-gradient(115deg, transparent 38%, rgba(255,240,200,0.14) 50%, transparent 62%) no-repeat 220% 0 / 220% 100%,
-              linear-gradient(180deg, #1d1710, #120d07);
-  color: #ffe6a6; border: 2px solid rgba(214,166,77,0.55); box-shadow: 0 0 0 rgba(230,184,90,0); transition: color 0.3s, border-color 0.3s, box-shadow 0.3s;
-  animation: btnSheen 9s var(--ease-out) infinite 1.5s; }
+.analyze-star { position: relative; overflow: visible; background: linear-gradient(180deg, #1d1710, #120d07);
+  color: #ffe6a6; border: 2px solid rgba(214,166,77,0.55); box-shadow: 0 0 0 rgba(230,184,90,0); transition: background 0.3s, color 0.3s, border-color 0.3s, box-shadow 0.3s; }
 .analyze-star .btn-label { font-weight: 700; letter-spacing: 0.06em; }
-.analyze-star:hover:not(:disabled) {
-  background: linear-gradient(115deg, transparent 38%, rgba(255,240,200,0.14) 50%, transparent 62%) no-repeat 220% 0 / 220% 100%,
-              linear-gradient(180deg, #271d10, #160f08);
-  color: #fff6e0; border-color: var(--c-gold); box-shadow: 0 0 26px rgba(230,184,90,0.42); }
+.analyze-star:hover:not(:disabled) { background: linear-gradient(180deg, #271d10, #160f08); color: #fff6e0; border-color: var(--c-gold); box-shadow: 0 0 26px rgba(230,184,90,0.42); }
 .analyze-star [class^="star-"] { position: absolute; filter: drop-shadow(0 0 0 #fff6e0); z-index: -5; height: auto; opacity: 0; }
 .analyze-star:hover [class^="star-"] { opacity: 1; }
 .analyze-star .fil0 { fill: #fff6e0; }
@@ -308,9 +300,10 @@ button { font: inherit; color: inherit; }
 }
 .fui-fill {
   inset: 1.5px;
+  /* Pass7：登入卡/工作區面板半透明（alpha 0.70）透出背景法陣；彈窗類在 line~458 加深保持實 */
   background:
     linear-gradient(90deg, transparent calc(50% - 110px), rgba(214,166,77,0.10) 50%, transparent calc(50% + 110px)) 0 0 / 100% 1px no-repeat,
-    linear-gradient(160deg, rgba(26, 19, 10, 0.93), rgba(13, 10, 6, 0.95) 46%, rgba(20, 14, 8, 0.92));
+    linear-gradient(160deg, rgba(26, 19, 10, 0.70), rgba(13, 10, 6, 0.72) 46%, rgba(20, 14, 8, 0.70));
 }
 .panel-head { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5); border-bottom: var(--panel-border); }
 .panel-eyebrow { font-family: var(--font-mono); font-size: var(--fs-nano); letter-spacing: 0.22em; color: var(--c-cyan); }
@@ -613,41 +606,11 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 .panel > .panel-head::before { top: 5px; left: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-left: 1px solid rgba(214,166,77,0.6); }
 .panel > .panel-head::after { top: 5px; right: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-right: 1px solid rgba(214,166,77,0.6); }
 
-/* ════════ Pass6：UI 流體/體積雲升級 ════════
-   流光邊=@property conic 角度動畫（Firefox 不支援 @property → 停在 from 0deg 靜態金邊，安全降級）。
-   體積雲=獨立 <i class="fui-mist"> 雲斑層、僅 opacity 呼吸（compositor 安全；遵守零閃鐵律不動 filter）。 */
-@property --fui-ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
-.fui-frame {
-  background: conic-gradient(from var(--fui-ang),
-    rgba(240,212,136,0.95), rgba(120,90,40,0.32) 20%, rgba(214,166,77,0.60) 37%,
-    rgba(98,214,196,0.38) 50%, rgba(214,166,77,0.60) 63%, rgba(120,90,40,0.32) 80%, rgba(240,212,136,0.95));
-}
-/* 流光只給焦點卡（登入卡/彈窗）；工作區常駐面板用靜態 conic 金邊——
-   conic 角度動畫=每幀整卡 repaint，5 卡全動在低階 GPU 會拖（工作區 VFX 退場原則同向） */
-.auth-card .fui-frame, .history-panel .fui-frame, .modal .fui-frame { animation: fuiFlow 14s linear infinite; }
-@keyframes fuiFlow { to { --fui-ang: 360deg; } }
-.fui-mist {
-  position: absolute; inset: 1.5px; pointer-events: none; z-index: 0;
-  clip-path: polygon(0 18px, 18px 0, calc(100% - 8px) 0, 100% 8px, 100% calc(100% - 18px), calc(100% - 18px) 100%, 8px 100%, 0 calc(100% - 8px));
-}
-.fui-mist.ma {
-  background:
-    radial-gradient(42% 55% at 18% 28%, rgba(214,166,77,0.13), transparent 70%),
-    radial-gradient(50% 42% at 78% 70%, rgba(120,90,40,0.16), transparent 72%),
-    radial-gradient(30% 36% at 60% 18%, rgba(98,214,196,0.05), transparent 70%);
-  animation: mistA 13s ease-in-out infinite alternate;
-}
-.fui-mist.mb {
-  background:
-    radial-gradient(48% 40% at 70% 24%, rgba(255,230,166,0.07), transparent 70%),
-    radial-gradient(44% 52% at 24% 76%, rgba(160,110,45,0.13), transparent 72%);
-  animation: mistB 17s ease-in-out infinite alternate;
-}
-@keyframes mistA { from { opacity: 0.45; } to { opacity: 1; } }
-@keyframes mistB { from { opacity: 1; } to { opacity: 0.35; } }
-
-/* 主鈕流光掃過（高光帶 background-position 動畫；GPU 友好、hover 行為不變） */
-@keyframes btnSheen { 0%, 72% { background-position: 220% 0, 0 0; } 100% { background-position: -130% 0, 0 0; } }
+/* ════════ Pass7：移除 Pass6 流體/體積雲（使用者令「先算了」）════════
+   fui-frame 回靜態金邊（前段 .fui-frame linear-gradient 定義即生效）；體積雲層隱藏；
+   主鈕流光掃過移除（btn-primary/analyze-star 的 animation 已拔，此處不再定義 btnSheen）。
+   卡片改半透明透出背景法陣（fui-fill alpha 0.70；彈窗類仍實，見前段加深規則）。 */
+.fui-mist { display: none; }
 
 /* 音效開關（header；金邊圓鈕、靜音畫斜線） */
 .sfx-btn {

@@ -1,5 +1,17 @@
 # S-Level Upgrade Tasks
 
+## PASS 7 光點柔化 + 入場再調 + UI 退場（2026-06-13d，已部署）
+使用者修訂：①光點不要「有邊界的一圈光」（像貼圖）→ 用 bloom 式柔暈 ②核心噴射光粒子減速 ③單環多轉幾圈、時長再加、目前轉太快、每環入場太擠 ④手機整頁特效拉遠（看得到最外環）⑤UI 流體/體積雲「先算了」（移除）⑥卡片改 70% 透明。
+- **柔化硬邊環**（查資料：soft particle 靠 falloff+bloom 發散、勿 shader 直畫 ring）：
+  · `nodes()` `glow(min(abs(dl-0.016),dl-0.005),0.0046)`（環）→ `glow(dl,0.010)` 純柔光球。
+  · orbitSys 節點 `glow(abs(nd-ns*2.4),0.0040)` 微型環 → `glow(nd,ns*4.5)*0.22` 柔外暈。發光擴散交給 UnrealBloom。
+- **核心噴射減速**：COMPUTE fam<0.15 核心火花 vel `3.2+2.0*rand`→`1.5+1.0*rand`、life 衰減 1.1→0.8（慢且存活久）。
+- **入場再調**：SPIN `(1-g)²·TAU`→`×2.5`（單環多轉 2.5 圈）；I lerp dt 1.05→0.8（出齊 ~4.5s）；五型 gate 起點拉開窗加寬（C 0-0.28／A 0.18-0.46／B 0.36-0.64／E 0.54-0.82／D 0.70-1.0＝一個個分明不擠）；TIMELINE reveal 3800→4800、vfx ignition after 4.4→5.4s（展開後減速）、cleanup 10500。
+- **手機拉遠**：BG_FRAG 新 `uZoom`，uv 乘之；setSize 依 aspect 自適應（<0.65 直式手機 2.2／<1.0 1.7／<1.3 1.2／桌面 1.0）→ 窄屏 uv 範圍放大、最外環不被左右裁掉。
+- **UI 退場**：Pass6 fui-frame conic 流光動畫移除（回靜態金邊）、fui-mist `display:none`（HTML 元素留著不碰，避免編碼坑）、主鈕 btnSheen 掃光移除（btn-primary/analyze-star 回乾淨）。
+- **卡片 70% 透明**：fui-fill 主漸層 alpha 0.93/0.95/0.92 → 0.70（登入卡+工作區面板透出背景法陣）；彈窗類（history/modal）仍加深保持實（聚焦暗場上要清楚）。
+- 驗證：npm test 26/26；raw WebGL 直編 BG_FRAG+P_FRAG（compiled true、零警告、SPIN 2.5/uZoom/核心減速確認）；CSS computed（mist none/流光掃光 animationName none/fill rgba 0.7）；CSS fallback 截圖見卡片半透明+無貼圖環。WebGL 視覺（軟暈/多圈/手機拉遠）沙箱斷網驗不了 → 待線上實機。
+
 ## PASS 6 沉浸升級（2026-06-13c，已部署）
 使用者修訂：①入場「從第一個慢到全部一起變快」②動畫加長（沉浸）③3D/景深不明顯要層次 ④基礎轉速再加（含法陣環、不過快）⑤UI 按鈕/卡片背景超強特效（流體/體積雲）——先查資料。
 - **轉速曲線**：ignition 期 frame 內 `rotMultT = 0.9 + 2.3·ignite²`——第一環慢轉出、環越多越快、全齊衝 3.2。

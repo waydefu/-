@@ -15,8 +15,8 @@ import { sfx } from "./audio-fx.js";
 export const TIMELINE = {
   cardOut: 0,
   ignite: 300,
-  reveal: 3800,   // Pass6 加長：環出齊 ~3.6s（I lerp dt×1.05）+轉速曲線爬滿；vfx after 4.4s ⇒ t≈4.7 減速
-  cleanup: 9000,
+  reveal: 4800,   // Pass7 再加長：環出齊 ~4.5s（I lerp dt×0.8、單環多轉 2.5 圈）；vfx after 5.4s ⇒ t≈5.7 減速
+  cleanup: 10500,
 };
 
 let timers = [];
