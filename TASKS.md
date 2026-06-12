@@ -1,5 +1,37 @@
 # S-Level Upgrade Tasks
 
+## PASS 5 開場重編舞（2026-06-12b，進行中）
+使用者指令：
+1. 手機歷史紀錄鍵破版要修（header 鑑定紀錄鈕文字換行）。
+2. SAGE LINK 卷宗傳送**直接刪除**（link-start 全鏈路）。
+3. 新開場編舞取代：載入頁結束 → 登入彈窗出現；背景=霧裡微亮核心（**夜燈亮度** idle）；
+   登入完成 → 登入卡收起 → 核心增亮 → 軌道**分次出現**旋轉 → 加快 → 工作區 **SAO 展開** → 軌道減速 → 正常運作(ambient)。
+4. 上網研究「增強動效 + 電影級音效」，以最高規格高品質（高效能利用率）**規劃**（產出 docs 規劃文件）。
+流程令：上下文防爆（先落盤再做；進度隨做隨記）。
+進度：[x] 研究+規劃文件 [x] 手機歷史鍵 [x] 刪 SAGE LINK [x] 新編舞 [x] 部署收尾
+
+實作摘要（2026-06-12b，Pass5）：
+- 規劃文件：docs/SAGE_OPENING_PASS5.md（編舞原則對照表、時序表、電影級音效配方、效能政策、來源）。
+- 手機歷史鍵：MOBILE OVERRIDES 加 .continue-application nowrap+縮 padding、.brand-name ellipsis、.nav-actions 不縮。390px 驗證單行。
+- 刪 SAGE LINK：link-start.js 刪檔；main.js 拔 import/呼叫；index.html 拔 #linkStart DOM；motion.css 拔 .link-start/.ls-* 全段
+  + reduced-motion 例外；tests/visual/helpers.ts 拔 selector。
+- 新編舞（事件驅動、零新 render pass）：
+  · 進站=idle 夜燈（powerT 0.16/igniteT 0.08——法陣軌道全熄、霧中微核）；已登入 reload=ambient 直入（不重播）。
+  · 手動登入（state.manualLogin flag，googleLoginBtn handler 設）→ applyAuthState 編舞分支：
+    t=0 auth-card.is-closing（saoOut）→ t=0.3 dispatch worldforge:ignite（core 切 ignition、audio 播 ignite 編組）
+    → t=1.9 body.just-linked+is-authed → workspace saoIn 0.65s（transform-origin center 32%）→ t=2.9 ignition after 2.6s 自動回 ambient 減速。
+  · core：_onIgnite 監聽；_onAuth 仲裁 450ms（無 ignite=reload → 直入 standing）；登出→idle。standing 語意改 ambient/idle（operational 留給 lab）。
+  · audio：sfx.ignite()=riser(C2→C4 sawtooth+雙帶噪聲 1.6s)→impact(58Hz sub+transient+C3、master duck 150ms)→whoosh(1200Hz)→shimmer(C6/G6/E7 detune 2.2s)。
+- 驗證：npm test 全綠；preview=夜燈截圖/ignite 中段聖光束+內外分次/saoIn 結束於可見/auth 隱藏/登出回 idle/390px header 單行、零 console error。
+- 坑：本機 python server 對 module 快取重——刪檔後舊 main.js import 404 整個 graph 掛（線上 no-cache 無此問題）；驗證用 import('?probe') 繞。
+
+技術備忘（編舞映射）：
+- sage-vfx 相位已備：idle(0.18 夜燈)/ignition(內→外 sealGate→midGate→outerGate→boundaryGate 分次點亮+rotMult 2.0)/ambient(0.30 減速 0.85)。
+- 改動點：great-sage-core _init() 尾 setPhase("ignition") → 進站只到 idle；_onAuth(user 登入) → setPhase("ignition")（after→ambient）。
+- 工作區 SAO 展開：app-main/workspace 套 modalIn 式 scaleX→scaleY 動畫（transform/opacity only），時點=ignition 高峰後 ~1.6s。
+- 登入卡收起：auth-card 套 modalOut 反向；body.is-authed 的 display 切換需配合動畫延遲。
+- 音效時點：登入琶音(auth-changed 已接)；ignition 可加長音 swell（規劃文件定）。
+
 ## ART DIRECTION PASS 4（2026-06-12，進行中）
 使用者批評與指令（原文要點，逐項做完才收尾）：
 1. 整體太像高密度 2D 法陣壁紙；要變成真正 3D 系統介面。法陣偏平面；外圈軌道像「線」不像「軌道系統」。

@@ -622,6 +622,11 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
    會被後段桌面元件規則（MODEL SLOT/spark-switch 等）以 source order 蓋掉——
    Pass3 手機列掉行就是這樣壞的。新增手機覆寫一律加在這裡，勿回填前段。 */
 @media (max-width: 640px) {
+  /* 歷史紀錄鍵防破版：文字絕不換行、padding 縮、brand 讓位（ellipsis） */
+  .continue-application { white-space: nowrap; padding: 10px 12px 10px 52px; font-size: 12.5px; }
+  .brand { min-width: 0; }
+  .brand-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .nav-actions { flex: 0 0 auto; }
   /* 第二排排直：clear(50) + 模型槽 + 加速鈕必須同列（360px 屏也不可掉行） */
   .review-controls { gap: 8px; align-items: center; flex-wrap: nowrap; min-width: 0; }
   .spark-switch { font-size: 13.5px; }                /* track=5em → 67.5px */

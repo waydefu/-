@@ -36,12 +36,24 @@ export class GreatSageCore {
       this.pxT = ((ev.clientX / window.innerWidth) - 0.5) * 0.6;
       this.pyT = (0.5 - (ev.clientY / window.innerHeight)) * 0.6;
     };
-    // 工作區 VFX 退場（Pass3 §九：登入頁 60-80%、工作區 20-35%）
-    this._standing = document.body.classList.contains("is-authed") ? "ambient" : "operational";
+    // 相位映射（Pass5 SAGE OPENING）：未登入＝idle 夜燈霧核；登入工作區＝ambient；
+    // 手動登入編舞由 main.js 發 worldforge:ignite（卡片收合後 0.3s）→ ignition 內→外分次點亮→2.6s 自動回 standing。
+    this._standing = document.body.classList.contains("is-authed") ? "ambient" : "idle";
+    this._onIgnite = () => {
+      if (this.vfx && this.vfx.phaseName() !== "computing") this.vfx.setPhase("ignition");
+    };
     this._onAuth = (e) => {
-      this._standing = e?.detail?.user ? "ambient" : "operational";
+      const user = e?.detail?.user;
+      this._standing = user ? "ambient" : "idle";
       this.vfx?.setStanding(this._standing);
-      if (this.vfx && this.vfx.phaseName() !== "computing") this.vfx.setPhase(this._standing);
+      if (!this.vfx || this.vfx.phaseName() === "computing") return;
+      if (user) {
+        // 仲裁：手動登入 450ms 內會收到 ignite（讓編舞接手）；reload 恢復收不到 → 直接進 ambient
+        window.setTimeout(() => {
+          const ph = this.vfx?.phaseName();
+          if (!this.disposed && this.vfx && ph !== "ignition" && ph !== "computing") this.vfx.setPhase(this._standing);
+        }, 450);
+      } else this.vfx.setPhase("idle");
     };
     canvas.addEventListener("webglcontextlost", this._onLost, false);
     canvas.addEventListener("webglcontextrestored", this._onRestored, false);
@@ -50,6 +62,7 @@ export class GreatSageCore {
     window.addEventListener("worldforge:analysis-start", this._onAnalysisStart);
     window.addEventListener("worldforge:analysis-complete", this._onAnalysisComplete);
     window.addEventListener("worldforge:auth-changed", this._onAuth);
+    window.addEventListener("worldforge:ignite", this._onIgnite);
   }
 
   _markDetailLoaded(name) {
@@ -93,7 +106,7 @@ export class GreatSageCore {
     this._markDetailLoaded("bloom");        // 後製管線（bloom + 電影 pass）就緒
     this._markDetailLoaded("magicule");     // GPGPU 魔力粒子場就緒
     this._markDetailLoaded("computation");  // 法陣/狀態機就緒
-    this.vfx.setPhase("ignition");          // 進站點火儀式 → operational 待運
+    this.vfx.setPhase(this._standing);      // Pass5：進站不點火——未登入=idle 夜燈霧核；已登入 reload=ambient 直接運作
   }
 
   /** effects-manager 契約：analysis-start→1、analysis-complete→0、登入 pulse→0.7。 */
@@ -168,6 +181,7 @@ export class GreatSageCore {
     window.removeEventListener("worldforge:analysis-start", this._onAnalysisStart);
     window.removeEventListener("worldforge:analysis-complete", this._onAnalysisComplete);
     window.removeEventListener("worldforge:auth-changed", this._onAuth);
+    window.removeEventListener("worldforge:ignite", this._onIgnite);
     try { this.vfx?.dispose(); } catch {}
     this.vfx = null;
   }

@@ -644,8 +644,8 @@ export function buildSageVfx(deps) {
                rotMult:0.55, rotMultT:0.55, rt:0, timer:0, after:null, pulse:0, t:0, px:0, py:0, pxT:0, pyT:0 };
   function setPhase(p) {
     PH.name = p; PH.timer = 0; PH.after = null;
-    if (p === "idle")        { PH.powerT=0.18; PH.igniteT=0.12; PH.rotMultT=0.55; }
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.after=[0.85, standing]; }
+    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.50; }  // Pass5 夜燈：霧中微亮核心，法陣/軌道近不可見
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.after=[2.6, standing]; }  // 加速段撐到工作區展開後才減速
     if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.1; }
     if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=0.85; }  // 工作區：VFX 退 20-35%
     if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.8; }

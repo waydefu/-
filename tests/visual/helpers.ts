@@ -55,7 +55,6 @@ export async function stabilizeVisuals(page: Page) {
 
       #bootLoader,
       #sageCanvas,
-      #linkStart,
       .bg-aura,
       .bg-grid {
         opacity: 0 !important;

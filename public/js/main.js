@@ -13,7 +13,6 @@ import {
 } from "./app/ui.js";
 import { initEffects } from "./effects/effects-manager.js";
 import { initButtonFx } from "./effects/interactions.js";
-import { playLinkStart } from "./effects/link-start.js";
 import { initAudioFx } from "./effects/audio-fx.js";
 
 const $ = (id) => document.getElementById(id);
@@ -464,11 +463,31 @@ function decryptText(id, finalStr, frames = 26) {
   }, 46);
 }
 
-/* ════════ 認證狀態 → 切換登入/App ════════ */
+/* ════════ 認證狀態 → 切換登入/App（SAGE OPENING 編舞見 docs/SAGE_OPENING_PASS5.md） ════════ */
+function enterWorkspace() {
+  restoreDraft(); refreshHistory(false);
+  setLine("sysStatusText", "鑑定核心已連線");
+  decryptText("resultStatusText", "鑑定核心已連線，準備解析手稿"); // 解碼用可見的卷宗狀態列
+}
 function applyAuthState(user) {
+  const manual = state.manualLogin; state.manualLogin = false;
+  if (user && manual && !document.body.classList.contains("is-authed")) {
+    // Act1 t=0：登入卡 SAO 收合（saoOut 既有動畫）；背景核心獨舞開始
+    document.querySelector(".auth-card")?.classList.add("is-closing");
+    // Act2 t=0.3：點火（核心增亮→軌道內外分次→加速）。事件驅動：core 與音效各自監聽。
+    window.setTimeout(() => window.dispatchEvent(new CustomEvent("worldforge:ignite")), 300);
+    // Act3 t=1.9：工作區 SAO 展開（點火高峰拍上）；ignition 2.6s 後自動減速回 ambient
+    window.setTimeout(() => {
+      document.body.classList.add("just-linked", "is-authed");
+      document.querySelector(".auth-card")?.classList.remove("is-closing");
+      enterWorkspace();
+      window.setTimeout(() => document.body.classList.remove("just-linked"), 5000); // 動畫保底清場
+    }, 1900);
+    return;
+  }
   document.body.classList.toggle("is-authed", !!user);
-  if (user) { restoreDraft(); refreshHistory(false); setLine("sysStatusText", "鑑定核心已連線"); decryptText("resultStatusText", "鑑定核心已連線，準備解析手稿"); } // 解碼用可見的卷宗狀態列（sysStatusText 在關閉的歷史彈窗內，看不到）
-  else { setLine("authStatus", ""); }
+  if (user) enterWorkspace();
+  else setLine("authStatus", "");
 }
 
 /* ════════ 綁定（一次性，無重複） ════════ */
@@ -483,8 +502,10 @@ function bind() {
     const btn = e.currentTarget;
     btn.classList.add("is-loading"); btn.setAttribute("disabled", "true");
     setLine("authStatus", "Google 授權通道開啟中…");
-    try { await signInWithGoogle(); playLinkStart(); window.setTimeout(() => decryptText("resultStatusText", "鑑定核心已連線，準備解析手稿"), 3800); }
+    state.manualLogin = true;   // 標記「登入動作」→ applyAuthState 播 SAGE OPENING 編舞（reload 恢復不播）
+    try { await signInWithGoogle(); }
     catch (err) {
+      state.manualLogin = false;
       const closed = err?.code === "auth/popup-closed-by-user";
       setLine("authStatus", closed ? "已取消登入，請再試一次" : "Google 授權失敗，請稍後再試", { error: !closed });
     } finally { btn.classList.remove("is-loading"); btn.removeAttribute("disabled"); }
