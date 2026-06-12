@@ -14,6 +14,7 @@ import {
 import { initEffects } from "./effects/effects-manager.js";
 import { initButtonFx } from "./effects/interactions.js";
 import { initAudioFx } from "./effects/audio-fx.js";
+import { playOpening } from "./effects/opening-director.js";
 
 const $ = (id) => document.getElementById(id);
 const uid = () => AppState.get("currentUser")?.uid || "guest";
@@ -472,17 +473,8 @@ function enterWorkspace() {
 function applyAuthState(user) {
   const manual = state.manualLogin; state.manualLogin = false;
   if (user && manual && !document.body.classList.contains("is-authed")) {
-    // Act1 t=0：登入卡 SAO 收合（saoOut 既有動畫）；背景核心獨舞開始
-    document.querySelector(".auth-card")?.classList.add("is-closing");
-    // Act2 t=0.3：點火（核心增亮→軌道內外分次→加速）。事件驅動：core 與音效各自監聽。
-    window.setTimeout(() => window.dispatchEvent(new CustomEvent("worldforge:ignite")), 300);
-    // Act3 t=1.9：工作區 SAO 展開（點火高峰拍上）；ignition 2.6s 後自動減速回 ambient
-    window.setTimeout(() => {
-      document.body.classList.add("just-linked", "is-authed");
-      document.querySelector(".auth-card")?.classList.remove("is-closing");
-      enterWorkspace();
-      window.setTimeout(() => document.body.classList.remove("just-linked"), 5000); // 動畫保底清場
-    }, 1900);
+    // SAGE OPENING 編舞全權交給 director（時序唯一真源＝opening-director.js TIMELINE）
+    playOpening({ onReveal: enterWorkspace });
     return;
   }
   document.body.classList.toggle("is-authed", !!user);

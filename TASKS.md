@@ -1,5 +1,13 @@
 # S-Level Upgrade Tasks
 
+## PASS 5b 編舞修訂（2026-06-13，已部署）
+使用者對比修訂：①Pass5 漏做「環快速轉動**把煙轉散**」②工作區展開順序錯——必須在「環減速完開始正常運作」**之後**（Pass5 在加速中段 t=1.9 就展開）。③要求模組化分區利於修改維護。
+- **模組化**：`js/effects/opening-director.js` 新導演模組＝時序唯一真源（TIMELINE 表：cardOut 0／ignite 300／peakEnd 2500／reveal 3300／cleanup 8000，改時序只動這張表）；main.js 編舞分支縮成 `playOpening({ onReveal: enterWorkspace })`。
+- **煙轉散**：sage-vfx 新 `uFog` uniform（三層煙霧：羊皮紙霧/資料煙/青綠霧統一乘；墨漬暗斑不動）；PH.fog/fogT 相位值（idle 1.15 濃／ignition 0.42 被轉散／ambient 0.72 回穩／operational 0.90／computing 0.60）；lerp dt*0.9 慢散；霧 uv 吃 RT（隨轉速加速）自帶旋轉方向感。smokeMid 乘 uFog 後 occl 連動（煙散→結界更清晰，語意正確）。
+- **順序修正**：ignition after 2.6→2.2s（t=2.5 巔峰收束自動減速回 ambient）；工作區 saoIn 改 t=3.3（減速近穩後）。
+- **音效原子化**：sfx.ignite() 組合拆成 riser(dur)/impact()/whoosh()/shimmer() 原子，由 director 排拍（riser t=0.3 鋪 2.2s、impact t=2.5 配 duck、whoosh+shimmer t=3.3 展開拍）；audio-fx 移除 worldforge:ignite 監聽（避免雙放）。
+- 驗證：npm test 26/26；preview（沙箱斷網 CDN 不到 → vfx-full 缺席，改驗 director DOM 鏈：t=0.5 卡片收合中＋工作區未出、t=3.0 仍未出（順序修正關鍵）、t=3.5 saoIn 播放）；deploy+smoke 7/7；線上抽驗 4 項全過。霧轉散視覺待線上實機驗收。
+
 ## PASS 5 開場重編舞（2026-06-12b，進行中）
 使用者指令：
 1. 手機歷史紀錄鍵破版要修（header 鑑定紀錄鈕文字換行）。

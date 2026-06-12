@@ -13,7 +13,7 @@ export const QUALITY = {
 
 const BG_FRAG = `
 precision highp float;
-uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy;
+uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy,uFog;
 uniform vec2 uRes;
 #define TAU 6.28318530718
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
@@ -183,12 +183,13 @@ void main(){
   vec2 w1=vec2(fbm2(q+RT*0.020),fbm2(q+vec2(5.2,1.3)-RT*0.016));
   float fog=fbm2(q+2.6*w1);
   float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;
-  col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.30;                          // 羊皮紙霧（加濃：手稿空間主體）
+  col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.30*uFog;                     // 羊皮紙霧（uFog 相位驅動：夜燈濃→點火被環轉散→ambient 回穩）
   float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.60,1.00,rad)*smoothstep(1.80,1.30,rad);
-  col+=vec3(0.28,0.18,0.06)*smokeMid*0.36;                              // 暗金資料煙（加濃）
-  col*=1.0-0.22*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（大尺度污漬、吃掉均勻感）
+  smokeMid*=uFog;
+  col+=vec3(0.28,0.18,0.06)*smokeMid*0.36;                              // 暗金資料煙（同步轉散）
+  col*=1.0-0.22*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨煙散）
   float tFog=fbm2(q*1.4-w1+vec2(0.0,RT*0.012));
-  col+=teal*0.045*tFog*tFog*smoothstep(0.7,1.4,rad);                    // 青綠索引霧
+  col+=teal*0.045*tFog*tFog*smoothstep(0.7,1.4,rad)*uFog;               // 青綠索引霧（同步轉散）
   { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀；4 行、略亮）
     for(int r=0;r<4;r++){ float fr=float(r);
       float y0=-0.78+fr*0.50+0.04*sin(RT*0.1+fr*2.0);
@@ -584,7 +585,7 @@ export function buildSageVfx(deps) {
   const U = {
     uTime:{value:0}, uRT:{value:0}, uRes:{value:uRes}, uSteps:{value:Q.steps},
     uPower:{value:0.18}, uIgnite:{value:0}, uFail:{value:0}, uFlash:{value:0}, uComplete:{value:0}, uPulse:{value:0},
-    uPx:{value:0}, uPy:{value:0},
+    uPx:{value:0}, uPy:{value:0}, uFog:{value:1.15},
   };
 
   // 背景大著色器
@@ -641,16 +642,17 @@ export function buildSageVfx(deps) {
   // 階段狀態機（規格 十一 + Pass2 §9 + Pass3 §五/§九：standing=待機相位，登入頁 operational／工作區 ambient）
   let standing = afterIgnition;
   const PH = { name:"idle", power:0.18, powerT:0.18, ignite:0, igniteT:0, fail:0, flash:0, complete:0,
-               rotMult:0.55, rotMultT:0.55, rt:0, timer:0, after:null, pulse:0, t:0, px:0, py:0, pxT:0, pyT:0 };
+               rotMult:0.55, rotMultT:0.55, fog:1.15, fogT:1.15, rt:0, timer:0, after:null, pulse:0, t:0, px:0, py:0, pxT:0, pyT:0 };
   function setPhase(p) {
     PH.name = p; PH.timer = 0; PH.after = null;
-    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.50; }  // Pass5 夜燈：霧中微亮核心，法陣/軌道近不可見
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.after=[2.6, standing]; }  // 加速段撐到工作區展開後才減速
-    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.1; }
-    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=0.85; }  // 工作區：VFX 退 20-35%
-    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.8; }
+    // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
+    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.50; PH.fogT=1.15; }  // 夜燈：霧中微亮核心
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.fogT=0.42; PH.after=[2.2, standing]; }  // 2.2s＝opening-director TIMELINE (peakEnd-ignite)，到期自動減速
+    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.1; PH.fogT=0.90; }
+    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=0.85; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
+    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.8; PH.fogT=0.60; }
     if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.9; PH.after=[2.6, standing]; }
-    if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.after=[0.85, standing]; }
+    if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.fogT=0.90; PH.after=[0.85, standing]; }
   }
   function frame(dt) {
     PH.t += dt; PH.timer += dt;
@@ -661,11 +663,12 @@ export function buildSageVfx(deps) {
     PH.flash  *= Math.exp(-dt*2.6);
     PH.complete += ((PH.name === "complete" ? 1 : 0) - PH.complete) * Math.min(1, dt*1.4);
     PH.rotMult += (PH.rotMultT - PH.rotMult) * Math.min(1, dt*2.0);
+    PH.fog += (PH.fogT - PH.fog) * Math.min(1, dt*0.9);   // 慢速 lerp＝煙被漸漸轉散/聚回的過程感
     PH.rt += dt * PH.rotMult * calmMul;
     PH.pulse *= 0.95;
     PH.px += (PH.pxT - PH.px) * Math.min(1, dt * 3);
     PH.py += (PH.pyT - PH.py) * Math.min(1, dt * 3);
-    U.uPx.value = PH.px; U.uPy.value = PH.py;
+    U.uPx.value = PH.px; U.uPy.value = PH.py; U.uFog.value = PH.fog;
     U.uTime.value = PH.t; U.uRT.value = PH.rt;
     U.uPower.value = PH.power; U.uIgnite.value = PH.ignite; U.uFail.value = PH.fail;
     U.uFlash.value = PH.flash; U.uComplete.value = PH.complete; U.uPulse.value = PH.pulse;

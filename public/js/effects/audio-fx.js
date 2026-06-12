@@ -74,22 +74,24 @@ export const sfx = {
                hiss(0.25, 0.10, 3200, 0.05); },
   error()  { tone(BASE, 0.16, { type: "sawtooth", vol: 0.30 });
              tone(BASE * 0.944, 0.34, { type: "sawtooth", vol: 0.30, delay: 0.14 }); }, // 小二度下行（警示）
-  /** SAGE OPENING 點火編組（電影級三段：riser 1.6s → impact+whoosh → shimmer；同 C 族） */
-  ignite() {
+  /** ── SAGE OPENING 音效原子（時序由 opening-director TIMELINE 排程；同 C 族材質）── */
+  riser(dur = 2.2) {                                                      // 升壓：C2→C4 滑升 + 低高雙帶噪聲
+    tone(BASE * 0.25, dur, { type: "sawtooth", vol: 0.22, sweep: 4 });
+    hiss(dur, 0.14, 500); hiss(dur * 0.85, 0.10, 1600, dur * 0.12);
+  },
+  impact() {                                                              // 落點：sub 體重 + transient + 中音；master duck 讓低頻有空間
     if (!ctx || muted) return;
-    tone(BASE * 0.25, 1.6, { type: "sawtooth", vol: 0.22, sweep: 4 });   // riser：C2→C4 滑升
-    hiss(1.6, 0.14, 500); hiss(1.4, 0.10, 1600, 0.2);                    // riser 噪聲層（低→高雙帶）
-    // impact（t=1.6）：sub 體重 + transient + 中音落點；master duck 讓低頻有空間
-    tone(58, 0.42, { vol: 0.85, sweep: 0.55, delay: 1.6 });
-    hiss(0.05, 0.30, 3000, 1.6);
-    tone(BASE, 0.5, { type: "triangle", vol: 0.50, delay: 1.6 });
-    const t1 = ctx.currentTime + 1.6;
-    master.gain.setValueAtTime(muted ? 0 : 0.16, t1);
-    master.gain.linearRampToValueAtTime(muted ? 0 : 0.10, t1 + 0.03);
-    master.gain.linearRampToValueAtTime(muted ? 0 : 0.16, t1 + 0.18);
-    hiss(0.5, 0.16, 1200, 1.6);                                          // whoosh（工作區展開拍）
-    [4, 6, 8.02].forEach((m, i) =>                                        // shimmer 餘韻（C6/G6/E7 微 detune）
-      tone(BASE * m, 2.2, { vol: 0.18, delay: 1.66 + i * 0.05 }));
+    tone(58, 0.42, { vol: 0.85, sweep: 0.55 });
+    hiss(0.05, 0.30, 3000);
+    tone(BASE, 0.5, { type: "triangle", vol: 0.50 });
+    const t1 = ctx.currentTime;
+    master.gain.setValueAtTime(0.16, t1);
+    master.gain.linearRampToValueAtTime(0.10, t1 + 0.03);
+    master.gain.linearRampToValueAtTime(0.16, t1 + 0.18);
+  },
+  whoosh() { hiss(0.5, 0.16, 1200); },                                    // 展開拍速度感
+  shimmer() {                                                             // 餘韻：C6/G6/E7 微 detune 長尾
+    [4, 6, 8.02].forEach((m, i) => tone(BASE * m, 2.2, { vol: 0.18, delay: 0.06 + i * 0.05 }));
   },
   setMuted(m) { muted = m;
     try { localStorage.setItem("flg-sfx", m ? "off" : "on"); } catch {}
@@ -111,7 +113,7 @@ export function initAudioFx() {
   }, { passive: true });
   // 站內事件
   window.addEventListener("worldforge:pulse", () => sfx.pulse());
-  window.addEventListener("worldforge:ignite", () => sfx.ignite());
+  // worldforge:ignite 的音效改由 opening-director 直接呼叫原子（riser/impact/whoosh/shimmer）——時序單一真源
   window.addEventListener("worldforge:analysis-start", () => sfx.analyzeStart());
   window.addEventListener("worldforge:analysis-complete", () => sfx.complete());
   window.addEventListener("worldforge:auth-changed", (e) => { if (e?.detail?.user) sfx.login(); });
