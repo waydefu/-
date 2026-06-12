@@ -1,5 +1,18 @@
 # S-Level Upgrade Tasks
 
+## PASS 6 沉浸升級（2026-06-13c，已部署）
+使用者修訂：①入場「從第一個慢到全部一起變快」②動畫加長（沉浸）③3D/景深不明顯要層次 ④基礎轉速再加（含法陣環、不過快）⑤UI 按鈕/卡片背景超強特效（流體/體積雲）——先查資料。
+- **轉速曲線**：ignition 期 frame 內 `rotMultT = 0.9 + 2.3·ignite²`——第一環慢轉出、環越多越快、全齊衝 3.2。
+- **加長**：I lerp dt×1.5→×1.05（出齊 ~3.6s）；TIMELINE reveal 3800、vfx after 4.4s（t≈4.7 減速）、riser 3.5s、cleanup 9000。
+- **景深**：視差 0.085/0.040→0.125/0.065；orbitSys 後景 fogOc 0.20→0.13、soft 2.2→3.0（更糊）；五型徑向亮度梯度（C 0.80 最亮→D 0.32 最暗）；外圈殘符 0.45→0.36。
+- **基礎轉速 +17%**：idle 0.82／ambient 1.35／operational 1.58／computing 2.45（全環吃 RT=含法陣環，一處改定）。
+- **UI 流體/體積雲**（查資料：@property+conic 流光、雲=明暗層疊、效能走 opacity/bg-position）：
+  · fui-frame 改 conic-gradient(from --fui-ang) 金→暗金→青綠環流；**流光動畫只掛焦點卡**（auth-card/history/modal）——conic 角度動畫=每幀整卡 repaint，5 卡全動在低階 GPU 拖（preview 截圖卡死即此因），工作區面板靜態金邊。Firefox 無 @property → 靜態降級。
+  · fui-mist ×2/卡（5 卡共 10）：多斑 radial-gradient 雲層、僅 opacity 呼吸 13s/17s 錯相（compositor 安全）。
+  · 主鈕流光掃過：btn-primary 7s／analyze-star 9s+1.5s delay，高光帶 bg-position 動畫，hover 行為不變。
+- **事故記錄**：PowerShell Get-Content 不帶 -Encoding 把 UTF-8 index.html 誤讀 Big5 再寫回 → 中文全亂碼；git checkout 還原後改用 Edit 工具 replace_all。鐵律：中文檔案禁用 PowerShell 文字管線，必帶 -Encoding UTF8 且僅讀。
+- 驗證：npm test 26/26；preview computed（fuiFlow 僅焦點卡/mist 呼吸/btnSheen/panel frame 靜態）；沙箱斷網 CDN 堵死完整流程，視覺待線上實機驗收；deploy+smoke+線上抽驗。
+
 ## PASS 5c 環出場修訂（2026-06-13b，已部署）
 使用者修訂：①環不是突然出現——一個一個**邊轉邊出**、出場帶 **360° 自轉** ②基礎轉速提高 ③出場更高速 ④順序改回「工作區 saoIn 展開**再**減速」。
 - **SPIN 宏**（BG_FRAG）：`#define SPIN(g) ((1-g)²·TAU)`——出場進度 g 帶旋轉偏移，初期整圈快轉、ease-out 落入正常轉速；只加在有角向特徵的層（14 處：五型軌道 aOff、主法陣盤、齒輪環、資料流×2、核心短符、主咒文、外圈殘符、封印刻度）。

@@ -114,9 +114,9 @@ vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float no
   float th=atan(q.y,q.x);
   float depth=sin(th)*sinT;                                  // 沿軌深度（+後 −前）
   float front=smoothstep(0.50,-0.50,depth);                  // 1=前景 0=後景
-  float fogOc=mix(0.20,1.0,front);                           // 後半被霧吃更深（遮擋=立體）
+  float fogOc=mix(0.13,1.0,front);                           // 後半被霧吃更深（Pass6：遮擋對比再拉=景深）
   float w=0.030*(0.55+0.75*front);                           // 主帶加粗；前寬後窄
-  float soft=mix(2.2,0.16,front);                            // 前銳後糊（焦外感）
+  float soft=mix(3.0,0.16,front);                            // 前銳後糊（Pass6 後景更糊=焦外感）
   float d=r-R;
   float band=smoothstep(w*soft+w,w*0.18,abs(d))*(0.22+0.78*smoothstep(-w,w,d)); // 主帶：外緣亮內側暗（對比加大）
   float lane=0.75+0.25*step(0.5,fract((th+aOff)*R*3.5));     // 帶內車道紋（沿軌分節）
@@ -155,9 +155,9 @@ void main(){
   vec2 uv=(gl_FragCoord.xy*2.0-uRes)/uRes.y;
   float t=uTime,RT=uRT,P=uPower,I=uIgnite,F=uFail,FL=uFlash,C=uComplete,pulse=uPulse;
   float rad=length(uv); float ang=atan(uv.y,uv.x+1e-6);
-  vec2 po=vec2(uPx,uPy);                 // 滑鼠視差：遠景動最多、中景小、核心不動
-  vec2 uvF=uv+po*0.085;                  // 遠景（霧/殘影/光斑/遠軌道）
-  vec2 uvP=uv+po*0.040;                  // 軌道層
+  vec2 po=vec2(uPx,uPy);                 // 滑鼠視差（Pass6 加大：層差=景深）：遠景動最多、中景小、核心不動
+  vec2 uvF=uv+po*0.125;                  // 遠景（霧/殘影/光斑/遠軌道）
+  vec2 uvP=uv+po*0.065;                  // 軌道層
   vec3 gold=vec3(1.0,0.78,0.38),amber=vec3(1.0,0.62,0.22),plat=vec3(1.0,0.97,0.90),
        teal=vec3(0.30,0.82,0.74),emberR=vec3(1.0,0.30,0.12);
   // 階段門（點火 內→外）
@@ -274,11 +274,11 @@ void main(){
   { float pAmp=mix(0.25,1.0,P);
     float gC=smoothstep(0.10,0.26,I), gA=smoothstep(0.42,0.58,I), gB=smoothstep(0.56,0.72,I),
           gE=smoothstep(0.68,0.84,I), gD=smoothstep(0.80,0.96,I);
-    col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085+SPIN(gC),     3.0, plat,      plat,      0.0, 0.70)*gC*pAmp;  // C 白金封印 14°（第一個出）
+    col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085+SPIN(gC),     3.0, plat,      plat,      0.0, 0.80)*gC*pAmp;  // C 白金封印 14°（第一個出；最近=最亮銳）
     col+=orbitSys(uvP,1.08, 0.927, 0.375, 0.35,  RT*0.060+SPIN(gA),     5.0, gold,      plat,      0.0, 0.85)*gA*pAmp;  // A 主黃金 22°
-    col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030-SPIN(gB),     4.0, teal*0.80, teal,      0.0, 0.55)*gB*pAmp;  // B 青綠索引 -30°
-    col+=orbitSys(uvP,1.16, 0.707,-0.707, 4.10, -RT*0.075-SPIN(gE),     6.0, amber,     gold,      1.0, 0.75)*gE*pAmp;  // E 斷裂資料 -45°
-    col+=orbitSys(uvF,1.40, 0.743, 0.669, 0.95,  RT*0.022+SPIN(gD)*0.6, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*gD*pAmp;  // D 暗金遠景 42°（最後、半圈沉重感）
+    col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030-SPIN(gB),     4.0, teal*0.80, teal,      0.0, 0.52)*gB*pAmp;  // B 青綠索引 -30°
+    col+=orbitSys(uvP,1.16, 0.707,-0.707, 4.10, -RT*0.075-SPIN(gE),     6.0, amber,     gold,      1.0, 0.70)*gE*pAmp;  // E 斷裂資料 -45°
+    col+=orbitSys(uvF,1.40, 0.743, 0.669, 0.95,  RT*0.022+SPIN(gD)*0.6, 4.0, gold*0.55, amber*0.5, 0.0, 0.32)*gD*pAmp;  // D 暗金遠景 42°（最遠=最暗，徑向景深）
   }
 
   // ═ 四 中圈主法陣（古代魔法機械盤，16 小層）
@@ -359,7 +359,7 @@ void main(){
         vec2 g=vec2((fract(cf)-0.5)*(TAU*1.30/130.0), rr-(1.25+0.10*h11(cell+9.0)))/0.020;
         if(abs(g.y)<1.5)
           col+=mix(gold,teal,0.25)*glow(glyphFam(g,cell*2.7+11.0,floor(h11(cell+4.0)*4.99)),0.11)
-              *(0.3+0.7*fbm2(vec2(a2*2.0,RT*0.05)))*smoothstep(0.55,0.85,I)*0.45*mix(0.4,1.0,P); } } }
+              *(0.3+0.7*fbm2(vec2(a2*2.0,RT*0.05)))*smoothstep(0.55,0.85,I)*0.36*mix(0.4,1.0,P); } } }  // Pass6 外圈壓暗=徑向景深
   for(int i=0;i<4;i++){ float ai=1.5708*float(i)+RT*0.062;                 // 節點符（鎖扣族 亮）
     vec2 c=vec2(cos(ai),sin(ai))*0.46; vec2 g=(uv-c)/0.020;
     if(dot(g,g)<4.0) col+=plat*glow(glyphFam(g,float(i)*7.7+3.0,4.0),0.10)*1.2*smoothstep(0.30,0.50,I)*mix(0.4,1.0,P); }
@@ -650,11 +650,11 @@ export function buildSageVfx(deps) {
   function setPhase(p) {
     PH.name = p; PH.timer = 0; PH.after = null;
     // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
-    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.70; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（基礎轉速 Pass5c 全面提高）
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=3.2; PH.flash=1; PH.fogT=0.42; PH.after=[3.4, standing]; }  // 高速 360 出場；3.4s＝撐過工作區展開（reveal 2.8）後才減速
-    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.90; }
-    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.15; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
-    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.1; PH.fogT=0.60; }
+    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.82; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（Pass6 基礎轉速再 +17%，含法陣環——全環吃 RT）
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[4.4, standing]; }  // 轉速由 frame 內曲線隨出場進度爬升 0.9→3.2；4.4s＝撐過 reveal(3.8) 後才減速
+    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.58; PH.fogT=0.90; }
+    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
+    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; }
     if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.9; PH.after=[2.6, standing]; }
     if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.fogT=0.90; PH.after=[0.85, standing]; }
   }
@@ -662,7 +662,8 @@ export function buildSageVfx(deps) {
     PH.t += dt; PH.timer += dt;
     if (PH.after && PH.timer >= PH.after[0]) { const nx = PH.after[1]; PH.after = null; setPhase(nx); }
     PH.power  += (PH.powerT  - PH.power)  * Math.min(1, dt*4.0);
-    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*1.5);   // Pass5c 放慢：環逐一出場全程 ~2.6s（配 SPIN 錯峰）
+    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*1.05);  // Pass6 再加長：環逐一出場全程 ~3.6s（沉浸感）
+    if (PH.name === "ignition") PH.rotMultT = 0.9 + 2.3*PH.ignite*PH.ignite;  // 轉速綁出場進度：第一環慢轉出 → 環越多整體越快 → 全齊衝 3.2
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
     PH.complete += ((PH.name === "complete" ? 1 : 0) - PH.complete) * Math.min(1, dt*1.4);
