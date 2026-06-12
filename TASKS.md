@@ -1,5 +1,13 @@
 # S-Level Upgrade Tasks
 
+## PASS 5c 環出場修訂（2026-06-13b，已部署）
+使用者修訂：①環不是突然出現——一個一個**邊轉邊出**、出場帶 **360° 自轉** ②基礎轉速提高 ③出場更高速 ④順序改回「工作區 saoIn 展開**再**減速」。
+- **SPIN 宏**（BG_FRAG）：`#define SPIN(g) ((1-g)²·TAU)`——出場進度 g 帶旋轉偏移，初期整圈快轉、ease-out 落入正常轉速；只加在有角向特徵的層（14 處：五型軌道 aOff、主法陣盤、齒輪環、資料流×2、核心短符、主咒文、外圈殘符、封印刻度）。
+- **逐環錯峰**：I lerp dt×3→×1.5（出齊 ~2.6s）；五型軌道獨立 gate：C(0.10-0.26)→A(0.42-0.58)→B(0.56-0.72)→E(0.68-0.84)→D(0.80-0.96)；符文/法陣沿用原序列 gate（自然在中段）。
+- **轉速**：idle 0.50→0.70、ambient 0.85→1.15、operational 1.1→1.35、computing 1.8→2.1、ignition 2.0→**3.2**。
+- **時序**：TIMELINE reveal 2800（環出齊、仍高速 → 工作區展開+impact/whoosh/shimmer 同拍）；vfx ignition after 3.4s（t≈3.7 展開後 0.9s 才減速回 ambient）；riser 2.5s 鋪到展開拍。
+- 驗證：npm test 26/26；沙箱斷網 CDN 不到 → 改用 raw WebGL 直接編譯 BG_FRAG 驗 SPIN 語法（compiled true、零警告、14 處）；deploy+smoke+線上抽驗。視覺手感待線上實機驗收。
+
 ## PASS 5b 編舞修訂（2026-06-13，已部署）
 使用者對比修訂：①Pass5 漏做「環快速轉動**把煙轉散**」②工作區展開順序錯——必須在「環減速完開始正常運作」**之後**（Pass5 在加速中段 t=1.9 就展開）。③要求模組化分區利於修改維護。
 - **模組化**：`js/effects/opening-director.js` 新導演模組＝時序唯一真源（TIMELINE 表：cardOut 0／ignite 300／peakEnd 2500／reveal 3300／cleanup 8000，改時序只動這張表）；main.js 編舞分支縮成 `playOpening({ onReveal: enterWorkspace })`。

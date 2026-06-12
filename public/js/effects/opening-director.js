@@ -4,18 +4,18 @@
 // 音效原子（riser/impact/whoosh/shimmer）與 DOM 拍點由本檔排程。
 import { sfx } from "./audio-fx.js";
 
-/** 編舞時間軸（ms，自登入成功起算）。
+/** 編舞時間軸（ms，自登入成功起算）。Pass5c 順序：環逐一 360° 邊轉邊出 → 高速旋轉把煙轉散
+ *  → 工作區 saoIn 展開（高速殘餘中）→ 之後才減速正常運作。
  *  cardOut(0)──卡片 saoOut 收合
- *  ignite(300)──核心增亮→軌道內→外分次點亮→轉速衝 2.0；霧開始被轉散（vfx ignition 相位，uFog 1.15→0.42）
- *  peakEnd(2500)──巔峰收束：ignition 到期自動回 ambient=環減速、霧已散（= ignite + IGNITION_HOLD）
- *  reveal(3300)──環減速近穩 → 工作區 saoIn 展開（場面安定才進人）
+ *  ignite(300)──點火：環逐一錯峰出場（各帶 360° 出場自轉，出齊 ~2.6s）；轉速衝 3.2；霧被轉散（uFog 1.15→0.42）
+ *  reveal(2800)──環已出齊、仍高速 → 工作區 saoIn 展開；音效 impact+whoosh+shimmer 落這拍
+ *  （減速不由 director 排：sage-vfx ignition after[3.4s] 自動回 ambient ⇒ t≈3.7 展開後 0.9s 減速）
  *  cleanup(8000)──just-linked 移除保底
- *  ※ IGNITION_HOLD 與 sage-vfx ignition after 秒數必須一致（(peakEnd-ignite)/1000）。 */
+ *  ※ sage-vfx ignition after 秒數＝(減速時點-ignite)/1000，調慢/快兩處要一起動。 */
 export const TIMELINE = {
   cardOut: 0,
   ignite: 300,
-  peakEnd: 2500,
-  reveal: 3300,
+  reveal: 2800,
   cleanup: 8000,
 };
 
@@ -31,20 +31,17 @@ export function playOpening({ onReveal } = {}) {
     document.querySelector(".auth-card")?.classList.add("is-closing");
   });
 
-  // Act2 點火（core 監聽切 ignition；音效 riser 鋪到巔峰收束拍）
+  // Act2 點火（core 監聽切 ignition；音效 riser 鋪到展開拍）
   at(TIMELINE.ignite, () => {
     window.dispatchEvent(new CustomEvent("worldforge:ignite"));
-    sfx.riser((TIMELINE.peakEnd - TIMELINE.ignite) / 1000);
+    sfx.riser((TIMELINE.reveal - TIMELINE.ignite) / 1000);
   });
 
-  // Act3 巔峰收束：環開始減速（vfx ignition after 自動切 ambient）；impact 落點+duck
-  at(TIMELINE.peakEnd, () => sfx.impact());
-
-  // Act4 工作區展開（環已近穩）；whoosh+shimmer 餘韻
+  // Act3 工作區展開（環已出齊、高速殘餘中）；impact 落點+duck+whoosh+shimmer 同拍
   at(TIMELINE.reveal, () => {
     document.body.classList.add("just-linked", "is-authed");
     document.querySelector(".auth-card")?.classList.remove("is-closing");
-    sfx.whoosh(); sfx.shimmer();
+    sfx.impact(); sfx.whoosh(); sfx.shimmer();
     onReveal?.();
   });
 

@@ -16,6 +16,8 @@ precision highp float;
 uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,uPy,uFog;
 uniform vec2 uRes;
 #define TAU 6.28318530718
+// 出場自轉（Pass5c）：g=出場進度 0→1；初期多轉一整圈、ease-out 落入正常轉速＝「邊轉邊出 360°」
+#define SPIN(g) ((1.0-(g))*(1.0-(g))*TAU)
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
 float h11(float n){ return fract(sin(n)*43758.5453); }
 float hash21(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
@@ -252,7 +254,7 @@ void main(){
   if(FL>0.01) col+=plat*glow(abs(rad-(1.0-FL)*1.55),0.012)*FL*0.45;       // 點火折射波外擴
 
   // ═ 三 資料軌道（最快層）
-  { vec2 pr=rot(-RT*0.38)*uv; float rr=length(pr);                        // 資料流（×2.4 加速＝演算主動態）
+  { vec2 pr=rot(-RT*0.38-SPIN(outerGate))*uv; float rr=length(pr);        // 資料流（×2.4 加速＝演算主動態；出場整圈）
     if(rr>0.98&&rr<1.18){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*110.0; float cell=floor(cf); float fx=abs(fract(cf)-0.5);
@@ -260,7 +262,7 @@ void main(){
       float bar=on*step(fx,0.10+0.32*h11(cell+3.3))*smoothstep(0.013,0.004,abs(rr-(1.04+0.10*h11(cell+5.5))));
       vec3 dc=mix(gold,teal,step(0.55,h11(cell+7.0))); dc=mix(dc,plat,step(0.86,h11(cell+9.0)));
       col+=dc*bar*(0.25+0.45*P)*(0.6+0.4*sin(t*3.0+cell*2.0))*outerGate; } }
-  { vec2 pr=rot(RT*0.26)*uv; float rr=length(pr);
+  { vec2 pr=rot(RT*0.26+SPIN(outerGate)*0.8)*uv; float rr=length(pr);
     if(rr>1.00&&rr<1.16){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*64.0; float cell=floor(cf);
@@ -268,18 +270,20 @@ void main(){
         vec2 g=rot(0.5*(h11(cell+2.0)-0.5)+0.35)*vec2((fract(cf)-0.5)*(TAU*1.08/64.0), rr-(1.04+0.10*h11(cell+1.0)));
         col+=mix(teal,gold,h11(cell+4.0))*glow(sdSeg(g,vec2(-0.030,0.0),vec2(0.030,0.0)),0.0035)*0.45*P*outerGate; } } }
 
-  // ═ 3D 軌道系統（五型；不同傾角/深度/速度/方向；穿霧有遮擋；視差層 uvP/uvF）
-  { float orbGate=smoothstep(0.45,0.75,I)*mix(0.25,1.0,P);
-    col+=orbitSys(uvP,1.08, 0.927, 0.375, 0.35,  RT*0.060, 5.0, gold,      plat,      0.0, 0.85)*orbGate;  // A 主黃金 22° 中快
-    col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030, 4.0, teal*0.80, teal,      0.0, 0.55)*orbGate;  // B 青綠索引 -30° 慢
-    col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085, 3.0, plat,      plat,      0.0, 0.70)*sealGate; // C 白金封印 14° 精準
-    col+=orbitSys(uvF,1.40, 0.743, 0.669, 0.95,  RT*0.022, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*orbGate;  // D 暗金遠景 42° 慢（霧遮）
-    col+=orbitSys(uvP,1.16, 0.707,-0.707, 4.10, -RT*0.075, 6.0, amber,     gold,      1.0, 0.75)*orbGate;  // E 斷裂資料 -45° 快 分群
+  // ═ 3D 軌道系統（五型；Pass5c：逐一錯峰出場、各自帶 360° 出場自轉、出齊 ~2.6s）
+  { float pAmp=mix(0.25,1.0,P);
+    float gC=smoothstep(0.10,0.26,I), gA=smoothstep(0.42,0.58,I), gB=smoothstep(0.56,0.72,I),
+          gE=smoothstep(0.68,0.84,I), gD=smoothstep(0.80,0.96,I);
+    col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085+SPIN(gC),     3.0, plat,      plat,      0.0, 0.70)*gC*pAmp;  // C 白金封印 14°（第一個出）
+    col+=orbitSys(uvP,1.08, 0.927, 0.375, 0.35,  RT*0.060+SPIN(gA),     5.0, gold,      plat,      0.0, 0.85)*gA*pAmp;  // A 主黃金 22°
+    col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030-SPIN(gB),     4.0, teal*0.80, teal,      0.0, 0.55)*gB*pAmp;  // B 青綠索引 -30°
+    col+=orbitSys(uvP,1.16, 0.707,-0.707, 4.10, -RT*0.075-SPIN(gE),     6.0, amber,     gold,      1.0, 0.75)*gE*pAmp;  // E 斷裂資料 -45°
+    col+=orbitSys(uvF,1.40, 0.743, 0.669, 0.95,  RT*0.022+SPIN(gD)*0.6, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*gD*pAmp;  // D 暗金遠景 42°（最後、半圈沉重感）
   }
 
   // ═ 四 中圈主法陣（古代魔法機械盤，16 小層）
   col*=1.0-0.16*smoothstep(0.058,0.024,abs(rad-0.76))*midGate;           // 暗槽環（環距拉大）
-  { vec2 pr=rot(RT*0.0145)*uv; float rr=length(pr); float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
+  { vec2 pr=rot(RT*0.0145+SPIN(midGate)*0.5)*uv; float rr=length(pr); float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;  // 主盤出場半圈自轉（沉重感）
     float L=0.0;
     L+=glow(abs(rr-0.70),0.0017)*0.85;                                    // 第一主圓（0.64-0.86 區）
     L+=glow(abs(rr-0.82),0.0015)*0.55*step(0.18,fbm2(vec2(a2*2.5,4.4)));  // 第二主圓（微斷）
@@ -298,7 +302,7 @@ void main(){
     float act=floor(mod(t*0.8,NS));                                        // 模組底光（演算輪播加速）
     float daA=mod(a2-act/NS*TAU+TAU,TAU);
     if(daA<TAU/NS) col+=gold*0.020*smoothstep(0.075,0.014,abs(rr-0.76))*computing*midGate; }
-  { vec2 pr=rot(-RT*0.022)*uv; float rr=length(pr);                        // 齒輪細環（可缺齒）
+  { vec2 pr=rot(-RT*0.022-SPIN(midGate)*0.7)*uv; float rr=length(pr);      // 齒輪細環（可缺齒；出場反向自轉）
     if(abs(rr-0.645)<0.010){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*180.0; float cell=floor(cf);
@@ -343,11 +347,11 @@ void main(){
   // ═ 五 符文語法系統（內→外點亮 + 掃描 + 完成收束）
   float scan=1.0+1.6*pow(0.5+0.5*cos(ang-RT*0.9),24.0)*computing;
   float blinkA=mix(0.62+0.38*sin(t*1.3+ang*5.0),0.95,C);
-  { vec2 pr=rot(RT*0.062)*uv;                                              // 核心短符（線族 白金；×2 讀取感）
-    col+=plat*runeRingT(pr,0.46,64.0,7.0,0.024,0.0,F)*smoothstep(0.15,0.35,I)*scan*blinkA*0.85*mix(0.4,1.0,P); }
-  { vec2 pr=rot(-RT*0.022)*uv; pr.y/=(0.96+0.04*sin(RT*0.15));             // 主咒文環（混族 琥珀）
-    col+=mix(gold,amber,0.4)*runeRingT(pr,0.90,72.0,23.0,0.040,-1.0,F)*smoothstep(0.40,0.65,I)*scan*blinkA*0.80*mix(0.4,1.0,P); }
-  { vec2 pr=rot(-RT*0.016)*uv; float rr=length(pr);                        // 外圈殘符
+  { float gR=smoothstep(0.15,0.35,I); vec2 pr=rot(RT*0.062+SPIN(gR))*uv;   // 核心短符（線族 白金；出場整圈）
+    col+=plat*runeRingT(pr,0.46,64.0,7.0,0.024,0.0,F)*gR*scan*blinkA*0.85*mix(0.4,1.0,P); }
+  { float gR=smoothstep(0.40,0.65,I); vec2 pr=rot(-RT*0.022-SPIN(gR)*0.8)*uv; pr.y/=(0.96+0.04*sin(RT*0.15));  // 主咒文環（混族 琥珀）
+    col+=mix(gold,amber,0.4)*runeRingT(pr,0.90,72.0,23.0,0.040,-1.0,F)*gR*scan*blinkA*0.80*mix(0.4,1.0,P); }
+  { vec2 pr=rot(-RT*0.016-SPIN(smoothstep(0.55,0.85,I))*0.6)*uv; float rr=length(pr);  // 外圈殘符
     if(rr>1.22&&rr<1.38){
       float a2=atan(pr.y,pr.x); if(a2<0.0)a2+=TAU;
       float cf=a2/TAU*130.0; float cell=floor(cf);
@@ -367,7 +371,7 @@ void main(){
   col+=plat*glow(abs(rad-0.242),0.0050)*0.22*sealGate;                     // 外側淡光（厚度）
   col+=gold*glow(abs(rad-0.256),0.012)*0.14*sealGate;                      // 封印外暈
   col+=vec3(1.0,0.93,0.80)*smoothstep(0.235,0.10,rad)*0.08*(0.6+0.4*cp)*sealGate; // 封印內暈
-  { vec2 pr=rot(RT*0.07)*uv;                                               // 精密數值刻度（×1.4）
+  { vec2 pr=rot(RT*0.07+SPIN(sealGate)*0.8)*uv;                            // 精密數值刻度（×1.4；出場自轉）
     col+=plat*tickRing(pr,0.274,120.0,0.0020,0.0090,5.5)*(0.40+0.30*cp)*sealGate; }
   for(int i=0;i<4;i++){ float fi=float(i);                                 // 四向鎖定節點（依序）
     float on=smoothstep(0.28+0.13*fi,0.37+0.13*fi,I);
@@ -646,11 +650,11 @@ export function buildSageVfx(deps) {
   function setPhase(p) {
     PH.name = p; PH.timer = 0; PH.after = null;
     // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
-    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.50; PH.fogT=1.15; }  // 夜燈：霧中微亮核心
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.0; PH.flash=1; PH.fogT=0.42; PH.after=[2.2, standing]; }  // 2.2s＝opening-director TIMELINE (peakEnd-ignite)，到期自動減速
-    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.1; PH.fogT=0.90; }
-    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=0.85; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
-    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=1.8; PH.fogT=0.60; }
+    if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.70; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（基礎轉速 Pass5c 全面提高）
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=3.2; PH.flash=1; PH.fogT=0.42; PH.after=[3.4, standing]; }  // 高速 360 出場；3.4s＝撐過工作區展開（reveal 2.8）後才減速
+    if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.90; }
+    if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.15; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
+    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.1; PH.fogT=0.60; }
     if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.9; PH.after=[2.6, standing]; }
     if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.fogT=0.90; PH.after=[0.85, standing]; }
   }
@@ -658,7 +662,7 @@ export function buildSageVfx(deps) {
     PH.t += dt; PH.timer += dt;
     if (PH.after && PH.timer >= PH.after[0]) { const nx = PH.after[1]; PH.after = null; setPhase(nx); }
     PH.power  += (PH.powerT  - PH.power)  * Math.min(1, dt*4.0);
-    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*3.0);
+    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*1.5);   // Pass5c 放慢：環逐一出場全程 ~2.6s（配 SPIN 錯峰）
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
     PH.complete += ((PH.name === "complete" ? 1 : 0) - PH.complete) * Math.min(1, dt*1.4);

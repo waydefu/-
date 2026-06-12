@@ -11,19 +11,22 @@
 | 可中斷性 | 全程不鎖輸入；reduced-motion 只縮短不取消 |
 | 效能 | DOM 只動 transform/opacity；VFX 只調 uniform（零新 pass、零新材質） |
 
-## 二、時序表（Pass5b 修訂；唯一真源＝js/effects/opening-director.js 的 TIMELINE 表）
-使用者修訂重點：①高速旋轉要**把煙轉散**（uFog 相位：夜燈 1.15→點火 0.42→ambient 0.72）
-②工作區展開必須在**環減速之後**（場面安定才進人，不與高速旋轉搶焦點）。
+## 二、時序表（Pass5c 修訂；唯一真源＝js/effects/opening-director.js 的 TIMELINE 表）
+Pass5c 使用者修訂：①環不是突然出現——**一個一個邊轉邊出**，出場帶 **360° 自轉**（SPIN 宏：(1-g)²·2π，
+ease-out 落入正常轉速）②基礎轉速全面提高（idle 0.70/ambient 1.15/operational 1.35/computing 2.1）
+③出場更高速（ignition rotMult 3.2）④順序＝**工作區 saoIn 展開之後才減速**。
 ```
 t=0.00  auth-changed(user)。音效：login 琶音（既有）。登入卡 saoOut 收合 0.34s。
-t=0.30  worldforge:ignite → ignition：核心增亮 → 軌道內→外分次點亮 → rotMult 衝 2.0
-        霧開始被轉散（uFog→0.42 慢 lerp）。音效：riser 2.2s（鋪到收束拍）。
-t=2.50  巔峰收束：ignition after[2.2s] 到期 → ambient（環減速 2.0→0.85、煙已散）。音效：impact+duck。
-t=3.30  環已近穩 → just-linked+is-authed → 工作區 saoIn 0.65s 展開。音效：whoosh+shimmer。
-t=3.95  編舞完成，正常運作（ambient fog 0.72）。
+t=0.30  worldforge:ignite → ignition：核心增亮、轉速衝 3.2、霧被轉散（uFog→0.42）。
+        環逐一錯峰出場（I lerp dt×1.5、各環獨立 gate）：封印環→內符文→主法陣→主咒文→
+        資料流→軌道 C→A→B→E→D→殘符/結界，每環出場自帶 360° 自轉，出齊 ~2.6s。
+        音效：riser 2.5s（鋪到展開拍）。
+t=2.80  環已出齊、仍高速 → just-linked+is-authed → 工作區 saoIn 0.65s 展開。
+        音效：impact+duck+whoosh+shimmer（落點全在這拍）。
+t=3.70  ignition after[3.4s] 到期 → ambient：環減速 3.2→1.15、正常運作（fog 0.72）。
 保底：    just-linked 8s 移除；is-authed 直接切換路徑仍存在（7s CSS 保底不變）。
-模組化：  時序改 TIMELINE 表；音效原子 riser/impact/whoosh/shimmer 由 director 排拍；
-          視覺相位由 worldforge:ignite 驅動 great-sage-core；霧濃度=sage-vfx uFog 相位值。
+模組化：  時序改 TIMELINE 表（減速時點＝sage-vfx ignition after，兩處同調）；
+          音效原子 riser/impact/whoosh/shimmer 由 director 排拍；霧濃度/轉速＝sage-vfx 相位值。
 ```
 進站（未登入）：bootLoader 結束 → **idle 夜燈相位**（power 0.16 / ignite 0.08：霧中微亮核心，軌道法陣近不可見）→ 登入卡 sao-pop 彈出。
 已登入 reload：直接 ambient（不重播點火）。登出：回 idle 夜燈。
