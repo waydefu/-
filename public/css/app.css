@@ -273,10 +273,35 @@ button { font: inherit; color: inherit; }
   81% { box-shadow: 15px 0 0 var(--key), 30px 0 0 var(--key), 45px 0 0 var(--key), 60px 0 0 var(--key), 75px 0 0 var(--key), 90px 0 0 var(--key), 22px 10px 0 var(--key), 37px 12px 0 var(--key), 52px 10px 0 var(--key), 60px 10px 0 var(--key), 68px 10px 0 var(--key), 83px 10px 0 var(--key); }
 }
 
-/* ═══ 面板（玻璃感＝靜態半透明漸層，無 backdrop-filter） ═══ */
+/* ═══ 面板（玻璃感＝靜態半透明漸層，無 backdrop-filter） ═══
+   FUI 切角構材：輪廓由 .fui-frame(金) + .fui-fill(暗) 雙層獨立元素 clip 出，
+   本體不設 background/border（box-shadow 柔光保留——32px 級光暈下形狀差異不可辨）。
+   鐵律：clip 層必須是無子元素/無 pseudo 的獨立 <i>，嚴禁 clip 容器內掛 pseudo。 */
 .panel {
-  position: relative; background: var(--panel-bg); border: var(--panel-border);
-  border-radius: var(--r-lg); box-shadow: var(--sh-md);
+  position: relative; border-radius: var(--r-lg); box-shadow: var(--sh-md);
+}
+.fui-frame, .fui-fill {
+  position: absolute; pointer-events: none; z-index: 0;
+  clip-path: polygon(
+    0 18px, 18px 0,
+    calc(100% - 8px) 0, 100% 8px,
+    100% calc(100% - 18px), calc(100% - 18px) 100%,
+    8px 100%, 0 calc(100% - 8px));
+}
+/* positioned 的 fui 層會蓋掉 static 內容 → 宿主直屬子元素一律抬到 z1 */
+.panel > :not(.fui-frame):not(.fui-fill),
+.auth-card > :not(.fui-frame):not(.fui-fill),
+.modal > :not(.fui-frame):not(.fui-fill) { position: relative; z-index: 1; }
+.fui-frame {
+  inset: 0;
+  background:
+    linear-gradient(135deg, rgba(240,212,136,0.95), rgba(214,166,77,0.45) 26%, rgba(120,90,40,0.35) 50%, rgba(214,166,77,0.5) 74%, rgba(240,212,136,0.9));
+}
+.fui-fill {
+  inset: 1.5px;
+  background:
+    linear-gradient(90deg, transparent calc(50% - 110px), rgba(214,166,77,0.10) 50%, transparent calc(50% + 110px)) 0 0 / 100% 1px no-repeat,
+    linear-gradient(160deg, rgba(26, 19, 10, 0.93), rgba(13, 10, 6, 0.95) 46%, rgba(20, 14, 8, 0.92));
 }
 .panel-head { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5); border-bottom: var(--panel-border); }
 .panel-eyebrow { font-family: var(--font-mono); font-size: var(--fs-nano); letter-spacing: 0.22em; color: var(--c-cyan); }
@@ -341,13 +366,7 @@ button { font: inherit; color: inherit; }
   .actions-row .analyze-star.btn-lg { flex: 1 0 100%; padding: 0 var(--s-4); }
   .clear-del { order: 2; }
   .review-controls { order: 3; margin-left: auto; }
-  .review-controls { gap: 10px; align-items: flex-end; }
-  .spark-switch { font-size: 17px; }
-  /* MODEL CORE SLOT 手機：面板向上開、靠右、不被裁切 */
-  .ms-face { padding: 0 10px; }
-  .ms-eyebrow { font-size: 8px; }
-  .ms-current { font-size: 11.5px; }
-  .ms-panel { right: 0; min-width: 230px; }
+  /* 尺寸/字級類手機覆寫統一放檔案最末「MOBILE OVERRIDES」區塊（source order 才蓋得過後段桌面規則） */
 }
 
 /* ═══ 結果區 ═══ */
@@ -366,7 +385,7 @@ button { font: inherit; color: inherit; }
 
 /* ═══ 登入畫面 ═══ */
 .auth-screen { position: relative; z-index: var(--z-shell); min-height: 100dvh; display: grid; place-items: center; padding: var(--s-5); }
-.auth-card { width: min(480px, 100%); background: linear-gradient(180deg, rgba(10, 7, 3, 0.72), rgba(4, 3, 1, 0.82)); border: var(--panel-border); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }
+.auth-card { width: min(480px, 100%); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }  /* 輪廓/填充交給 .fui-frame/.fui-fill 切角層 */
 .auth-eyebrow { font-family: var(--font-mono); font-size: var(--fs-caption); letter-spacing: 0.28em; color: var(--c-cyan); }
 .auth-title { font-family: var(--font-display); font-size: var(--fs-h1); color: var(--c-gold-bright); margin: var(--s-3) 0; line-height: 1.15; }
 .auth-copy { color: var(--c-text-soft); margin-bottom: var(--s-6); }
@@ -412,7 +431,7 @@ button { font: inherit; color: inherit; }
   /* SAO 式開合的靜止態＝收成水平細線（scaleX0 scaleY0.02）；動畫負責展開/收合 */
   transform: translate(-50%, -50%) scaleX(0) scaleY(0.02); transform-origin: center center;
   opacity: 0; pointer-events: none;
-  background: var(--panel-bg-strong); border: var(--panel-border); border-radius: var(--r-lg);
+  border-radius: var(--r-lg);  /* 填充/輪廓交給 fui 切角層 */
   box-shadow: var(--sh-lg); padding: var(--s-6); text-align: center;
 }
 .modal.is-open { pointer-events: auto; animation: modalIn 0.42s var(--ease-out) forwards; }
@@ -422,10 +441,13 @@ button { font: inherit; color: inherit; }
 .modal-actions { display: flex; gap: var(--s-3); }
 .modal-actions .btn { flex: 1; }
 
-/* SAO 彈窗共用：金色邊光（premium 質感，靜態不閃；登入卡 / 歷史 / 登出彈窗一致） */
+/* SAO 彈窗共用：金色外光暈（邊框由 fui 切角層負責；inset 光移除——透明本體上會穿幫出矩形角） */
 .auth-card, .history-panel, .modal {
-  border: 1px solid rgba(214, 166, 77, 0.32);
-  box-shadow: var(--sh-lg), 0 0 28px rgba(214, 166, 77, 0.16), inset 0 0 20px rgba(255, 230, 166, 0.05);
+  box-shadow: var(--sh-lg), 0 0 28px rgba(214, 166, 77, 0.16);
+}
+/* 彈窗類 fui 填充加深（聚焦暗場上要實，半透明會看見背後內容） */
+.history-panel .fui-fill, .modal .fui-fill {
+  background: linear-gradient(160deg, rgba(24, 18, 10, 0.985), rgba(11, 8, 5, 0.99) 50%, rgba(18, 13, 8, 0.985));
 }
 
 /* ═══ Toast ═══ */
@@ -550,14 +572,15 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 /* 登入卡＝鑑定核心控制台：四角鎖扣 + 內框刻度 + 柔背光 */
 .auth-card { position: relative; }
 .auth-card::before {
-  content: ""; position: absolute; inset: 9px; pointer-events: none; border-radius: 8px;
+  content: ""; position: absolute; inset: 9px; pointer-events: none; z-index: 1;
   border: 1px dashed rgba(214,178,90,0.18);
+  clip-path: polygon(0 14px, 14px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 6px 100%, 0 calc(100% - 6px));
 }
 .card-lock { position: absolute; width: 16px; height: 16px; pointer-events: none; opacity: 0.85; }
-.card-lock.lk-tl { top: -1px; left: -1px; border-top: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
-.card-lock.lk-tr { top: -1px; right: -1px; border-top: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
-.card-lock.lk-bl { bottom: -1px; left: -1px; border-bottom: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
-.card-lock.lk-br { bottom: -1px; right: -1px; border-bottom: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
+.card-lock.lk-tl { top: 4px; left: 4px; border-top: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
+.card-lock.lk-tr { top: 2px; right: 2px; border-top: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
+.card-lock.lk-bl { bottom: 2px; left: 2px; border-bottom: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
+.card-lock.lk-br { bottom: 4px; right: 4px; border-bottom: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
 .card-lock::after { content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%;
   background: #ffe6a6; box-shadow: 0 0 7px rgba(255,230,166,0.8); }
 .card-lock.lk-tl::after { top: 2px; left: 2px; } .card-lock.lk-tr::after { top: 2px; right: 2px; }
@@ -580,3 +603,30 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 }
 .panel > .panel-head::before { top: 5px; left: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-left: 1px solid rgba(214,166,77,0.6); }
 .panel > .panel-head::after { top: 5px; right: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-right: 1px solid rgba(214,166,77,0.6); }
+
+/* 音效開關（header；金邊圓鈕、靜音畫斜線） */
+.sfx-btn {
+  width: 40px; height: 40px; display: inline-grid; place-items: center; flex: 0 0 auto;
+  border: 1px solid rgba(214, 166, 77, 0.4); border-radius: 50%;
+  background: rgba(20, 14, 7, 0.6); color: #d6a64d; cursor: pointer;
+  transition: border-color 0.25s var(--ease-out), color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
+}
+.sfx-btn svg { width: 19px; height: 19px; }
+.sfx-btn .sfx-slash { opacity: 0; transition: opacity 0.2s var(--ease-out); }
+.sfx-btn.is-muted .sfx-wave { opacity: 0.25; }
+.sfx-btn.is-muted .sfx-slash { opacity: 1; }
+.sfx-btn:hover, .sfx-btn:focus-visible { border-color: #f0d488; color: #ffe6a6; transform: scale(1.06); }
+
+/* ════════ MOBILE OVERRIDES（鐵律：此區塊必須保持在檔案最末端） ════════
+   手機尺寸/字級覆寫集中於此。前段 640px media 區塊裡的同特異度覆寫
+   會被後段桌面元件規則（MODEL SLOT/spark-switch 等）以 source order 蓋掉——
+   Pass3 手機列掉行就是這樣壞的。新增手機覆寫一律加在這裡，勿回填前段。 */
+@media (max-width: 640px) {
+  /* 第二排排直：clear(50) + 模型槽 + 加速鈕必須同列（360px 屏也不可掉行） */
+  .review-controls { gap: 8px; align-items: center; flex-wrap: nowrap; min-width: 0; }
+  .spark-switch { font-size: 13.5px; }                /* track=5em → 67.5px */
+  .ms-face { padding: 0 8px; gap: 7px; }
+  .ms-eyebrow { font-size: 7.5px; letter-spacing: 0.2em; }
+  .ms-current { font-size: 11px; max-width: 96px; overflow: hidden; text-overflow: ellipsis; }
+  .ms-panel { right: 0; min-width: 230px; }           /* 面板向上開、靠右、不被裁切 */
+}

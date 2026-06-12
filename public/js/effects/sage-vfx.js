@@ -108,32 +108,34 @@ float arcFrags(vec2 p,float seed){
 // ── 3D 軌道系統（Pass3 §三：主帶+內外緣線+簇狀刻度+節點星體(暈+微環)+切線拖尾+前後遮擋）──
 vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float nodeN,vec3 cA,vec3 cB,float broken,float amp){
   vec2 q=rot(phi)*p; q.y/=max(abs(cosT),0.18);
-  float r=length(q); if(abs(r-R)>0.22) return vec3(0.0);
+  float r=length(q); if(abs(r-R)>0.26) return vec3(0.0);
   float th=atan(q.y,q.x);
   float depth=sin(th)*sinT;                                  // 沿軌深度（+後 −前）
-  float front=smoothstep(0.45,-0.45,depth);                  // 1=前景 0=後景
-  float fogOc=mix(0.34,1.0,front);                           // 後半被霧吃
-  float w=0.018*(0.75+0.55*front);                           // 前粗後細
+  float front=smoothstep(0.50,-0.50,depth);                  // 1=前景 0=後景
+  float fogOc=mix(0.20,1.0,front);                           // 後半被霧吃更深（遮擋=立體）
+  float w=0.030*(0.55+0.75*front);                           // 主帶加粗；前寬後窄
+  float soft=mix(2.2,0.16,front);                            // 前銳後糊（焦外感）
   float d=r-R;
-  float band=smoothstep(w,w*0.18,abs(d))*(0.30+0.50*smoothstep(-w,w,d));   // 主帶：外緣亮內側暗
-  float eIn=glow(abs(d+w),0.0015);                           // 內緣細金線
-  float eOut=glow(abs(d-w),0.0018);                          // 外緣亮線
+  float band=smoothstep(w*soft+w,w*0.18,abs(d))*(0.22+0.78*smoothstep(-w,w,d)); // 主帶：外緣亮內側暗（對比加大）
+  float lane=0.75+0.25*step(0.5,fract((th+aOff)*R*3.5));     // 帶內車道紋（沿軌分節）
+  float eIn=glow(abs(d+w),0.0016);                           // 內緣細金線
+  float eOut=glow(abs(d-w),0.0022);                          // 外緣亮線
   float cf=(th+aOff)*R*14.0; float cell=floor(cf);
   float clus=step(0.45,fbm2(vec2(cell*0.13,R*7.0)));         // 簇狀刻度（密疏分群）
   float tick=smoothstep(0.5,0.15,abs(fract(cf)-0.5))*clus*step(abs(d),w*1.35);
   float gap=broken>0.5?step(0.35,fbm2(vec2((th+aOff)*1.8,R*3.0))):1.0;     // E 型斷裂
-  vec3 col=(cA*band*0.45+cA*eIn*0.30+cB*eOut*0.55+cB*tick*0.30)*gap;
+  vec3 col=(cA*band*lane*0.55+cA*eIn*0.32+cB*eOut*(0.30+0.45*front)+cB*tick*0.32*front)*gap;
   for(int i=0;i<6;i++){ if(float(i)>=nodeN) break;           // 節點星體
     float a=aOff+float(i)/nodeN*TAU+h11(R*31.0+float(i))*0.9;
     vec2 np=vec2(cos(a),sin(a))*R;
     float nd=length(q-np);
-    if(nd<0.16){
-      float nf=smoothstep(0.45,-0.45,sin(a)*sinT);           // 節點自身前後
-      float ns=0.013*(0.65+0.70*nf);
-      col+=cB*(glow(nd,ns)*1.15+glow(nd,ns*3.0)*0.22)*(0.45+0.85*nf);     // 光球+外暈
-      col+=cA*glow(abs(nd-ns*2.4),0.0035)*0.40*(0.3+0.7*nf); }            // 微型環
-    float db=mod(a-th+TAU,TAU);                              // 切線拖尾（節點後方）
-    col+=cA*glow(abs(d),w*0.5)*exp(-db*7.5)*step(0.02,db)*0.75*(0.35+0.65*front); }
+    if(nd<0.20){
+      float nf=smoothstep(0.50,-0.50,sin(a)*sinT);           // 節點自身前後
+      float ns=0.017*(0.50+0.85*nf);
+      col+=cB*(glow(nd,ns)*1.25+glow(nd,ns*3.2)*0.26)*(0.35+0.95*nf);     // 光球+外暈
+      col+=cA*glow(abs(nd-ns*2.4),0.0040)*0.45*(0.25+0.75*nf); }          // 微型環
+    float db=mod(a-th+TAU,TAU);                              // 切線彗尾（拉長）
+    col+=cA*glow(abs(d),w*0.45)*exp(-db*4.2)*step(0.02,db)*0.85*(0.25+0.75*front); }
   return col*amp*fogOc;
 }
 float raysLayer(float ang,float rad,float seed,float sharp){
@@ -181,19 +183,20 @@ void main(){
   vec2 w1=vec2(fbm2(q+RT*0.020),fbm2(q+vec2(5.2,1.3)-RT*0.016));
   float fog=fbm2(q+2.6*w1);
   float fogW=smoothstep(0.1,-1.0,uv.y)*0.7+smoothstep(0.45,1.25,abs(uv.x))*0.5;
-  col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.16;                          // 羊皮紙霧
+  col+=vec3(0.30,0.19,0.09)*fog*fog*fogW*0.30;                          // 羊皮紙霧（加濃：手稿空間主體）
   float smokeMid=fbm2(q*1.8+w1*1.5-vec2(RT*0.01,0.0))*smoothstep(0.60,1.00,rad)*smoothstep(1.80,1.30,rad);
-  col+=vec3(0.28,0.18,0.06)*smokeMid*0.22;                              // 暗金資料煙
+  col+=vec3(0.28,0.18,0.06)*smokeMid*0.36;                              // 暗金資料煙（加濃）
+  col*=1.0-0.22*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（大尺度污漬、吃掉均勻感）
   float tFog=fbm2(q*1.4-w1+vec2(0.0,RT*0.012));
   col+=teal*0.045*tFog*tFog*smoothstep(0.7,1.4,rad);                    // 青綠索引霧
-  { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀）
-    for(int r=0;r<3;r++){ float fr=float(r);
-      float y0=-0.62+fr*0.55+0.04*sin(RT*0.1+fr*2.0);
+  { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀；4 行、略亮）
+    for(int r=0;r<4;r++){ float fr=float(r);
+      float y0=-0.78+fr*0.50+0.04*sin(RT*0.1+fr*2.0);
       float dy=abs(tp.y-y0);
       if(dy<0.035){
-        float cx=floor((tp.x+RT*0.012*(fr-1.0))*22.0);
+        float cx=floor((tp.x+RT*0.012*(fr-1.5))*22.0);
         float on=step(0.35,h11(cx+fr*57.0));
-        col+=vec3(0.45,0.38,0.26)*0.030*on*smoothstep(0.030,0.010,dy)
+        col+=vec3(0.45,0.38,0.26)*0.050*on*smoothstep(0.030,0.010,dy)
              *step(fract((tp.x)*22.0),0.7)*smoothstep(0.40,0.75,rad); } } }
   { vec2 gp=uv*9.0+vec2(0.0,t*0.05); vec2 cell=floor(gp);               // 燒焦紙屑（暗、慢落）
     float hh=hash21(cell+31.7);
@@ -266,11 +269,11 @@ void main(){
 
   // ═ 3D 軌道系統（五型；不同傾角/深度/速度/方向；穿霧有遮擋；視差層 uvP/uvF）
   { float orbGate=smoothstep(0.45,0.75,I)*mix(0.25,1.0,P);
-    col+=orbitSys(uvP,1.08, 0.978, 0.208, 0.35,  RT*0.060, 5.0, gold,      plat,      0.0, 0.85)*orbGate;  // A 主黃金 12° 中快
-    col+=orbitSys(uvP,1.24, 0.913,-0.407, 1.90, -RT*0.030, 4.0, teal*0.80, teal,      0.0, 0.55)*orbGate;  // B 青綠索引 -24° 慢
-    col+=orbitSys(uv, 0.40, 0.990, 0.139, 2.60,  RT*0.085, 3.0, plat,      plat,      0.0, 0.70)*sealGate; // C 白金封印 8° 精準
-    col+=orbitSys(uvF,1.40, 0.848, 0.530, 0.95,  RT*0.022, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*orbGate;  // D 暗金遠景 32° 慢（霧遮）
-    col+=orbitSys(uvP,1.16, 0.809,-0.588, 4.10, -RT*0.075, 6.0, amber,     gold,      1.0, 0.75)*orbGate;  // E 斷裂資料 -36° 快 分群
+    col+=orbitSys(uvP,1.08, 0.927, 0.375, 0.35,  RT*0.060, 5.0, gold,      plat,      0.0, 0.85)*orbGate;  // A 主黃金 22° 中快
+    col+=orbitSys(uvP,1.24, 0.866,-0.500, 1.90, -RT*0.030, 4.0, teal*0.80, teal,      0.0, 0.55)*orbGate;  // B 青綠索引 -30° 慢
+    col+=orbitSys(uv, 0.40, 0.970, 0.242, 2.60,  RT*0.085, 3.0, plat,      plat,      0.0, 0.70)*sealGate; // C 白金封印 14° 精準
+    col+=orbitSys(uvF,1.40, 0.743, 0.669, 0.95,  RT*0.022, 4.0, gold*0.55, amber*0.5, 0.0, 0.40)*orbGate;  // D 暗金遠景 42° 慢（霧遮）
+    col+=orbitSys(uvP,1.16, 0.707,-0.707, 4.10, -RT*0.075, 6.0, amber,     gold,      1.0, 0.75)*orbGate;  // E 斷裂資料 -45° 快 分群
   }
 
   // ═ 四 中圈主法陣（古代魔法機械盤，16 小層）
@@ -510,7 +513,7 @@ void main(){
   vec4 d=texture2D(uPosTex,aRef); vec3 p=d.xyz; vLife=d.w; vRand=aRand;
   vFam=h2(aRef+0.123); vDist=length(p);
   vec4 mv=modelViewMatrix*vec4(p,1.0);
-  float fs=vFam<0.15?1.5:(vFam<0.45?0.8:(vFam<0.65?1.1:(vFam<0.82?0.7:(vFam<0.93?0.6:0.5))));
+  float fs=vFam<0.15?1.5:(vFam<0.45?0.8:(vFam<0.65?1.1:(vFam<0.82?0.48:(vFam<0.93?0.40:0.34))));  // 外三族縮小成紙塵
   float bokeh=step(0.985,aRand)*4.0+1.0;
   gl_PointSize=uSize*fs*bokeh*(0.35+aRand*0.9)*smoothstep(0.0,0.3,vLife)*(1.0+uPulse)/max(2.0,-mv.z);
   gl_Position=projectionMatrix*mv;
@@ -527,9 +530,10 @@ void main(){
   if(vFam<0.15){ col=mix(plat,gold,vRand); amp=0.4+0.9*uPower; }
   else if(vFam<0.45){ col=mix(teal,vec3(1.0,0.9,0.6),vRand); amp=(0.30+0.65*uPower)*smoothstep(10.0,2.0,vDist); }
   else if(vFam<0.65){ col=mix(plat,amber,vRand); amp=0.22+0.80*uPower; }
-  else if(vFam<0.82){ col=mix(gold,amber,vRand*0.6); amp=0.30+0.35*uPower; }
-  else if(vFam<0.93){ col=mix(gold,vec3(0.6,0.45,0.25),0.5); amp=0.22; }
-  else { col=vec3(0.85,0.75,0.55); amp=0.18; }
+  // 外三族＝古書頁粉塵/墨跡灰塵（暖褐、暗、小）——去星空感，手稿資料空間的「紙塵」
+  else if(vFam<0.82){ col=mix(vec3(0.62,0.46,0.24),vec3(0.46,0.31,0.15),vRand); amp=0.15+0.20*uPower; }
+  else if(vFam<0.93){ col=vec3(0.42,0.31,0.18); amp=0.12; }
+  else { col=vec3(0.36,0.28,0.17); amp=0.10; }
   col=mix(col,vec3(1.0,0.25,0.10),uFail*step(0.6,vRand));
   float bokehA=mix(1.0,0.22,step(0.985,vRand));
   gl_FragColor=vec4(col, a*(0.45+vRand*0.5)*smoothstep(0.0,0.3,vLife)*amp*bokehA);
@@ -624,7 +628,7 @@ export function buildSageVfx(deps) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.42, 0.33, 0.78);  // Pass3 §七：高門檻小半徑（只核心/節點/星芒）
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.52, 0.37, 0.72);  // Pass4：分區 bloom 加量（強度/半徑↑、門檻微降——節點/符文也入光）
   composer.addPass(bloom);
   const cinematic = new ShaderPass({
     uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:uRes} },

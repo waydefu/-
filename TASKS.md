@@ -1,5 +1,41 @@
 # S-Level Upgrade Tasks
 
+## ART DIRECTION PASS 4（2026-06-12，進行中）
+使用者批評與指令（原文要點，逐項做完才收尾）：
+1. 整體太像高密度 2D 法陣壁紙；要變成真正 3D 系統介面。法陣偏平面；外圈軌道像「線」不像「軌道系統」。
+2. 參考影片分析 UI 表現：https://youtu.be/SbO9xfTzXwA 、https://youtu.be/4fN3m9bq5XQ
+3. 登入/工作區卡片融合 OK 但太方正太普通 → FUI 化（切角/構材/接縫），遵守零閃鐵律（禁 clip 容器內 pseudo）。
+4. 背景改「暗黑手稿資料空間」：古書頁粉塵／暗褐羊皮紙霧／墨跡灰塵／漂浮文字殘影／暗金資料煙——不是純宇宙星場。
+5. 分區 bloom 增加一些。
+6. 手機第二排按鈕列沒排直：模型切換+加速鈕掉到第三排 → RWD 修復（390px 驗證）。
+7. 連結成功動畫（LINK START）太弱且風格不一致 → 重編舞、黑金+青綠統一。
+8. 準備音效系統（查資料再做；WebAudio 程序化、autoplay 政策、靜音開關）。
+流程令：以上皆先查資料再改；注意上下文防爆（計畫落盤本檔、進度隨做隨記）。
+進度標記：[x] 研究 [x] 手機列 [x] 卡片 [x] 背景+軌道+bloom [x] LINK START [x] 音效 [x] 部署收尾
+
+實作摘要（2026-06-12，Pass4）：
+- 手機列：根因＝Pass3 桌面 MODEL SLOT/spark-switch 規則寫在 640px 區塊之後，source order 蓋掉手機覆寫（thinkToggle 100px 擠掉行）。
+  治本＝app.css 檔尾新設「MOBILE OVERRIDES 區塊（鐵律：保持檔案最末）」：spark 13.5px(track 5em=67.5px)、ms-face 縮、ms-current 96px ellipsis。390/360px 驗證同列。
+- 卡片 FUI：fui-frame(金)+fui-fill(暗) 雙層獨立 <i> clip 切角（左上/右下 18px、右上/左下 8px），本體去 bg/border 留柔光 shadow。
+  踩坑＝positioned fui 層蓋掉 static 內容 → 宿主直屬子元素統一 position:relative+z1。套用：auth-card/手稿/卷宗/歷史/登出彈窗五處（HTML 插入）。
+  auth-card::before 虛線內框改 clip 同形+z1；card-lock 內縮貼斜邊。彈窗 fui-fill 加深（暗場上要實）。
+- 背景手稿空間：粒子外三族（中圈/碎屑/遠塵）改暗褐紙塵（色暗、size 0.48/0.40/0.34、amp 降）→ 去星空感；
+  羊皮紙霧 0.16→0.30、資料煙 0.22→0.36、文字殘影 3→4 行 ×0.05、新增大尺度墨漬暗斑(×0.22)。
+- 軌道 3D：orbitSys 主帶 0.018→0.030、前銳後糊(soft 0.16~2.2)、後景霧遮 0.34→0.20、帶內車道紋、彗尾 7.5→4.2、節點加大；
+  五型傾角 12/-24/8/32/-36 → 22/-30/14/42/-45（橢圓透視更明顯）。bloom 0.42/0.33/0.78→0.52/0.37/0.72。
+- LINK START「SAGE LINK 卷宗傳送」：三幕（0-0.8 聚合/0.8-2.6 傳送/收尾）；星線改黑金配比(金60/琥珀22/白金12/青綠6)、
+  30% 符文短劃(斷續)、法陣環外湧+四向節點珠、白金核漸亮、播放時 dispatch worldforge:pulse 同步法陣衝能。
+- 音效：js/effects/audio-fx.js（WebAudio 純合成、C4 基頻族派生、共用 envelope/lowpass 材質）；
+  hover/click/pulse/login琶音/analyzeStart hum/complete鐘/error小二度；首次手勢解鎖、localStorage('flg-sfx')、
+  header #sfxToggleBtn 靜音鈕（is-muted 斜線）。main.js boot 接 initAudioFx()。
+- 已知：preview 對 js module 重度快取（驗證需 import?cb=）；線上 firebase.json 對 js/css/html 全 no-cache 不受影響。
+
+研究結論（2026-06-12）：兩支參考＝「no-copyright HUD futuristic animation with sound / hacker screen 4K」FUI 模板。
+設計語彙：①環=分段粗弧（不同寬度/轉速/方向）非細線，透視傾斜+層間遮擋+相機漂移=3D 感 ②環側掛刻度+微型數據標籤
+③面板=角括號/斜切角+半透明填充+細框+header tab ④雷達 sweep 掠光 ⑤音效（hum+tick+whoosh）與動畫同步。
+WebAudio：純合成 UI kit，全音效同一 base freq+envelope/filter 派生（材質一致）；oscillator+noise buffer+biquad+ADSR；
+首次手勢解鎖 AudioContext、master gain+靜音存 localStorage。
+
 ## Current Goal
 Implement the S-level upgrade plan for the Great Sage UI: loader/VFX director, non-squeezing controls, arcane model selector, and resilient progress tracking.
 

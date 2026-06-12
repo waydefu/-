@@ -81,6 +81,7 @@
   <!-- ════════ 登入畫面 ════════ -->
   <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
     <section class="auth-card sao-pop">
+      <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
       <i class="card-lock lk-tl" aria-hidden="true"></i><i class="card-lock lk-tr" aria-hidden="true"></i>
       <i class="card-lock lk-bl" aria-hidden="true"></i><i class="card-lock lk-br" aria-hidden="true"></i>
       <p class="auth-eyebrow">GREAT SAGE · APPRAISAL ENGINE</p>
@@ -107,6 +108,14 @@
       <span class="brand-name">大賢者鑑定核心</span>
     </div>
     <nav class="nav-actions" aria-label="工作區操作">
+      <button class="sfx-btn" type="button" id="sfxToggleBtn" aria-pressed="true" aria-label="關閉音效">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M11 5 6 9H3v6h3l5 4V5z" fill="currentColor" stroke="none"/>
+          <path class="sfx-wave" d="M15.5 8.5a5 5 0 0 1 0 7"/>
+          <path class="sfx-wave" d="M18 6a8.5 8.5 0 0 1 0 12"/>
+          <path class="sfx-slash" d="M4 4l16 16"/>
+        </svg>
+      </button>
       <button class="continue-application" type="button" id="historyToggleBtn" aria-label="開啟鑑定紀錄" aria-expanded="false" aria-controls="historyPanel">
         <div>
           <div class="pencil"></div>
@@ -128,6 +137,7 @@
     <div class="workspace">
       <!-- 左：系統狀態 + 歷史紀錄（桌機側欄；手機 bottom sheet） -->
       <aside class="col-aside panel history-panel" id="historyPanel" aria-label="系統狀態與鑑定紀錄">
+        <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
         <div class="panel-head">
           <span class="panel-eyebrow">ARCHIVE</span>
           <h2 class="panel-title">鑑定紀錄</h2>
@@ -147,6 +157,7 @@
       <!-- 中：草稿輸入 -->
       <section class="col-stack" aria-labelledby="draftHeading">
         <div class="panel">
+          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
           <div class="panel-head">
             <span class="panel-eyebrow">MANUSCRIPT CONSOLE</span>
             <h2 class="panel-title" id="draftHeading">手稿輸入</h2>
@@ -214,6 +225,7 @@
       <!-- 右：鑑定結果 -->
       <section class="col-stack" aria-labelledby="resultHeading">
         <div class="panel">
+          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
           <div class="panel-head">
             <span class="panel-eyebrow">ARCANE DIAGNOSTIC DOSSIER</span>
             <h2 class="panel-title" id="resultHeading">鑑定卷宗</h2>
@@ -235,6 +247,7 @@
 
   <!-- 登出確認彈窗 -->
   <div class="modal" id="logoutModal" role="alertdialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutCopy" hidden>
+    <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
     <h2 class="modal-title" id="logoutTitle">確認封存並登出</h2>
     <p class="modal-copy" id="logoutCopy">系統會保留目前草稿與歷史記憶。確認結束本次工作階段？</p>
     <div class="modal-actions">
