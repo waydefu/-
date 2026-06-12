@@ -87,6 +87,15 @@ Backend context (unchanged this batch): production LLM path is NVIDIA NIM multi-
   3. 手機降級先不做（使用者令）；QUALITY 等級已預留（sage-vfx.js：ultra/high/medium/low/static），要降只改 great-sage-core.js 的 quality 參數。
   4. 本機預覽：`scripts/dev-static-server.mjs` + `.claude/launch.json`（vfx-static, port 8123）→ 開 `/poc/vfx-lab.html`。
 
+## 工作區空塊 + 開場閃屏修復 + 死碼封存 (Claude, 2026-06-12)
+- **工作區上方空塊**：Pass3 的「面板統一」重複宣告 `.panel { position: relative; }`（app.css 後段），蓋掉了 `.history-panel { position: fixed; }`（同特異度、後者在前）→ 歷史彈窗掉回 workspace grid flow 佔走第一列 ~242px（transform scaleY(0.02) 視覺隱形但佔位）。修法＝刪冗餘規則（基礎 `.panel` 本就 relative），留註解防重犯。驗證：computed position 回 fixed、grid 兩列、手稿面板貼齊 header、歷史彈窗置中開合正常。
+- **開場閃屏（核心動畫消失露出漸層背景）**：兩個共犯——
+  1. `sage-vfx.js setSize/setRenderScale`：`renderer.setSize` 清空 drawing buffer，而 core loop 順序是「先 frame 渲染→後調 scale」，rAF 返回後合成器端出透明 canvas → 閃出 CSS 漸層底。修法＝`setSize` 尾端同一 task 內立即 `composer.render()`。
+  2. `great-sage-core.js` 自適應 scale 無冷卻：點火期 FPS 在 36/56 門檻附近波動，每秒 resize 一次；`bloom.setSize` 重配 render target 本身就卡頓 → 「resize 卡頓→FPS 掉→再 resize」震盪。修法＝調整間隔 ≥2.5s（`_scaleHold`）。
+  - 驗證：preview 重載 vfx-full、resize 壓測 ×5 零 console error、VFX 正常渲染。閃屏為時序性問題，最終手感待線上實機驗收。
+- **死碼封存**：`public/js/webgl/*`（6 檔）、`public/sw-register.js`、`public/spellcheck.worker.js`、`poc/great-sage-vfx-poc.html`、根目錄誤入庫 jpeg → `git mv` 至根目錄 `deadcode/`（public 外不部署；附 `deadcode/README.md` 死因表）。保留：`sw.js`/`swkill.js`（SW 清理機制）、`forbidden-words.json`（main.js 在用）。README 同步：effects 樹加入 sage-vfx.js、webgl Phase 2 接回計畫標記作廢、關鍵檔案清單與維護原則更新。
+- 驗證：npm test 26/26。注意：本機 preview 驗證需用 flg-static（public 為 root）；vfx-static 的 root 是 repo 根目錄，絕對路徑 `/css|/js` 會 404 變成無樣式頁。
+
 ## Ultra Pass 3 桌機高規格版 (Claude, 2026-06-11b)
 規格：`docs/SAGE_CORE_ULTRA_PASS3.md`（原文=桌面 2026611提示詞.txt 第二版）。只做 Ultra，QUALITY 降級結構保留未實作。
 - **首屏防閃**：index.html critical inline = Sage veil（深黑+暗金核+外圈輪廓+微青綠，外部 CSS 未到也不露普通背景）；`#sageCanvas` 預設 opacity:0，唯一揭示路徑=GreatSageCore **第一幀 render 完成**（effects-manager 的提早揭示已移除）；auth-screen/app-main/header 由 body.vfx-* 類別 gating 淡入 + 7s CSS 動畫保底（JS 全掛也可見）。

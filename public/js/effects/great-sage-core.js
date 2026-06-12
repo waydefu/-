@@ -24,7 +24,7 @@ export class GreatSageCore {
     this._glyphMarked = false;
     this._last = performance.now();
     // 自適應 render scale（FPS 監測；專案唯一允許的效能旋鈕，不關特效）
-    this._scale = 1; this._frames = 0; this._fpsT = performance.now();
+    this._scale = 1; this._frames = 0; this._fpsT = performance.now(); this._scaleHold = 0;
     this._onResize = () => { this.vfx?.setSize(window.innerWidth, window.innerHeight); };
     this._onLost = (e) => { e.preventDefault(); this.stop(); };
     this._onRestored = () => { if (!this.disposed) this.start(); };
@@ -136,10 +136,14 @@ export class GreatSageCore {
         if (now - this._fpsT >= 1000) {
           const fps = (this._frames * 1000) / (now - this._fpsT);
           this._frames = 0; this._fpsT = now;
-          let ns = this._scale;
-          if (fps < 36 && ns > 0.6) ns = Math.max(0.6, ns - 0.12);
-          else if (fps > 56 && ns < 1) ns = Math.min(1, ns + 0.08);
-          if (ns !== this._scale) { this._scale = ns; this.vfx.setRenderScale(ns); }
+          // 冷卻 2.5s：bloom.setSize 重配 render target 本身就會卡一下，
+          // 不設冷卻會形成「resize 卡頓→FPS 掉→再 resize」震盪（開場閃屏主因之二）
+          if (now - this._scaleHold >= 2500) {
+            let ns = this._scale;
+            if (fps < 36 && ns > 0.6) ns = Math.max(0.6, ns - 0.12);
+            else if (fps > 56 && ns < 1) ns = Math.min(1, ns + 0.08);
+            if (ns !== this._scale) { this._scale = ns; this._scaleHold = now; this.vfx.setRenderScale(ns); }
+          }
         }
       }
       this.frameId = requestAnimationFrame(loop);

@@ -86,24 +86,23 @@ public/
     app/
       auth.js           Firebase 初始化 + Google 登入/登出（行為不變）
       ui.js             彈窗/抽屜/toast/狀態/遮罩（分層正確、transform/opacity）
-      review-controls.js 模型放射選單（自/深/快）+ 思考開關，寫入 AppState 供 analyze-api 帶入
+      review-controls.js MODEL CORE SLOT 模型槽（自/深/快）+ 思考開關，寫入 AppState 供 analyze-api 帶入
     core/               config.js（設定）、state.js（AppState）、types.js
     services/           analyze-api.js（呼叫 Cloud Function + SSE）、cache.js（per-uid 快取）
     utils/              result-sections.js（拆段 + markdown-lite + 容錯標題解析）
     effects/
       effects-manager.js  WebGL lazy 初始化 + context-lost→CSS fallback + 生命週期總控
-      great-sage-core.js  現行背景 WebGL 場景（Three.js via jsdelivr）
+      great-sage-core.js  引擎殼：契約/addon 載入/自適應 render scale/站內事件→相位映射
+      sage-vfx.js         SAGE CORE IGNITION 視覺真源（零依賴工廠；poc/vfx-lab.html 共用）
       interactions.js     按鈕 ripple / 磁吸微互動
       link-start.js       LINK START 登入→工作區轉場
-    webgl/              【legacy 強模組·目前孤兒·Phase 2 重新接回】
-                        arcane-core / optical-background / raphael-computation-ring /
-                        magicule-particles / reference-glyph-ring / gold-bokeh-field /
-                        stepped-animation / materials / constants / math-utils / dispose-utils
-                        （THREE 依賴注入式、已內建自訂 GLSL ShaderMaterial；預設青藍配色，
-                          接回時須 recolor 成黑金）
   forbidden-words.json  禁詞與語彙掃描資料
-  sw.js / sw-register.js / swkill.js  Service Worker 與清理入口
+  sw.js / swkill.js     Service Worker 安全墊與清理入口
 ```
+
+> 舊版 `js/webgl/` 強模組、`sw-register.js`、`spellcheck.worker.js` 已於 2026-06-12
+> 確認零引用並封存至根目錄 `deadcode/`（不部署；詳見 `deadcode/README.md`）。
+> 原「Phase 2 接回 webgl/*」計畫由 SAGE CORE IGNITION 引擎整體取代，不再執行。
 
 ### Frontend 放置規則
 
@@ -111,7 +110,7 @@ public/
 - API fetch / 快取 / timeout / App Check token → `js/services/`。
 - 純函式工具（不碰 DOM/Firebase/AppState）→ `js/utils/`。
 - App 控制（auth / UI 控制器）→ `js/app/`；主編排在 `js/main.js`。
-- WebGL / 特效類別 → `js/effects/`（新）或 `js/webgl/`（legacy 強模組），必須保留 dispose / context-lost / visibility cleanup。
+- WebGL / 特效類別 → `js/effects/`，必須保留 dispose / context-lost / visibility cleanup。
 - UI DOM 與主流程在 `public/index.html` + `js/main.js`；CSS 在 `public/css/*`。**不要**把功能邏輯塞進特效檔，不要 `!important` 海、inline style 海、z-index 地獄。
 
 ### DOM 契約（app 邏輯依賴，不可任意改名）
@@ -176,12 +175,12 @@ Dark Fantasy UI · Arcane Magic Tech · Ancient Magical Machinery · Cinematic H
 
 ### 現況
 
-- 正式入口背景 = `js/effects/great-sage-core.js`（電影級）：Three.js（jsdelivr full URL）+ **UnrealBloom 後製**（alpha-safe 自寫 combine shader，輸出 base.a 永不黑屏）+ ACES tone mapping（exposure 0.82）。場景＝雙層 icosahedron 核心 + 核心光球 + 中央光爆 sprite + CanvasTexture 發光軌道環（不同傾斜軸 + 發光電子）。bloom addon 動態 import 靠 importmap 解內部 `'three'`，失敗 → catch → 退回基礎奇觀（不黑屏）。
-- 已**接回的 legacy 強模組**（動態 import，皆 `(THREE, this.group, profile{reduced,mobile,lowPower}, null)` + `update` + `dispose`）：`ReferenceGlyphRing`（細緻符文環）、`MagiculeParticleField`（shader 發光小光點）、`RaphaelComputationRing`（計算環）。`arcane-core` 的奇點核心 shader 已**取精華複製進** `great-sage-core`（非整檔 import）。`webgl/` 現存：`constants` / `math-utils` / `dispose-utils` + 上述三模組；孤兒（`arcane-core` / `optical-background` / `gold-bokeh-field` / `stepped-animation` / `materials`）已**刪除**（git 歷史保留）。
-- **自適應 DPR**：`great-sage-core` 每秒測 FPS，嚴重掉幀降 render scale（floor 0.6×）、回穩才升 — 唯一效能旋鈕，不關特效。
+- 正式入口背景 = **SAGE CORE IGNITION**：視覺真源 `js/effects/sage-vfx.js`（零依賴工廠，three 類別注入；GPGPU 魔力粒子 + 多層法陣 + 3D 軌道系統 + UnrealBloom + filmic 電影 pass），`great-sage-core.js` 為引擎殼（契約/addon 動態載入/自適應 render scale/站內事件→相位映射）。規格：`docs/SAGE_CORE_IGNITION_SPEC.md` + `REFINE_PASS2` + `ULTRA_PASS3`。addon 動態 import 靠 importmap 解內部 `'three'`，失敗 → catch → CSS 背景 fallback（不黑屏）。
+- 舊版 legacy 強模組 `js/webgl/*` 已全數封存至 `deadcode/`（2026-06-12，零引用；接回計畫由 SAGE CORE IGNITION 取代）。
+- **自適應 render scale**：`great-sage-core` 每秒測 FPS，嚴重掉幀降 render scale（floor 0.6×）、回穩才升、調整間隔 ≥2.5s 防震盪 — 唯一效能旋鈕，不關特效。resize/變更 scale 後同一 task 內立即重繪（防透明幀閃屏）。
 - **登入儀式**：滑入/聚焦登入鈕 → `worldforge:pulse` → 核心短暫充能；handoff = LINK START canvas 光速隧道 warp（`link-start.js`）+ 收尾羊皮紙金淨化閃光（`.ls-flash`）；`decryptText` 文字解碼揭露 `鑑定核心已連線`。
 - **彈窗**：登入卡 / 歷史 / 登出 統一 SAO 開合（水平展開→垂直展開）+ 金色邊光。
-- `js/webgl/*` 全部已 recolor 為黑金（少量深藍 accent `#2f6fd0`，使用者明確要少量青藍，推翻 README 早期「避免冷藍」）。
+- 配色基準：黑金為主 + 少量青綠/深藍 accent（使用者明確要少量青藍，推翻 README 早期「避免冷藍」）。
 
 ### 效能與裝置政策（本分支硬規則）
 
@@ -200,7 +199,7 @@ Dark Fantasy UI · Arcane Magic Tech · Ancient Magical Machinery · Cinematic H
 | UnrealBloom（EffectComposer） | 立即 | 走 jsdelivr `/+esm`，免動 CSP；校準防過曝 |
 | 2D CanvasTexture → 3D 黑金魔法陣 | 立即 | 純程序化零素材 |
 | DPR / render-target scale 自適應 | 立即 | 唯一允許的效能旋鈕；手機防 context-lost |
-| 復用並 recolor `webgl/*` 強模組 | 分階段 | THREE 注入可移植、已有 GLSL；青藍→黑金 |
+| 復用並 recolor `webgl/*` 強模組 | 已作廢 | 由 SAGE CORE IGNITION 整體取代；檔案封存 `deadcode/` |
 | SMAA | 分階段 | 後製收尾 AA（後製會 bypass MSAA） |
 | DoF / Bokeh | 分階段 | 全螢幕 pass 較貴，綁 render-target scale |
 | GPGPU curl-noise 粒子 | 分階段·進階 | float RT，須嚴格 dispose |
@@ -212,7 +211,7 @@ Dark Fantasy UI · Arcane Magic Tech · Ancient Magical Machinery · Cinematic H
 ### 推薦實作順序
 
 - **Phase 1**：ACES + exposure → UnrealBloom → DPR/render-target 自適應 → CanvasTexture 黑金魔法陣 → bloom 校準。全程 lazy + context-lost→CSS fallback。（線框 → 發光電影黑金）
-- **Phase 2**：復用並 recolor `webgl/*` 強模組接進 `effects-manager` → DoF/Bokeh → SMAA → GSAP 狀態導演（idle / authInteracting / syncing / operational + 鏡頭）。
+- **Phase 2**（已改道）：~~復用 `webgl/*` 強模組~~ → SAGE CORE IGNITION 引擎已落地（相位狀態機 idle/ignition/operational/ambient/computing/complete/failed）；後續為 DoF/Bokeh → SMAA 評估。
 - **Phase 3**：GPGPU curl-noise 粒子 → PBR 程序化魔法書 → GTAO/SAO 評估定奪 → TAA 僅評估 → KTX2/Draco 素材管線評估。
 
 ### 登入 VFX 時序（校準基準，實作不同請於 PR 註明）
@@ -365,10 +364,10 @@ firebase functions:log --only analyzeV2 -n 80
 - 核心設定 / 狀態 / 型別：`public/js/core/`
 - API 串流 / 快取：`public/js/services/analyze-api.js`、`cache.js`
 - 結果解析：`public/js/utils/result-sections.js`
-- 特效層：`public/js/effects/effects-manager.js`、`great-sage-core.js`、`interactions.js`、`link-start.js`
-- Legacy 強 WebGL 模組（Phase 2 接回）：`public/js/webgl/`
+- 特效層：`public/js/effects/effects-manager.js`、`great-sage-core.js`、`sage-vfx.js`、`interactions.js`、`link-start.js`
+- 死碼封存（不部署）：`deadcode/`（舊 webgl 強模組、sw-register、spellcheck.worker、舊 PoC）
 - 禁詞資料：`public/forbidden-words.json`
-- Service Worker：`public/sw.js`、`sw-register.js`、`swkill.js`
+- Service Worker：`public/sw.js`、`swkill.js`
 - Cloud Function：`functions/src/index.ts`（handler）、`providers.ts`（LLM 供應商層）、`config.ts`、`validation.ts`、`quota.ts`
 - Firestore rules：`firestore.rules`
 - Hosting / CSP 設定：`firebase.json`
@@ -381,7 +380,7 @@ firebase functions:log --only analyzeV2 -n 80
 ## 維護原則
 
 - 先保護安全、成本與資料隔離，再做視覺升級。
-- 視覺升級以本分支 `effects/` + 接回 `webgl/*` 強模組為基礎，不另起互相打架的第二套登入頁。
+- 視覺升級以本分支 `effects/`（SAGE CORE IGNITION 真源 `sage-vfx.js`）為基礎，不另起互相打架的第二套登入頁。
 - UI 文案符合「西方奇幻小說編修核心」；loading 與錯誤狀態不可宣稱不存在的功能。
 - IME composing 期間不觸發昂貴分析、禁詞掃描或干擾性自動保存。
 - 所有長時間 async request 必須有 timeout、取消、finally 狀態復原與可辨識錯誤。

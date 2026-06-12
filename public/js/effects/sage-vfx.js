@@ -684,6 +684,7 @@ export function buildSageVfx(deps) {
     bloom.setSize(w * basePR * renderScale, h * basePR * renderScale);
     camera.aspect = w / h; camera.updateProjectionMatrix();
     uRes.set(w * basePR * renderScale, h * basePR * renderScale);
+    composer.render();   // resize 清空 drawing buffer；同一 task 內立即重繪，否則合成器端出透明 canvas → 閃出 CSS 漸層底
   }
   function setRenderScale(s) { renderScale = Math.max(0.5, Math.min(1, s)); setSize(window.innerWidth, window.innerHeight); }
   function dispose() {

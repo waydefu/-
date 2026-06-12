@@ -572,8 +572,9 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
   box-shadow: 0 0 8px rgba(255,230,166,0.7); animation: gateLamp 2.6s ease-in-out infinite; }
 @keyframes gateLamp { 0%,100% { opacity: 0.55; } 50% { opacity: 1; } }
 
-/* 工作區面板統一：細角刻 + 暗金材質感（不搶內容） */
-.panel { position: relative; }
+/* 工作區面板統一：細角刻 + 暗金材質感（不搶內容）。
+   注意：勿在此重宣告 .panel{position}——基礎 .panel 已 relative；
+   在 .history-panel{position:fixed} 之後再寫會把歷史彈窗打回 grid flow，工作區上方多出一塊空行。 */
 .panel > .panel-head::before, .panel > .panel-head::after {
   content: ""; position: absolute; width: 12px; height: 12px; pointer-events: none; opacity: 0.5;
 }
