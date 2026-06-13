@@ -1,5 +1,17 @@
 # S-Level Upgrade Tasks
 
+## PASS 14 移方格/井字線 + 大柔圓收斂 + 登入卡連動 + 卷宗 reveal（2026-06-13k，已部署）
+依「精修提示詞」（不擴張全站），使用者點名：方格碎片線+井字線移除、大柔圓(含初始內圈)收斂留光點、選做三項 UI 連動。
+**VFX：**
+- 方格碎片線+超大井字線＝「卷宗邊框殘影」(glow uv.x±/uv.y±0.90 斷續＝畫面四周框)，移除。
+- 大柔圓：①燒焦紙屑 glow(length(f)-0.08,0.06) 甜甜圈柔環→glow(length(f),0.012) 小暗點 ②核心初始內圈：新 coreStruct=smoothstep(0.20,0.46,P)，idle 低 power 時 raymarch 球/金黃能量膜收斂→只剩奇點光點(「留光點就好」)，運作(operational/computing)時顯結構。
+**UI（提示詞選做三項）：**
+- 登入卡連動：hover Google 鈕→四角 card-lock 節點燈微亮+放大(:has 現代瀏覽器，降級僅一般 hover)；click→四向鎖扣依序亮(lockFire 順時針 tl→tr→br→bl delay 0/.09/.18/.27)。main.js click 加 is-authing(600ms)。
+- 登入失敗橘紅短閃：authFail keyframes(0.7s 內回穩、非長閃)；main.js catch 非「取消」時加 is-fail。MODEL is-fail CSS(ms-sync line542)早已備、純前端無真失敗不假造觸發。authStatus 文案改 AUTH SYNC/AUTH LINK FAILED。
+- 鑑定卷宗 result reveal：motion.css result-section riseIn→sectionReveal(邊框先亮金邊+柔光→容器淡入)；內容 result-section-body>* 逐段 riseIn(早已有)＝先框後文。app.css 重複段移除(動效歸 motion.css 單一真源)。
+- 驗證：npm test 26/26；raw WebGL BG_FRAG compiled 零警告(邊框/紙屑環移除、coreStruct 作用域)；CSS computed(lockFire+依序 delay/authFail/sectionReveal+body riseIn 全對)；零 console error。截圖管線沙箱卡(CDN 斷環境問題)。deploy+smoke+線上抽驗。視覺(泡泡消失/核心 idle 收斂/登入卡連動)待實機。
+- 未碰：Auth/API/model 值流/歷史/草稿/DOM 綁定。
+
 ## PASS 13 泡泡真兇＝失焦光斑 + 回退過強 bleed（2026-06-13j，已部署）
 使用者貼圖：核心中心變超大白光球、原本光點不見、泡泡還在（圖上左下青綠+右下金兩個大圓盤）。
 - **找到真兇**：泡泡＝line 217「失焦光斑」4 個大高斯柔圓 `exp(-dot(uvF-bp))*（2.2~5.2）`，顏色金(0.30,0.20,0.06)+青綠(0.06,0.16,0.12)+暗紅，漂移散布——完全吻合截圖兩個大圓盤。**前三次(Pass9/12)都在核心同心環裡找＝找錯地方**，環全是小誤判。直接移除這 4 個大柔圓。

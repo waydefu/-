@@ -387,6 +387,7 @@ button { font: inherit; color: inherit; }
 .result-section-body { padding: var(--s-4) var(--s-5); font-family: var(--font-serif); font-size: var(--fs-read); line-height: 1.95; color: #f4eede; white-space: normal; word-break: break-word; }
 .result-section-body p { margin: 0 0 0.9em; white-space: pre-wrap; }
 .result-section-body p:last-child { margin-bottom: 0; }
+/* 卷宗 result reveal（邊框先亮→內容分段淡入）統一在 motion.css：result-section 進場 + result-section-body>* 逐段。 */
 
 /* ═══ 登入畫面 ═══ */
 .auth-screen { position: relative; z-index: var(--z-shell); min-height: 100dvh; display: grid; place-items: center; padding: var(--s-5); }
@@ -605,10 +606,27 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 .card-lock.lk-bl { bottom: 2px; left: 2px; border-bottom: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
 .card-lock.lk-br { bottom: 4px; right: 4px; border-bottom: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
 .card-lock::after { content: ""; position: absolute; width: 4px; height: 4px; border-radius: 50%;
-  background: #ffe6a6; box-shadow: 0 0 7px rgba(255,230,166,0.8); }
+  background: #ffe6a6; box-shadow: 0 0 7px rgba(255,230,166,0.8); transition: box-shadow var(--t-mid), transform var(--t-mid); }
 .card-lock.lk-tl::after { top: 2px; left: 2px; } .card-lock.lk-tr::after { top: 2px; right: 2px; }
 .card-lock.lk-bl::after { bottom: 2px; left: 2px; } .card-lock.lk-br::after { bottom: 2px; right: 2px; }
+.card-lock { transition: opacity var(--t-mid) var(--ease-out); }
 .auth-card:hover .card-lock { opacity: 1; }
+/* Pass14 控制台連動：hover Google 鈕 → 四角節點燈微亮（:has 現代瀏覽器；不支援則僅一般 hover 態） */
+.auth-card:has(#googleLoginBtn:hover) .card-lock,
+.auth-card:has(#googleLoginBtn:focus-visible) .card-lock { opacity: 1; }
+.auth-card:has(#googleLoginBtn:hover) .card-lock::after,
+.auth-card:has(#googleLoginBtn:focus-visible) .card-lock::after { box-shadow: 0 0 11px rgba(255,230,166,1); transform: scale(1.35); }
+/* click 授權 → 四向鎖扣依序亮（順時針 tl→tr→br→bl，授權閘門開啟感） */
+@keyframes lockFire { 0% { opacity: 0.85; } 35% { opacity: 1; filter: drop-shadow(0 0 7px #ffe6a6); } 100% { opacity: 0.85; filter: none; } }
+.auth-card.is-authing .card-lock { animation: lockFire 0.46s var(--ease-out) both; }
+.auth-card.is-authing .lk-tl { animation-delay: 0s; }
+.auth-card.is-authing .lk-tr { animation-delay: 0.09s; }
+.auth-card.is-authing .lk-br { animation-delay: 0.18s; }
+.auth-card.is-authing .lk-bl { animation-delay: 0.27s; }
+/* 授權失敗 → 橘紅短閃（非純 alert；0.8s 內回穩、不長閃，遵守 error motion 規範） */
+@keyframes authFail { 0%,100% { box-shadow: var(--sh-lg), 0 0 28px rgba(214,166,77,0.16); }
+  18%,52% { box-shadow: var(--sh-lg), 0 0 30px rgba(255,120,90,0.6), 0 0 0 1px rgba(255,120,90,0.5); } }
+.auth-card.is-fail { animation: authFail 0.7s var(--ease-out); }
 
 /* 授權閘門標 + 狀態燈 */
 .gate-tag { display: flex; align-items: center; justify-content: center; gap: 8px;

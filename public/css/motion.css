@@ -22,7 +22,10 @@
 .enter-rise-3 { animation: riseIn var(--t-slow) var(--ease-out) 0.22s both; }
 
 /* 結果分段 reveal（每段加 .reveal，基底 opacity:1，僅增強） */
-.result-section { animation: riseIn var(--t-slow) var(--ease-out) both; }
+/* Pass14：卷宗進場改 sectionReveal＝邊框先亮（金邊+柔光）→ 容器淡入；內容(body>*)隨後逐段浮現＝先框後文 */
+@keyframes sectionReveal { 0% { opacity: 0; transform: translateY(10px); border-color: rgba(240,212,136,0.75); box-shadow: 0 0 20px rgba(214,166,77,0.32); }
+  55% { border-color: rgba(240,212,136,0.55); } 100% { opacity: 1; transform: translateY(0); } }
+.result-section { animation: sectionReveal var(--t-slow) var(--ease-out) both; }
 .result-section:nth-child(2) { animation-delay: 0.1s; }
 .result-section:nth-child(3) { animation-delay: 0.2s; }
 

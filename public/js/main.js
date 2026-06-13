@@ -495,14 +495,22 @@ function bind() {
 
   $("googleLoginBtn")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
+    const card = document.querySelector(".auth-card");
     btn.classList.add("is-loading"); btn.setAttribute("disabled", "true");
-    setLine("authStatus", "Google 授權通道開啟中…");
+    card?.classList.remove("is-fail");
+    card?.classList.add("is-authing");                          // 四向鎖扣依序亮（控制台授權感）
+    window.setTimeout(() => card?.classList.remove("is-authing"), 600);
+    setLine("authStatus", "AUTH SYNC · 授權同步中…");
     state.manualLogin = true;   // 標記「登入動作」→ applyAuthState 播 SAGE OPENING 編舞（reload 恢復不播）
     try { await signInWithGoogle(); }
     catch (err) {
       state.manualLogin = false;
       const closed = err?.code === "auth/popup-closed-by-user";
-      setLine("authStatus", closed ? "已取消登入，請再試一次" : "Google 授權失敗，請稍後再試", { error: !closed });
+      if (!closed) {                                            // 真失敗：卡片橘紅短閃（非純文字）
+        card?.classList.add("is-fail");
+        window.setTimeout(() => card?.classList.remove("is-fail"), 800);
+      }
+      setLine("authStatus", closed ? "已取消登入，請再試一次" : "AUTH LINK FAILED · 授權連線失敗，請再試", { error: !closed });
     } finally { btn.classList.remove("is-loading"); btn.removeAttribute("disabled"); }
   });
 

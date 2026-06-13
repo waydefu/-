@@ -207,13 +207,11 @@ void main(){
         float on=step(0.35,h11(cx+fr*57.0));
         col+=vec3(0.45,0.38,0.26)*0.050*on*smoothstep(0.030,0.010,dy)
              *step(fract((tp.x)*22.0),0.7)*smoothstep(0.40,0.75,rad); } } }
-  { vec2 gp=uv*9.0+vec2(0.0,t*0.05); vec2 cell=floor(gp);               // 燒焦紙屑（暗、慢落）
+  { vec2 gp=uv*9.0+vec2(0.0,t*0.05); vec2 cell=floor(gp);               // 燒焦紙屑（Pass14：大柔甜甜圈→小暗點，留點不留圓）
     float hh=hash21(cell+31.7);
     if(hh>0.93){ vec2 f=fract(gp)-0.5;
-      col+=vec3(0.16,0.07,0.02)*glow(length(f)-0.08,0.06)*0.5*smoothstep(0.6,1.0,rad); } }
-  { float aspx=uRes.x/uRes.y;                                            // 卷宗邊框殘影
-    float fr1=glow(abs(abs(uv.x)-(aspx-0.10)),0.0028)+glow(abs(abs(uv.y)-0.90),0.0028);
-    col+=vec3(0.35,0.27,0.14)*fr1*step(0.40,fbm2(uv*3.0+5.0))*0.06; }
+      col+=vec3(0.16,0.07,0.02)*glow(length(f),0.012)*0.4*smoothstep(0.6,1.0,rad); } }
+  // Pass14：移除「卷宗邊框殘影」——uv.x±/uv.y±0.90 斷續線＝畫面四周方格碎片線 + 超大井字框，使用者令移除
   // Pass13：移除「失焦光斑」4 個大柔圓——這才是使用者反覆指的「泡泡」（左下青綠/右下金大圓盤），
   //   非核心同心環。前三次找錯地方；這 4 個大高斯柔圓(金+青綠)配 bloom＝討厭的大泡泡，直接移除。
 
@@ -393,6 +391,7 @@ void main(){
     col+=gold*glow(abs(rad-rrK),0.0030)*(1.0-ph)*step(0.25,fbm2(vec2(ang*2.0+fk*3.0,5.0)))*0.10*(0.4+0.6*P)*sealGate; }
 
   // ═ 七 白金智慧核心（10 小層）
+  float coreStruct=smoothstep(0.20,0.46,P);   // Pass14：idle 低 power 時核心結構(球/能量膜)收斂→只剩奇點光點；運作時顯現
   if(rad<0.14){                                                            // 暖白球體（體積 raymarch）
     vec3 ro=vec3(uv*5.0,-1.0); float T=1.0; vec3 acc=vec3(0.0);
     for(int i=0;i<24;i++){
@@ -405,13 +404,13 @@ void main(){
         vec3 em=mix(gold,plat,smoothstep(0.55,0.0,length(p)))*(1.0/(0.20+dot(p,p)*2.2));
         acc+=T*den*em*0.060; T*=exp(-den*0.34);
         if(T<0.02) break; } }
-    col+=acc*coreAmp*coreTint*0.85; }
-  col+=plat*coreTint*smoothstep(0.022,0.0,rad)*1.45*coreAmp;               // 純白奇點（縮小）
+    col+=acc*coreAmp*coreTint*0.85*coreStruct; }                          // Pass14：球體 idle 收斂
+  col+=plat*coreTint*smoothstep(0.022,0.0,rad)*1.45*coreAmp;               // 純白奇點（光點；idle 仍保留＝「留光點就好」）
   // Pass13：泡泡真兇是「失焦光斑」(已移)，非核心環——回退 Pass12 過強雙層 bleed（中心爆白成大球、
   //   洗掉原本光點）。恢復核心結構光點：金黃能量膜(細金邊)+橘金熱量邊；核心＝raymarch 球+奇點+細金環+星芒，
   //   有層次不爆白。細環 width 小＝結構線非泡泡殼（泡泡是大柔圓，已移）。
-  { float r0=0.105+0.010*fbm2(vec2(ang*2.5,t*0.7));                        // 金黃能量膜（核心金邊光點）
-    col+=gold*coreTint*glow(abs(rad-r0),0.0045)*0.55*coreAmp; }
+  { float r0=0.105+0.010*fbm2(vec2(ang*2.5,t*0.7));                        // 金黃能量膜（核心金邊光點；idle 收斂）
+    col+=gold*coreTint*glow(abs(rad-r0),0.0045)*0.55*coreAmp*coreStruct; }
   { float hp=smoothstep(0.55,0.9,P)+FL+F;                                  // 橘金熱量邊（高峰才顯）
     float r1=0.150+0.014*fbm2(vec2(ang*4.0+2.0,t*1.1));
     col+=amber*coreTint*glow(abs(rad-r1),0.0060)*0.32*min(hp,1.2)*(0.5+0.5*cp); }
