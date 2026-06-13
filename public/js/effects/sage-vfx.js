@@ -214,11 +214,8 @@ void main(){
   { float aspx=uRes.x/uRes.y;                                            // 卷宗邊框殘影
     float fr1=glow(abs(abs(uv.x)-(aspx-0.10)),0.0028)+glow(abs(abs(uv.y)-0.90),0.0028);
     col+=vec3(0.35,0.27,0.14)*fr1*step(0.40,fbm2(uv*3.0+5.0))*0.06; }
-  for(int i=0;i<4;i++){ float fi=float(i);                               // 失焦光斑（資料霧焦外）
-    vec2 bp=rot(RT*0.01*(h11(fi+3.0)-0.5))*vec2(h11(fi*7.1)-0.5,h11(fi*13.3)-0.5)*2.6;
-    float g2=exp(-dot(uvF-bp,uvF-bp)*(2.2+3.0*h11(fi+5.0)));
-    vec3 bc=fi<1.5?vec3(0.30,0.20,0.06):(fi<2.5?vec3(0.06,0.16,0.12):vec3(0.18,0.05,0.03));
-    col+=bc*g2*0.05; }
+  // Pass13：移除「失焦光斑」4 個大柔圓——這才是使用者反覆指的「泡泡」（左下青綠/右下金大圓盤），
+  //   非核心同心環。前三次找錯地方；這 4 個大高斯柔圓(金+青綠)配 bloom＝討厭的大泡泡，直接移除。
 
   // ═ 二 外圍儀式邊界 + 六 9 類碎片
   { vec2 pr=rot(RT*0.006)*uv; float a2=atan(pr.y,pr.x);
@@ -410,11 +407,14 @@ void main(){
         if(T<0.02) break; } }
     col+=acc*coreAmp*coreTint*0.85; }
   col+=plat*coreTint*smoothstep(0.022,0.0,rad)*1.45*coreAmp;               // 純白奇點（縮小）
-  // Pass12 根治泡泡光暈：移除核心外柔寬同心發光環（原 0.105 金黃能量膜 / 0.150 橘金熱量邊）
-  //   ——前兩次只移 0.172/0.185，這兩條才是核心外「肥皂泡殼」主因。
-  //   改雙層連續 exp 徑向柔暈：中心亮→平滑往外散，無任何環邊界＝無泡泡殼；發光交給 bloom。
-  col+=mix(gold,plat,0.5)*coreTint*exp(-rad*rad*15.0)*0.58*coreAmp*sealGate; // 近核柔暈（強、收斂）
-  col+=mix(gold,amber,0.4)*coreTint*exp(-rad*rad*5.5)*0.18*coreAmp*sealGate; // 廣域光散射（弱、延伸融場景；連續無殼）
+  // Pass13：泡泡真兇是「失焦光斑」(已移)，非核心環——回退 Pass12 過強雙層 bleed（中心爆白成大球、
+  //   洗掉原本光點）。恢復核心結構光點：金黃能量膜(細金邊)+橘金熱量邊；核心＝raymarch 球+奇點+細金環+星芒，
+  //   有層次不爆白。細環 width 小＝結構線非泡泡殼（泡泡是大柔圓，已移）。
+  { float r0=0.105+0.010*fbm2(vec2(ang*2.5,t*0.7));                        // 金黃能量膜（核心金邊光點）
+    col+=gold*coreTint*glow(abs(rad-r0),0.0045)*0.55*coreAmp; }
+  { float hp=smoothstep(0.55,0.9,P)+FL+F;                                  // 橘金熱量邊（高峰才顯）
+    float r1=0.150+0.014*fbm2(vec2(ang*4.0+2.0,t*1.1));
+    col+=amber*coreTint*glow(abs(rad-r1),0.0060)*0.32*min(hp,1.2)*(0.5+0.5*cp); }
   { float fl4=pow(abs(cos(ang+0.12)),1500.0)*1.1;                          // 星芒：4 主（平時收斂、點火/完成才放）
     float fl8=pow(abs(cos(ang*2.0+0.62)),350.0)*0.40;
     float fl20=pow(abs(cos(ang*5.0+0.21)),90.0)*0.16;
