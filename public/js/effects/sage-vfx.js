@@ -198,15 +198,7 @@ void main(){
   col+=vec3(0.42,0.28,0.12)*pow(cNear,2.4)*smoothstep(0.40,1.10,rad)*0.42*uFog*godray;
   col*=1.0-0.20*smoothstep(0.50,0.95,fbm2(uvF*2.3+vec2(7.0,3.0)))*edge; // 墨漬暗斑（紙的污漬，不隨雲動）
   col+=teal*0.075*cMid*smoothstep(0.7,1.4,rad)*uFog*godray;             // 青綠索引（附在中層雲、隨之漂移）
-  { vec2 tp=rot(0.02*sin(RT*0.05))*uvF;                                 // 漂浮文字殘影（不可讀；4 行、略亮）
-    for(int r=0;r<4;r++){ float fr=float(r);
-      float y0=-0.78+fr*0.50+0.04*sin(RT*0.1+fr*2.0);
-      float dy=abs(tp.y-y0);
-      if(dy<0.035){
-        float cx=floor((tp.x+RT*0.012*(fr-1.5))*22.0);
-        float on=step(0.35,h11(cx+fr*57.0));
-        col+=vec3(0.45,0.38,0.26)*0.050*on*smoothstep(0.030,0.010,dy)
-             *step(fract((tp.x)*22.0),0.7)*smoothstep(0.40,0.75,rad); } } }
+  // Pass15：移除「漂浮文字殘影」——4 行水平斷續方塊(y0=-0.78+fr*0.50)＝使用者反映的「四條背景碎片直線」，直接移除。
   { vec2 gp=uv*9.0+vec2(0.0,t*0.05); vec2 cell=floor(gp);               // 燒焦紙屑（Pass14：大柔甜甜圈→小暗點，留點不留圓）
     float hh=hash21(cell+31.7);
     if(hh>0.93){ vec2 f=fract(gp)-0.5;
@@ -634,7 +626,7 @@ export function buildSageVfx(deps) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.56, 0.42, 0.72);  // Pass9：strength/radius↑ 配合核心柔暈+雲層發散更融（門檻不動避免雲過曝）
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.46, 0.28, 0.82);  // Pass15：threshold↑0.82(只核心入光)+radius↓0.28(暈收斂)＝亮粒子不再被暈成大柔圓泡泡；strength 0.46
   composer.addPass(bloom);
   const cinematic = new ShaderPass({
     uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:uRes} },
