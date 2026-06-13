@@ -1,5 +1,17 @@
 # S-Level Upgrade Tasks
 
+## PASS 10 元件狀態 contract + a11y 互動補完（2026-06-13g，已部署）
+依「全站工程升級提示詞」先出審查報告（標 已達標/部分缺口/真缺口），使用者選「全部真缺口」執行。
+基準：Pass1-9 已達標項（token 集中、首屏 gate、WebGL fallback、MODEL SLOT、motion、skip link/reduced-motion、zero-flicker）不重做。
+- **toast 四變體**：ui.js toast(msg,type) 加 type=info/success/error/warning；error/warning→role=alert 搶讀、其餘 status；加關閉鈕(dismissible)、自動關 error/warn 4.2s 其餘 2.8s。app.css 左色條(金/綠/橘紅/琥珀)+狀態圓點(不只靠色)+關閉鈕。
+- **button 語意態**：app.css 加 btn-success/btn-block/btn-compact（btn-danger/ghost/disabled/icon/lg 已有）。
+- **textarea error/disabled**：draft-input[aria-invalid=true] 危險邊框+柔光、:disabled 灰停用、:focus 加柔光環；main.js scanForbidden 命中時設 aria-invalid（配 forbiddenWarn 文字雙重提示）；index.html aria-describedby 加 forbiddenWarn 關聯。
+- **modal/history a11y**：ui.js 共用 trapTab+lockScroll/unlockScroll；openLogoutModal/openHistory 記 lastFocus+鎖捲動+Tab 焦點陷阱+開啟送焦點；close 移除 trap+解鎖+還焦點。ESC/outside-click 本就有(bindScrim)。
+- **dropdown 鍵盤**：review-controls setOpen(true) 焦點送進選中 radio(↑↓ 原生 group 切換立即可用)；ESC 關閉還焦點按鈕。:has(input:focus-visible) outline 本就有。
+- **對比**：tokens --c-text-muted #a08d68→#b29c72、--c-text-faint #7d6e4c→#94815a（半透明卡上提至 AA；仍與主文字分級）。
+- 驗證：npm test 26/26、check:frontend 通過；preview 實測——toast 三變體左色條(error rgb255,154,134／ok 203,227,154／warn 230,184,90)+關閉鈕、textarea aria-invalid 邊框轉危險色、modal(開啟焦點進取消鈕/scroll lock/ESC 關/還焦點 logoutBtn/Tab 循環回首)、dropdown(開啟焦點進選中 radio/ESC 還焦點按鈕)全過、零 console error。
+- 註：test:a11y(playwright) 因沙箱 CDN 斷網+port 風險未跑，改用 preview eval 直接實測所有改動的 a11y 行為(更精準)。明確未碰：Firebase/Auth/API 值流、MODEL SLOT radio 契約、VFX 編舞、首屏 gate。
+
 ## PASS 9 移格子 + 去泡泡 + 光影整體 + 分層雲霧（2026-06-13f，已部署）
 使用者：①一排排格子移掉 ②外層泡泡光球改掉 ③光影整體優化 ④霧改「像雲層分層、不規則、+景深、+散開動效」。研究禁單一來源。
 - **研究（多來源）**：分層雲＝多 octave FBM 疊層（IQ dynclouds／Maxime Heckel／gameidea／shadertoy）；散開＝curl noise 流場 + advection 推 uv（Rombo／shaderbits UE4／HAL 論文）；景深＝遠中近層遞減 opacity+視差。

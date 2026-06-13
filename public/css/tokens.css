@@ -19,8 +19,8 @@
   /* ── 文字（暖白/羊皮紙） ── */
   --c-text: #f4eede;        /* warm holy white（主文字） */
   --c-text-soft: #d9c8a4;   /* parchment */
-  --c-text-muted: #a08d68;  /* 次要 */
-  --c-text-faint: #7d6e4c;  /* placeholder */
+  --c-text-muted: #b29c72;  /* 次要（Pass10 提亮：半透明卡上仍達 AA） */
+  --c-text-faint: #94815a;  /* placeholder（Pass10 提亮，仍與主文字分級） */
 
   /* ── 主色 / 點綴（黑金；語意名沿用，全部金系，零藍紫） ── */
   --c-gold: #d6a64d;        /* 主金 */

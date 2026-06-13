@@ -174,14 +174,17 @@ function updateDiagnostics() {
 let FORBIDDEN = [];
 function scanForbidden() {
   const el = $("forbiddenWarn");
+  const field = $("draftField");
   if (!el) return;
-  const text = $("draftField")?.value || "";
-  if (!text || !FORBIDDEN.length) { el.hidden = true; el.textContent = ""; return; }
+  const text = field?.value || "";
+  const clear = () => { el.hidden = true; el.textContent = ""; field?.removeAttribute("aria-invalid"); };
+  if (!text || !FORBIDDEN.length) { clear(); return; }
   const hits = [];
   for (const w of FORBIDDEN) { if (w?.term && text.includes(w.term)) hits.push(w); if (hits.length >= 8) break; }
-  if (!hits.length) { el.hidden = true; el.textContent = ""; return; }
+  if (!hits.length) { clear(); return; }
   el.hidden = false;
   el.textContent = `偵測到 ${hits.length} 個東方語彙，建議替換：` + hits.map((w) => `${w.term}→${w.replace}`).join("、");
+  field?.setAttribute("aria-invalid", "true");                 // 觸發 textarea error 視覺態（邊框+柔光，配 warn 文字雙重提示）
 }
 function saveDraft() {
   try {

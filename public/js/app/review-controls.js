@@ -38,6 +38,8 @@ export function initReviewControls() {
   const setOpen = (open) => {
     slot?.classList.toggle("is-open", open);
     btn?.setAttribute("aria-expanded", String(open));
+    // 開啟時焦點送進選中的 radio → ↑↓ 原生 radio group 鍵盤切換立即可用；關閉還焦點給按鈕
+    if (open) (radios.find((r) => r.checked) || radios[0])?.focus();
   };
 
   const sync = (announce) => {
@@ -74,7 +76,7 @@ export function initReviewControls() {
     setOpen(false);
   });
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && slot?.classList.contains("is-open")) setOpen(false);
+    if (e.key === "Escape" && slot?.classList.contains("is-open")) { setOpen(false); btn?.focus(); }
   });
   thinkInput?.addEventListener("change", () => sync(false));
   sync(false);

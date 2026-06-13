@@ -125,7 +125,11 @@ button { font: inherit; color: inherit; }
 .btn-ghost { --btn-bg: rgba(30, 23, 12, 0.5); }
 .btn-danger { --btn-bd: rgba(255, 140, 140, 0.5); --btn-fg: #ffd6d6; }
 .btn-danger:hover:not(:disabled) { --btn-bd: var(--c-danger); }
+.btn-success { --btn-bd: rgba(203, 227, 154, 0.5); --btn-fg: #e7f3c6; }
+.btn-success:hover:not(:disabled) { --btn-bd: var(--c-ok); }
 .btn-icon { width: 44px; min-height: 44px; padding: 0; }
+.btn-block { width: 100%; }                                  /* 全寬語意態 */
+.btn-compact { min-height: 38px; padding: 0 var(--s-3); font-size: var(--fs-caption); }  /* 緊湊語意態 */
 
 /* 主鈕 hover 金光：改用元素 box-shadow（.btn 已 overflow:hidden 會裁切 ::after，移到元素本身；
    box-shadow 過渡，零閃）。 */
@@ -318,7 +322,10 @@ button { font: inherit; color: inherit; }
   transition: border-color var(--t-mid) var(--ease-out);
 }
 .draft-input::placeholder { color: var(--c-text-faint); }
-.draft-input:focus { outline: none; border-color: var(--c-silverblue); }
+.draft-input:focus { outline: none; border-color: var(--c-silverblue); box-shadow: 0 0 0 1px var(--c-silverblue), 0 0 16px rgba(226,192,116,0.18); }
+.draft-input:disabled { opacity: 0.55; cursor: not-allowed; border-color: var(--c-line-soft); }
+/* error 態（aria-invalid="true"）：危險色邊框 + 柔光，不只變色——配 forbiddenWarn 文字雙重提示 */
+.draft-input[aria-invalid="true"] { border-color: var(--c-danger); box-shadow: 0 0 0 1px var(--c-danger), 0 0 16px rgba(255,154,134,0.18); }
 .draft-meta { display: flex; justify-content: space-between; gap: var(--s-3); font-family: var(--font-mono); font-size: var(--fs-caption); color: var(--c-text-muted); }
 .draft-meta .over { color: var(--c-danger); }
 .draft-meta .warn { color: var(--c-gold); }
@@ -451,12 +458,30 @@ button { font: inherit; color: inherit; }
 /* ═══ Toast ═══ */
 .toasts { position: fixed; left: 50%; bottom: clamp(20px, 6vh, 64px); z-index: var(--z-toast); transform: translateX(-50%); display: grid; gap: var(--s-2); width: min(520px, calc(100vw - 32px)); pointer-events: none; }
 .toast {
-  padding: var(--s-3) var(--s-4); background: rgba(11, 17, 36, 0.96); border: var(--panel-border);
-  border-radius: var(--r-sm); color: var(--c-text); font-size: var(--fs-caption); text-align: center;
-  box-shadow: var(--sh-md); opacity: 0; transform: translateY(10px);
+  display: flex; align-items: center; gap: var(--s-3);
+  padding: var(--s-3) var(--s-3) var(--s-3) var(--s-4); background: var(--panel-bg-strong); border: var(--panel-border);
+  border-left: 3px solid var(--c-gold);                    /* 預設 info＝金 */
+  border-radius: var(--r-sm); color: var(--c-text); font-size: var(--fs-caption); text-align: left;
+  box-shadow: var(--sh-md); opacity: 0; transform: translateY(10px); pointer-events: auto;
   animation: toastIn var(--t-mid) var(--ease-out) forwards;
 }
 .toast.is-out { animation: toastOut var(--t-mid) var(--ease-out) forwards; }
+.toast-msg { flex: 1 1 auto; min-width: 0; }
+/* 四語意變體：左色條 + 狀態圓點（不只靠顏色——點＋role=alert/status 雙重提示） */
+.toast::before { content: ""; flex: 0 0 auto; width: 8px; height: 8px; border-radius: 50%; background: var(--c-gold); box-shadow: 0 0 8px var(--glow-gold); }
+.toast-success { border-left-color: var(--c-ok); }
+.toast-success::before { background: var(--c-ok); box-shadow: 0 0 8px rgba(203,227,154,0.5); }
+.toast-error { border-left-color: var(--c-danger); }
+.toast-error::before { background: var(--c-danger); box-shadow: 0 0 8px rgba(255,154,134,0.5); }
+.toast-warning { border-left-color: #e6b85a; }
+.toast-warning::before { background: #e6b85a; box-shadow: 0 0 8px rgba(230,184,90,0.5); }
+.toast-close {
+  flex: 0 0 auto; width: 26px; height: 26px; display: inline-grid; place-items: center;
+  border: none; border-radius: var(--r-xs); background: transparent; color: var(--c-text-muted); cursor: pointer;
+  transition: color var(--t-fast), background var(--t-fast);
+}
+.toast-close:hover, .toast-close:focus-visible { color: var(--c-text); background: rgba(255,255,255,0.06); outline: none; }
+.toast-close svg { width: 14px; height: 14px; }
 
 /* ════════ 審稿控制：模型放射選單 + 思考開關（黑金） ════════ */
 .review-controls { display: inline-flex; align-items: center; gap: 14px; flex: 0 0 auto; }

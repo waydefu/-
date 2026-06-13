@@ -3,20 +3,52 @@
 // 鐵則：transform/opacity 動畫；無 contain:paint；遮罩 pointer-events 由 .is-open 控制。
 const $ = (id) => document.getElementById(id);
 
-/** 短暫通知。 */
-export function toast(message) {
+// ── a11y 浮層共用：焦點陷阱 + 捲動鎖 + 還焦點（modal / history 共用） ──
+const FOCUSABLE = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+let scrollLockCount = 0;
+function lockScroll() { if (scrollLockCount++ === 0) document.body.style.overflow = "hidden"; }
+function unlockScroll() { if (scrollLockCount > 0 && --scrollLockCount === 0) document.body.style.overflow = ""; }
+function trapTab(container, e) {
+  if (e.key !== "Tab") return;
+  const f = Array.from(container.querySelectorAll(FOCUSABLE)).filter((el) => el.offsetParent !== null);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+}
+
+/** 短暫通知。type: info(預設)|success|error|warning；error/warning 用 role=alert 搶讀。 */
+export function toast(message, type = "info") {
   const wrap = $("toasts");
   if (!wrap || !message) return;
   const el = document.createElement("div");
-  el.className = "toast";
-  el.setAttribute("role", "status");
-  el.textContent = message;
-  wrap.appendChild(el);
-  window.setTimeout(() => {
+  el.className = "toast toast-" + type;
+  el.setAttribute("role", type === "error" || type === "warning" ? "alert" : "status");
+
+  const msg = document.createElement("span");
+  msg.className = "toast-msg";
+  msg.textContent = message;
+  el.appendChild(msg);
+
+  const close = document.createElement("button");
+  close.type = "button";
+  close.className = "toast-close";
+  close.setAttribute("aria-label", "關閉通知");
+  close.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+  el.appendChild(close);
+
+  let removed = false;
+  const dismiss = () => {
+    if (removed) return; removed = true;
+    window.clearTimeout(autoT);
     el.classList.add("is-out");
     el.addEventListener("animationend", () => el.remove(), { once: true });
-    window.setTimeout(() => el.remove(), 500);
-  }, 2600);
+    window.setTimeout(() => el.remove(), 500);   // reduced-motion 動畫熔斷時的保底移除
+  };
+  close.addEventListener("click", dismiss);
+  // error/warning 停留久一點（4.2s），其餘 2.8s
+  const autoT = window.setTimeout(dismiss, (type === "error" || type === "warning") ? 4200 : 2800);
+  wrap.appendChild(el);
 }
 
 /** 設定狀態列文字 + error 狀態（line 容器需有 [data-state] 與內層文字 span）。 */
@@ -44,6 +76,7 @@ function hideScrim() {
 export function openLogoutModal() {
   const m = $("logoutModal");
   if (!m) return;
+  m._lastFocus = document.activeElement;          // 記住觸發元素，關閉時還焦點
   window.clearTimeout(m._closeTimer);
   m.classList.remove("is-closing");
   m.hidden = false;
@@ -51,6 +84,9 @@ export function openLogoutModal() {
   void m.offsetWidth;
   m.classList.add("is-open");
   showScrim("modal");
+  lockScroll();
+  m._trap = (e) => trapTab(m, e);                 // Tab 焦點陷阱（限制在彈窗內循環）
+  m.addEventListener("keydown", m._trap);
   $("logoutCancelBtn")?.focus();
 }
 
@@ -61,6 +97,10 @@ export function closeLogoutModal() {
   m.classList.remove("is-open");
   m.classList.add("is-closing");
   hideScrim();
+  if (m._trap) { m.removeEventListener("keydown", m._trap); m._trap = null; }
+  unlockScroll();
+  const back = m._lastFocus; m._lastFocus = null;
+  if (back && back.focus) back.focus();           // 還焦點給觸發鈕
   window.clearTimeout(m._closeTimer);
   m._closeTimer = window.setTimeout(() => { m.classList.remove("is-closing"); m.hidden = true; }, 360);
 }
@@ -69,12 +109,17 @@ export function closeLogoutModal() {
 export function openHistory() {
   const p = $("historyPanel");
   if (!p) return;
+  p._lastFocus = document.activeElement;
   window.clearTimeout(p._closeTimer);
   p.classList.remove("is-closing");
   void p.offsetWidth; // reflow → SAO 開合動畫重新觸發
   p.classList.add("is-open");
   $("historyToggleBtn")?.setAttribute("aria-expanded", "true");
   showScrim("history"); // 全裝置皆抽屜（部落格式單欄）→ 一律出遮罩
+  lockScroll();
+  p._trap = (e) => trapTab(p, e);
+  p.addEventListener("keydown", p._trap);
+  $("historyCloseBtn")?.focus();
 }
 
 /** 關閉手機歷史 sheet。 */
@@ -86,6 +131,10 @@ export function closeHistory() {
   window.clearTimeout(p._closeTimer);
   p._closeTimer = window.setTimeout(() => p.classList.remove("is-closing"), 360);
   $("historyToggleBtn")?.setAttribute("aria-expanded", "false");
+  if (p._trap) { p.removeEventListener("keydown", p._trap); p._trap = null; }
+  unlockScroll();
+  const back = p._lastFocus; p._lastFocus = null;
+  if (back && back.focus) back.focus();
   if (scrimUser === "history") hideScrim();
 }
 
