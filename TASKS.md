@@ -1,5 +1,12 @@
 # S-Level Upgrade Tasks
 
+## PASS 11 手機粒子降載（2026-06-13h，已部署）
+依「Motion System 提示詞」，但使用者明確點真問題＝「手機特效粒子數過多，針對動畫處理」。聚焦此，不做全站 motion 大重構（專案已有 motion tokens+Pass1-10 成熟）。
+- 定位：great-sage-core line 100 寫死 quality:"ultra"，手機桌機都 40000 粒子(texW 200²)+dprCap 2.0+raymarch 24。手機 GPU 弱+高 DPR → 過重。
+- 改：`quality: this.mobile ? "medium" : "ultra"`（mobile 旗標 effects-manager 早傳）。medium = texW 128²=16384 粒子(−59%)、dprCap 1.25、raymarch 12。**特效層全保留，只降量**；桌機 ultra 不動。
+- 推翻早期「手機不降粒子」政策——本次使用者主動指令，新令優先。手機另有自適應 render scale(FPS<36 再降 floor 0.6)雙重保險、calm 模式(reduced-motion)降動態。
+- 驗證：npm test 26/26；preview 抓 QUALITY 表確認 mobile→medium 邏輯+粒子 40000→16384(−59%)+dprCap 1.25+steps 12；shader 不受影響(quality 只改 JS 參數)。deploy+smoke+線上抽驗。手機實機順暢度待驗收。
+
 ## PASS 10 元件狀態 contract + a11y 互動補完（2026-06-13g，已部署）
 依「全站工程升級提示詞」先出審查報告（標 已達標/部分缺口/真缺口），使用者選「全部真缺口」執行。
 基準：Pass1-9 已達標項（token 集中、首屏 gate、WebGL fallback、MODEL SLOT、motion、skip link/reduced-motion、zero-flicker）不重做。

@@ -97,7 +97,8 @@ export class GreatSageCore {
       ShaderPass: spMod.ShaderPass,
       OutputPass: opMod.OutputPass,
       canvas: this.canvas,
-      quality: "ultra",          // 使用者令：只做 Ultra（QUALITY 等級已預留，要降只改這裡）
+      quality: this.mobile ? "medium" : "ultra",  // 手機降 medium：粒子 40000→16384、DPR cap 1.25、raymarch 24→12（使用者令「手機粒子過多」）；桌機維持 ultra。特效層不關，只降量。
+
       calm: this.calm,
       afterIgnition: this._standing,
     });
