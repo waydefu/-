@@ -374,8 +374,7 @@ void main(){
   col*=1.0-0.28*glow(abs(rad-0.205),0.010)*sealGate;                       // 核心暗部護圈
   col*=1.0-0.18*glow(abs(rad-0.229),0.0035)*sealGate;                      // 主環內側陰影（厚度）
   col+=plat*glow(abs(rad-0.235),0.0028)*(1.10+0.40*cp)*sealGate;           // 白金封印主環
-  col+=plat*glow(abs(rad-0.242),0.0050)*0.22*sealGate;                     // 外側淡光（厚度）
-  col+=gold*glow(abs(rad-0.256),0.012)*0.14*sealGate;                      // 封印外暈
+  // Pass12 去泡泡：移除封印環外側柔光殼（原 0.242 淡光 / 0.256 外暈）——同心柔環＝泡泡輪廓來源；只留下方細線主環 0.235
   col+=vec3(1.0,0.93,0.80)*smoothstep(0.235,0.10,rad)*0.08*(0.6+0.4*cp)*sealGate; // 封印內暈
   { vec2 pr=rot(RT*0.07+SPIN(sealGate)*0.8)*uv;                            // 精密數值刻度（×1.4；出場自轉）
     col+=plat*tickRing(pr,0.274,120.0,0.0020,0.0090,5.5)*(0.40+0.30*cp)*sealGate; }
@@ -411,12 +410,11 @@ void main(){
         if(T<0.02) break; } }
     col+=acc*coreAmp*coreTint*0.85; }
   col+=plat*coreTint*smoothstep(0.022,0.0,rad)*1.45*coreAmp;               // 純白奇點（縮小）
-  { float r0=0.105+0.010*fbm2(vec2(ang*2.5,t*0.7));                        // 金黃能量膜
-    col+=gold*coreTint*glow(abs(rad-r0),0.0050)*0.70*coreAmp; }
-  { float hp=smoothstep(0.55,0.9,P)+FL+F;                                  // 橘金熱量邊（高峰才顯）
-    float r1=0.150+0.014*fbm2(vec2(ang*4.0+2.0,t*1.1));
-    col+=amber*coreTint*glow(abs(rad-r1),0.0070)*0.40*min(hp,1.2)*(0.5+0.5*cp); }
-  col+=mix(gold,plat,0.5)*coreTint*exp(-rad*rad*15.0)*0.42*coreAmp*sealGate; // Pass9 核心光散射 bleed：連續徑向柔暈取代泡泡膜邊（無硬球緣，發散交給 bloom）
+  // Pass12 根治泡泡光暈：移除核心外柔寬同心發光環（原 0.105 金黃能量膜 / 0.150 橘金熱量邊）
+  //   ——前兩次只移 0.172/0.185，這兩條才是核心外「肥皂泡殼」主因。
+  //   改雙層連續 exp 徑向柔暈：中心亮→平滑往外散，無任何環邊界＝無泡泡殼；發光交給 bloom。
+  col+=mix(gold,plat,0.5)*coreTint*exp(-rad*rad*15.0)*0.58*coreAmp*sealGate; // 近核柔暈（強、收斂）
+  col+=mix(gold,amber,0.4)*coreTint*exp(-rad*rad*5.5)*0.18*coreAmp*sealGate; // 廣域光散射（弱、延伸融場景；連續無殼）
   { float fl4=pow(abs(cos(ang+0.12)),1500.0)*1.1;                          // 星芒：4 主（平時收斂、點火/完成才放）
     float fl8=pow(abs(cos(ang*2.0+0.62)),350.0)*0.40;
     float fl20=pow(abs(cos(ang*5.0+0.21)),90.0)*0.16;
