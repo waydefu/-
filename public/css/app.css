@@ -297,12 +297,30 @@ body.is-authed .skip-link:focus { top: calc(var(--shell-header-h) + 12px); }
   background:
     linear-gradient(135deg, rgba(240,212,136,0.95), rgba(214,166,77,0.45) 26%, rgba(120,90,40,0.35) 50%, rgba(214,166,77,0.5) 74%, rgba(240,212,136,0.9));
 }
+/* Pass21 登入卡專屬旋轉流光金邊（參考 card__border；只此單卡＝效能 OK；@property conic 角度動畫，
+   Firefox 無 @property → 停在靜態金邊安全降級。常駐工作區面板維持上方靜態 fui-frame） */
+@property --fui-ang { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+.auth-card .fui-frame {
+  background:
+    conic-gradient(from var(--fui-ang),
+      rgba(240,212,136,0.95), rgba(120,90,40,0.30) 18%, rgba(214,166,77,0.55) 34%,
+      rgba(255,246,224,0.95) 48%, rgba(214,166,77,0.55) 62%, rgba(120,90,40,0.30) 80%, rgba(240,212,136,0.95)),
+    linear-gradient(135deg, rgba(240,212,136,0.9), rgba(214,166,77,0.45) 50%, rgba(240,212,136,0.85));
+  animation: fuiFlow 12s linear infinite;
+}
+@keyframes fuiFlow { to { --fui-ang: 360deg; } }
 .fui-fill {
   inset: 1.5px;
-  /* Pass7：登入卡/工作區面板半透明（alpha 0.70）透出背景法陣；彈窗類在 line~458 加深保持實 */
+  /* Pass21 去塑膠：多層 radial 角落光暈（右下暖金/左上青綠微光/上緣柔光）疊在半透明底上＝有深度非平板；
+     保留 alpha 0.70 透出背景法陣（彈窗類在 line~458 加深）。 */
   background:
+    radial-gradient(125% 80% at 88% 90%, rgba(214,166,77,0.13), transparent 60%),
+    radial-gradient(115% 75% at 10% 14%, rgba(98,214,196,0.06), transparent 58%),
+    radial-gradient(90% 60% at 50% 0%, rgba(255,230,166,0.05), transparent 52%),
     linear-gradient(90deg, transparent calc(50% - 110px), rgba(214,166,77,0.10) 50%, transparent calc(50% + 110px)) 0 0 / 100% 1px no-repeat,
     linear-gradient(160deg, rgba(26, 19, 10, 0.70), rgba(13, 10, 6, 0.72) 46%, rgba(20, 14, 8, 0.70));
+  /* inset 立體：上緣白金高光細線 + 底部內陰影＝邊緣有受光、去塑膠平板感（clip-path 內部不裁 inset） */
+  box-shadow: inset 0 1px 0 rgba(255,240,200,0.16), inset 0 -26px 50px -30px rgba(0,0,0,0.55);
 }
 .panel-head { display: flex; align-items: center; gap: var(--s-3); padding: var(--s-4) var(--s-5); border-bottom: var(--panel-border); }
 .panel-eyebrow { font-family: var(--font-mono); font-size: var(--fs-nano); letter-spacing: 0.22em; color: var(--c-cyan); }
@@ -452,7 +470,11 @@ body.is-authed .skip-link:focus { top: calc(var(--shell-header-h) + 12px); }
 }
 /* 彈窗類 fui 填充加深（聚焦暗場上要實，半透明會看見背後內容） */
 .history-panel .fui-fill, .modal .fui-fill {
-  background: linear-gradient(160deg, rgba(24, 18, 10, 0.985), rgba(11, 8, 5, 0.99) 50%, rgba(18, 13, 8, 0.985));
+  /* 彈窗：實底（聚焦暗場上要清楚）+ 同款角落光暈去塑膠；inset box-shadow 繼承上方 .fui-fill */
+  background:
+    radial-gradient(125% 80% at 88% 90%, rgba(214,166,77,0.14), transparent 60%),
+    radial-gradient(115% 75% at 10% 14%, rgba(98,214,196,0.05), transparent 58%),
+    linear-gradient(160deg, rgba(24, 18, 10, 0.985), rgba(11, 8, 5, 0.99) 50%, rgba(18, 13, 8, 0.985));
 }
 
 /* ═══ Toast ═══ */

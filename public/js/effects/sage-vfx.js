@@ -134,7 +134,7 @@ vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float no
     if(nd<0.20){
       float nf=smoothstep(0.50,-0.50,sin(a)*sinT);           // 節點自身前後
       float ns=0.017*(0.50+0.85*nf);
-      col+=cB*(glow(nd,ns)*1.3+glow(nd,ns*1.8)*0.12)*(0.35+0.95*nf); }    // Pass16：只留乾淨小光球+極窄貼身暈——移除 ns*3.2/ns*4.5 大柔暈（＝「環上光點的光暈」泡泡真兇）；發光交 bloom
+      col+=cB*glow(nd,ns)*0.9*(0.35+0.95*nf); }                           // Pass21：節點再收斂——降亮度 1.3→0.9、移 ns*1.8 暈層，避免被 bloom 暈成大圈（「環上光點光暈」復發根治）
     float db=mod(a-th+TAU,TAU);                              // 切線彗尾（拉長）
     col+=cA*glow(abs(d),w*0.45)*exp(-db*4.2)*step(0.02,db)*0.85*(0.25+0.75*front); }
   return col*amp*fogOc;
@@ -641,7 +641,7 @@ export function buildSageVfx(deps) {
   const rt = new THREE.WebGLRenderTarget(1, 1, { type: THREE.HalfFloatType });
   const composer = new EffectComposer(renderer, rt);
   composer.addPass(new RenderPass(scene, camera));
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.46, 0.28, 0.82);  // Pass15：threshold↑0.82(只核心入光)+radius↓0.28(暈收斂)＝亮粒子不再被暈成大柔圓泡泡；strength 0.46
+  const bloom = new UnrealBloomPass(new THREE.Vector2(1,1), 0.46, 0.24, 0.86);  // Pass21：threshold↑0.86(更只核心入光)+radius↓0.24(暈再收)＝節點等亮點不被暈成大圈；strength 0.46
   composer.addPass(bloom);
   const cinematic = new ShaderPass({
     uniforms:{ tDiffuse:{value:null}, uTime:{value:0}, uRes:{value:uRes} },

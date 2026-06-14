@@ -1,5 +1,16 @@
 # S-Level Upgrade Tasks
 
+## PASS 21 光暈復發收斂 + 卡片去塑膠（2026-06-14）
+使用者：①超大光暈(環上光點、很多個)又出現 ②彈窗/卡片太塑膠[所有一起改]，參考 card(漸層底+旋轉流光邊+inset shadow)，保留半透明+原風格+按鈕特效。
+- **光暈復發根治**：分析＝orbitSys 節點(glow*1.3)雖小，但 bloom radius 0.28 把每個亮節點暈成大圈、五型×多節點=很多超大光暈。改：節點亮度 1.3→0.9、移 ns*1.8 暈層(只留 glow(nd,ns))；bloom threshold 0.82→0.86、radius 0.28→0.24(亮點不被暈大)。
+- **去塑膠(所有卡片，參考 card 技法黑金化)**：塑膠感＝fui-fill 平板 linear-gradient。改：
+  · fui-fill 加多層 radial 角落光暈(右下暖金 0.13/左上青綠 0.06/上緣柔光 0.05)疊半透明底＝有深度非平板。
+  · inset box-shadow(上緣白金高光細線 + 底部內陰影)＝邊緣受光立體(clip 內不裁 inset)。
+  · 保留 alpha 0.70 半透明；彈窗類實底 0.985 + 同款角落光暈。
+- **登入卡旋轉流光邊**(參考 card__border)：只 auth-card fui-frame 改 conic @property 旋轉(12s)＝單卡效能 OK；常駐工作區面板維持靜態 fui-frame(效能)；Firefox 無 @property 降級靜態。
+- 保留：fui-frame 切角金邊、按鈕全特效、半透明、黑金風格。
+- 驗證：npm test 27/27；shader 編譯+節點降亮+bloom 確認；CSS computed(fui-fill radial+inset+0.70 保留、auth fui-frame fuiFlow、panel 靜態)。deploy+smoke。截圖管線環境卡，實機質感待驗。
+
 ## PASS 20 動效升級 P0+P1：computing 爆點 + 法陣啟動掃描掠光（2026-06-14）
 依動效研究報告 P0/P1，深度研究後實作（使用者令）。
 - 多來源研究：scifiinterfaces HUD（radar sweep 掃描掠光=運算中主訊號、staged reveal、data lines 持續微動）；IQ functions/Harry Alisavakis shockwave/Book of Shaders（擴散環=兩 smoothstep 相減 cubic pulse、半徑 lerp 擴大）。現有 shader 已有 uPulse 擴散波+scan radar 概念基礎，缺 computing 進場爆點。
