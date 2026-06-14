@@ -175,10 +175,12 @@ Dark Fantasy UI · Arcane Magic Tech · Ancient Magical Machinery · Cinematic H
 
 ### 現況
 
-- 正式入口背景 = **SAGE CORE IGNITION**：視覺真源 `js/effects/sage-vfx.js`（零依賴工廠，three 類別注入；GPGPU 魔力粒子 + 多層法陣 + 3D 軌道系統 + UnrealBloom + filmic 電影 pass），`great-sage-core.js` 為引擎殼（契約/addon 動態載入/自適應 render scale/站內事件→相位映射）。規格：`docs/SAGE_CORE_IGNITION_SPEC.md` + `REFINE_PASS2` + `ULTRA_PASS3`。addon 動態 import 靠 importmap 解內部 `'three'`，失敗 → catch → CSS 背景 fallback（不黑屏）。
+- 正式入口背景 = **SAGE CORE IGNITION**：視覺真源 `js/effects/sage-vfx.js`（零依賴工廠，three 類別注入；GPGPU 魔力粒子 + 多層法陣 + 3D 軌道系統 + UnrealBloom + filmic 電影 pass），`great-sage-core.js` 為引擎殼（契約/addon 動態載入/自適應 render scale/站內事件→相位映射）。規格：`docs/SAGE_CORE_IGNITION_SPEC.md` + `REFINE_PASS2` + `ULTRA_PASS3` + `SAGE_OPENING_PASS5`。addon 動態 import 靠 importmap 解內部 `'three'`，失敗 → catch → CSS 背景 fallback（不黑屏）。
+- **sage-vfx.js 內部地圖（BG_FRAG 由內到外）**：核心 raymarch 暖白球+奇點+能量膜環+星芒 → 內圈封印穩定器(白金主環 0.235/刻度/鎖扣) → 中圈主法陣(主圓/節點/齒輪/資料讀取條) → 符文系統(核心短符/主咒文/外圈殘符) → **3D 軌道系統 orbitSys()**(五型 A 金/B 青綠/C 白金/D 暗金/E 斷裂；每環＝主帶+緣線+刻度+節點星體+彗尾) → 外圍儀式邊界+9 類碎片 → 雲霧三層(遠/中/近 advection 散開)。後製 CINE_FRAG(熱浪/filmic/暗角) + UnrealBloom。粒子 COMPUTE/P_VERT/P_FRAG。
+  > 視覺除錯雷區：**「環上光點的光暈/泡泡」=orbitSys 節點 glow 半徑**（Pass16 修，勿再放大 ns 倍數）；大柔圓非背景靜態層時查粒子+bloom；改前用 raw WebGL 單獨渲染 BG_FRAG + readPixels 掃描定位，勿讀碼空猜。
 - 舊版 legacy 強模組 `js/webgl/*` 已全數封存至 `deadcode/`（2026-06-12，零引用；接回計畫由 SAGE CORE IGNITION 取代）。
-- **自適應 render scale**：`great-sage-core` 每秒測 FPS，嚴重掉幀降 render scale（floor 0.6×）、回穩才升、調整間隔 ≥2.5s 防震盪 — 唯一效能旋鈕，不關特效。resize/變更 scale 後同一 task 內立即重繪（防透明幀閃屏）。
-- **登入儀式**：滑入/聚焦登入鈕 → `worldforge:pulse` → 核心短暫充能；handoff = LINK START canvas 光速隧道 warp（`link-start.js`）+ 收尾羊皮紙金淨化閃光（`.ls-flash`）；`decryptText` 文字解碼揭露 `鑑定核心已連線`。
+- **自適應 render scale**：`great-sage-core` 每秒測 FPS，嚴重掉幀降 render scale（floor 0.6×）、回穩才升、調整間隔 ≥2.5s 防震盪 — 唯一效能旋鈕，不關特效。resize/變更 scale 後同一 task 內立即重繪（防透明幀閃屏）。手機 quality=medium（Pass11 粒子降載）。
+- **登入編舞（SAGE OPENING，Pass5）**：滑入/聚焦登入鈕 → `worldforge:pulse` 核心充能 + 卡片四角節點亮；click → 四向鎖扣依序亮 + `state.manualLogin`；成功 → `opening-director.js` TIMELINE 編舞（卡片 saoOut 收 → `worldforge:ignite` 核心點火/軌道逐環 360° 出場/煙轉散 → 工作區 saoIn 展開 → ambient 減速）。**LINK START 隧道轉場已刪除**（link-start.js 移除）；失敗 → 卡片橘紅短閃 `is-fail`。
 - **彈窗**：登入卡 / 歷史 / 登出 統一 SAO 開合（水平展開→垂直展開）+ 金色邊光。
 - 配色基準：黑金為主 + 少量青綠/深藍 accent（使用者明確要少量青藍，推翻 README 早期「避免冷藍」）。
 
@@ -364,7 +366,7 @@ firebase functions:log --only analyzeV2 -n 80
 - 核心設定 / 狀態 / 型別：`public/js/core/`
 - API 串流 / 快取：`public/js/services/analyze-api.js`、`cache.js`
 - 結果解析：`public/js/utils/result-sections.js`
-- 特效層：`public/js/effects/effects-manager.js`、`great-sage-core.js`、`sage-vfx.js`、`interactions.js`、`link-start.js`
+- 特效層：`public/js/effects/effects-manager.js`、`great-sage-core.js`、`sage-vfx.js`、`opening-director.js`、`audio-fx.js`、`interactions.js`（link-start.js 已於 Pass5 刪除）
 - 死碼封存（不部署）：`deadcode/`（舊 webgl 強模組、sw-register、spellcheck.worker、舊 PoC）
 - 禁詞資料：`public/forbidden-words.json`
 - Service Worker：`public/sw.js`、`swkill.js`

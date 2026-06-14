@@ -134,8 +134,7 @@ vec3 orbitSys(vec2 p,float R,float cosT,float sinT,float phi,float aOff,float no
     if(nd<0.20){
       float nf=smoothstep(0.50,-0.50,sin(a)*sinT);           // 節點自身前後
       float ns=0.017*(0.50+0.85*nf);
-      col+=cB*(glow(nd,ns)*1.25+glow(nd,ns*3.2)*0.26)*(0.35+0.95*nf);     // 光球+外暈
-      col+=cA*glow(nd,ns*4.5)*0.22*(0.25+0.75*nf); }                      // Pass7：柔外暈取代硬微環（去貼圖感）
+      col+=cB*(glow(nd,ns)*1.3+glow(nd,ns*1.8)*0.12)*(0.35+0.95*nf); }    // Pass16：只留乾淨小光球+極窄貼身暈——移除 ns*3.2/ns*4.5 大柔暈（＝「環上光點的光暈」泡泡真兇）；發光交 bloom
     float db=mod(a-th+TAU,TAU);                              // 切線彗尾（拉長）
     col+=cA*glow(abs(d),w*0.45)*exp(-db*4.2)*step(0.02,db)*0.85*(0.25+0.75*front); }
   return col*amp*fogOc;
