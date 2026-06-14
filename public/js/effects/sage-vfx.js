@@ -449,6 +449,13 @@ void main(){
         dC=min(dC,sdSeg(uv,pp,pn)); pp=pn; }
       col+=emberR*glow(dC,0.0025)*F*0.8; } }
   if(pulse>0.001) col+=plat*glow(abs(rad-(1.0-pulse)*1.5),0.010)*pulse*0.9;
+  // P1 computing 啟動掃描掠光（radar sweep 繞主法陣；分析中主視覺訊號，大柔帶非小粒子、不暴力 bloom）
+  if(computing>0.01){
+    float sw=pow(max(0.0,cos(ang-RT*1.3)),5.0);                            // 一道寬柔亮帶繞圈（順時針掃描）
+    col+=mix(plat,gold,0.45)*sw*smoothstep(0.28,0.44,rad)*smoothstep(1.10,0.52,rad)*0.30*computing;
+    float sw2=pow(max(0.0,cos(ang-RT*1.3-2.094)),7.0);                     // 第二道較窄尾掃（120° 後，掃描縱深）
+    col+=mix(gold,plat,0.5)*sw2*smoothstep(0.30,0.46,rad)*smoothstep(0.95,0.5,rad)*0.18*computing;
+  }
 
   col*=smoothstep(1.95,0.30,rad);                                          // 統一暗角收束
   gl_FragColor=vec4(col,1.0);
@@ -646,7 +653,7 @@ export function buildSageVfx(deps) {
     if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[5.4, standing]; }  // 轉速由 frame 內曲線隨出場進度爬升 0.9→3.2；5.4s＝撐過 reveal(4.8) 後才減速
     if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.58; PH.fogT=0.90; }
     if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
-    if (p === "computing")   { PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; }
+    if (p === "computing")   { PH.power=0.95; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; PH.pulse=1; PH.flash=Math.max(PH.flash,0.22); }  // P0：進場爆點——pulse 擴散波+flash 短亮，肉眼明確「核心開始運算」
     if (p === "complete")    { PH.power=1.0; PH.powerT=0.45; PH.igniteT=1; PH.flash=0.8; PH.complete=1; PH.rotMultT=0.9; PH.after=[2.6, standing]; }
     if (p === "failed")      { PH.fail=1; PH.powerT=0.35; PH.rotMultT=2.2; PH.fogT=0.90; PH.after=[0.85, standing]; }
   }

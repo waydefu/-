@@ -1,5 +1,13 @@
 # S-Level Upgrade Tasks
 
+## PASS 20 動效升級 P0+P1：computing 爆點 + 法陣啟動掃描掠光（2026-06-14）
+依動效研究報告 P0/P1，深度研究後實作（使用者令）。
+- 多來源研究：scifiinterfaces HUD（radar sweep 掃描掠光=運算中主訊號、staged reveal、data lines 持續微動）；IQ functions/Harry Alisavakis shockwave/Book of Shaders（擴散環=兩 smoothstep 相減 cubic pulse、半徑 lerp 擴大）。現有 shader 已有 uPulse 擴散波+scan radar 概念基礎，缺 computing 進場爆點。
+- **P0 進場爆點**：setPhase("computing") 加 PH.power=0.95(瞬提)+PH.pulse=1(觸發既有擴散波+粒子推動)+PH.flash=0.22(短亮)。分析開始 0.3s 內肉眼明確「核心開始運算」。
+- **P1 啟動掃描掠光**：computing gate 下加兩道 radar sweep（pow(cos(ang-RT*1.3),5/7) 寬柔亮帶繞主法陣 rad 0.28-1.10，金/白金，第二道 120° 後尾掃）。大柔帶非小粒子、不暴力 bloom（遵守報告與泡泡教訓）。符文亮度沿用既有 scan(computing 強化)。
+- 驗證：npm test 27/27；raw WebGL 渲染量化 ambient(P0.30)=16.48 vs computing(P0.78)=29.71 平均亮度(+80%，遠超報告目標差 4→6-8)；deploy hosting+smoke。實機手感待驗。
+- 未做：P2/P3 complete 收束強化（報告建議，下一步可選）。
+
 ## PASS 19 調高整體解析度 + 納入 codex QA 改動 + 動效研究分析（2026-06-14）
 使用者令：①App Check 小地方 codex 已處理(commit 2bb7ecd token wiring) ②研究報告看完查資料分析參考 ③調高整體解析度。
 - **解析度（我做）**：great-sage-core render scale floor 0.6 → 桌面 0.85/手機 0.7（this.mobile 分流）、升回門檻 56→52fps（更快回滿）。掉幀時不再糊到 0.6；桌面正常本就 dprCap 2.0 滿。研究佐證(MDN WebGL best practices)：render scale=小 back buffer upscale 是標準法、手機螢幕小高解析常非必要→手機 floor 保守。
