@@ -31,6 +31,7 @@ button { font: inherit; color: inherit; }
   border: var(--panel-border); border-radius: var(--r-sm); transition: top var(--t-mid) var(--ease-out);
 }
 .skip-link:focus { top: 12px; }
+body.is-authed .skip-link:focus { top: calc(var(--shell-header-h) + 12px); }
 
 /* 小工具類（取代零散 inline style） */
 .mt-4 { margin-top: var(--s-4); }
@@ -475,7 +476,8 @@ button { font: inherit; color: inherit; }
 .toast-warning { border-left-color: #e6b85a; }
 .toast-warning::before { background: #e6b85a; box-shadow: 0 0 8px rgba(230,184,90,0.5); }
 .toast-close {
-  flex: 0 0 auto; width: 26px; height: 26px; display: inline-grid; place-items: center;
+  flex: 0 0 auto; width: 44px; height: 44px; display: inline-grid; place-items: center;
+  margin: -9px -9px -9px 0;
   border: none; border-radius: var(--r-xs); background: transparent; color: var(--c-text-muted); cursor: pointer;
   transition: color var(--t-fast), background var(--t-fast);
 }
@@ -519,6 +521,7 @@ button { font: inherit; color: inherit; }
 .model-slot.is-open .ms-panel { opacity: 1; transform: translateY(0); pointer-events: auto; }
 .ms-opt {
   position: relative; display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+  min-height: 44px;
   border: 1px solid transparent; border-radius: 9px; cursor: pointer; overflow: hidden;
   transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out);
 }
@@ -579,8 +582,26 @@ button { font: inherit; color: inherit; }
 .spark-switch input:checked + .track .star:nth-child(2) { animation: spk-warp 0.6s linear infinite 0.1s; }
 .spark-switch input:checked + .track .star:nth-child(3) { animation: spk-warp 0.3s linear infinite 0.2s; }
 .spark-switch input:checked + .track .star:nth-child(4) { animation: spk-warp 0.5s linear infinite 0.15s; }
+.spark-switch.is-disabled input:checked + .track {
+  border-color: rgba(255,255,255,0.15);
+  box-shadow: inset 0 0.2em 0.5em rgba(0,0,0,0.6), 0 0.2em 0.4em rgba(0,0,0,0.2);
+}
+.spark-switch.is-disabled input:checked + .track::before { opacity: 0; }
+.spark-switch.is-disabled input:checked + .track .knob { transform: none; }
+.spark-switch.is-disabled input:checked + .track .knob svg { color: #272727; transform: none; }
+.spark-switch.is-disabled .star,
+.spark-switch.is-disabled input:checked + .track .star {
+  animation: none !important;
+  opacity: 0 !important;
+  box-shadow: none;
+}
 @keyframes spk-drift { 0% { transform: translateX(0); opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { transform: translateX(-6em); opacity: 0; } }
 @keyframes spk-warp { 0% { transform: translateX(0) scaleX(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateX(-6em) scaleX(2); opacity: 0; } }
+@keyframes spk-warp-mobile {
+  0% { transform: translateX(0) scaleX(0.75); opacity: 0; }
+  12%,78% { opacity: 1; }
+  100% { transform: translateX(-6em) scaleX(2.15); opacity: 0; }
+}
 @media (prefers-reduced-motion: reduce) { .spark-switch .star { animation: none !important; opacity: 0; } }
 
 /* ════════ Ultra Pass3：首屏揭示順序 + 控制台化登入卡 + 全站統一 ════════ */
@@ -645,7 +666,7 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 
 /* 音效開關（header；金邊圓鈕、靜音畫斜線） */
 .sfx-btn {
-  width: 40px; height: 40px; display: inline-grid; place-items: center; flex: 0 0 auto;
+  width: 44px; height: 44px; min-width: 44px; min-height: 44px; display: inline-grid; place-items: center; flex: 0 0 auto;
   border: 1px solid rgba(214, 166, 77, 0.4); border-radius: 50%;
   background: rgba(20, 14, 7, 0.6); color: #d6a64d; cursor: pointer;
   transition: border-color 0.25s var(--ease-out), color 0.25s var(--ease-out), transform 0.25s var(--ease-out);
@@ -662,13 +683,23 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
    Pass3 手機列掉行就是這樣壞的。新增手機覆寫一律加在這裡，勿回填前段。 */
 @media (max-width: 640px) {
   /* 歷史紀錄鍵防破版：文字絕不換行、padding 縮、brand 讓位（ellipsis） */
-  .continue-application { white-space: nowrap; padding: 10px 12px 10px 52px; font-size: 12.5px; }
+  .continue-application { min-height: 44px; white-space: nowrap; padding: 10px 12px 10px 52px; font-size: 12.5px; }
   .brand { min-width: 0; }
   .brand-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .nav-actions { flex: 0 0 auto; }
   /* 第二排排直：clear(50) + 模型槽 + 加速鈕必須同列（360px 屏也不可掉行） */
   .review-controls { gap: 8px; align-items: center; flex-wrap: nowrap; min-width: 0; }
   .spark-switch { font-size: 13.5px; }                /* track=5em → 67.5px */
+  .spark-switch.is-disabled { opacity: 0.4; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star {
+    width: 1.85em; height: 0.14em; border-radius: 0.07em;
+    background: rgba(255, 251, 232, 0.96);
+    box-shadow: 0 0 0.28em rgba(255, 230, 166, 0.92);
+  }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(1) { animation: spk-warp-mobile 0.52s linear infinite; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(2) { animation: spk-warp-mobile 0.72s linear infinite 0.08s; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(3) { animation: spk-warp-mobile 0.44s linear infinite 0.16s; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(4) { animation: spk-warp-mobile 0.62s linear infinite 0.12s; }
   .ms-face { padding: 0 8px; gap: 7px; }
   .ms-eyebrow { font-size: 7.5px; letter-spacing: 0.2em; }
   .ms-current { font-size: 11px; max-width: 96px; overflow: hidden; text-overflow: ellipsis; }

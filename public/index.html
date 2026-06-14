@@ -15,9 +15,9 @@
   <link rel="preconnect" href="https://analyzev2-yxfwrism4q-uc.a.run.app" crossorigin />
 
   <!-- 設計系統 CSS（同源、極小、可快取） -->
-  <link rel="stylesheet" href="/css/tokens.css" />
-  <link rel="stylesheet" href="/css/app.css" />
-  <link rel="stylesheet" href="/css/motion.css" />
+  <link rel="stylesheet" href="/css/tokens.css?v=qa-thinking-gate-20260614" />
+  <link rel="stylesheet" href="/css/app.css?v=qa-thinking-gate-20260614" />
+  <link rel="stylesheet" href="/css/motion.css?v=qa-thinking-gate-20260614" />
 
   <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700&family=Noto+Sans+TC:wght@400;500;700&family=Noto+Serif+TC:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet" />
 
@@ -188,19 +188,19 @@
               </button>
               <div class="review-controls" role="group" aria-label="模型與思考模式">
                 <div class="model-slot" id="modelDial">
-                  <button class="ms-face" type="button" id="modelSlotBtn" aria-haspopup="listbox" aria-expanded="false" aria-label="模型核心槽">
+                  <button class="ms-face" type="button" id="modelSlotBtn" aria-haspopup="true" aria-expanded="false" aria-controls="modelPanel" aria-label="模型核心槽">
                     <span class="ms-node" aria-hidden="true"></span>
                     <span class="ms-text"><b class="ms-eyebrow">MODEL CORE</b><span class="ms-current" id="modelCurrent">自動核心 AUTO</span></span>
                     <span class="ms-tri" aria-hidden="true"></span>
                   </button>
-                  <div class="ms-panel" id="modelPanel" role="listbox" aria-label="選擇模型核心">
-                    <label class="ms-opt" role="option"><input value="auto" name="modelPick" type="radio" id="mdAuto" checked>
+                  <div class="ms-panel" id="modelPanel" role="radiogroup" aria-label="選擇模型核心">
+                    <label class="ms-opt"><input value="auto" name="modelPick" type="radio" id="mdAuto" checked>
                       <span class="ms-node" aria-hidden="true"></span>
                       <span class="ms-text"><span class="ms-name">自動核心 <i>AUTO LINK</i></span><span class="ms-desc">依字數自動切換 深核／快核</span></span></label>
-                    <label class="ms-opt" role="option"><input value="kimi" name="modelPick" type="radio" id="mdKimi">
+                    <label class="ms-opt"><input value="kimi" name="modelPick" type="radio" id="mdKimi">
                       <span class="ms-node" aria-hidden="true"></span>
                       <span class="ms-text"><span class="ms-name">深度核心 <i>DEEP CORE</i></span><span class="ms-desc">Kimi K2.6 · 繁中深度審稿</span></span></label>
-                    <label class="ms-opt" role="option"><input value="groq" name="modelPick" type="radio" id="mdGroq">
+                    <label class="ms-opt"><input value="groq" name="modelPick" type="radio" id="mdGroq">
                       <span class="ms-node" aria-hidden="true"></span>
                       <span class="ms-text"><span class="ms-name">快速核心 <i>SWIFT CORE</i></span><span class="ms-desc">Groq Llama · 秒回快審</span></span></label>
                   </div>

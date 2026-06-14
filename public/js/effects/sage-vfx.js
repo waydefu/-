@@ -681,6 +681,8 @@ export function buildSageVfx(deps) {
     composer.render();
   }
   function setSize(w, h) {
+    w = Math.max(1, Math.floor(w || 0));
+    h = Math.max(1, Math.floor(h || 0));
     renderer.setPixelRatio(basePR * renderScale);
     renderer.setSize(w, h, false);
     composer.setPixelRatio(basePR * renderScale);

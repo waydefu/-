@@ -145,7 +145,7 @@ export class GreatSageCore {
           this._markDetailLoaded("glyph");          // 首幀渲染成功
           this.canvas.style.opacity = "1";          // 第一幀 ready 才揭示（CSS 0.9s 淡入）
         }
-        // 自適應 render scale：嚴重掉幀降、回穩升（floor 0.6）
+        // 自適應 render scale：嚴重掉幀降、回穩升（Pass19 調高整體解析度：floor 桌面 0.85/手機 0.7、升回門檻放寬 52fps→更快回滿）
         this._frames++;
         if (now - this._fpsT >= 1000) {
           const fps = (this._frames * 1000) / (now - this._fpsT);
@@ -153,9 +153,10 @@ export class GreatSageCore {
           // 冷卻 2.5s：bloom.setSize 重配 render target 本身就會卡一下，
           // 不設冷卻會形成「resize 卡頓→FPS 掉→再 resize」震盪（開場閃屏主因之二）
           if (now - this._scaleHold >= 2500) {
+            const floor = this.mobile ? 0.7 : 0.85;   // Pass19 調高整體解析度：掉幀時也不糊到 0.6；桌面 GPU 強維持更高
             let ns = this._scale;
-            if (fps < 36 && ns > 0.6) ns = Math.max(0.6, ns - 0.12);
-            else if (fps > 56 && ns < 1) ns = Math.min(1, ns + 0.08);
+            if (fps < 36 && ns > floor) ns = Math.max(floor, ns - 0.12);
+            else if (fps > 52 && ns < 1) ns = Math.min(1, ns + 0.08);
             if (ns !== this._scale) { this._scale = ns; this._scaleHold = now; this.vfx.setRenderScale(ns); }
           }
         }

@@ -1,5 +1,20 @@
 # S-Level Upgrade Tasks
 
+## PASS 19 調高整體解析度 + 納入 codex QA 改動 + 動效研究分析（2026-06-14）
+使用者令：①App Check 小地方 codex 已處理(commit 2bb7ecd token wiring) ②研究報告看完查資料分析參考 ③調高整體解析度。
+- **解析度（我做）**：great-sage-core render scale floor 0.6 → 桌面 0.85/手機 0.7（this.mobile 分流）、升回門檻 56→52fps（更快回滿）。掉幀時不再糊到 0.6；桌面正常本就 dprCap 2.0 滿。研究佐證(MDN WebGL best practices)：render scale=小 back buffer upscale 是標準法、手機螢幕小高解析常非必要→手機 floor 保守。
+- **納入 codex 工作區未提交 QA 改動**（使用者同意一起 commit+部署）：
+  · 44px 觸控目標：toast-close/ms-opt/sfx-btn/歷史鍵 min 44px。
+  · skip-link authed 時下移(不被 header 擋)。
+  · spark-switch is-disabled 視覺態(思考開關停用時星不動)+手機 spk-warp-mobile 動畫+reduced-motion 變體。
+  · MODEL SLOT a11y：aria-haspopup=true/aria-controls/role=radiogroup、移除誤用 role=option(實為 radio)。
+  · audio-fx 選擇器 [role=option]→.ms-opt(配合上面)。
+  · sage-vfx setSize 整數化防護(w/h Math.max(1,floor))。
+  · index.html CSS cache-bust ?v=qa-thinking-gate-20260614。
+  · 測試 26→27(codex 新增 1)，全過。
+- **動效研究報告分析（參考，未實作）**：報告(動效 82→90/法陣 80→94)方向專業正確——不加粒子/不暴力 bloom/大形狀非小粒子(手機糊)/SDF 輪廓，與本專案泡泡災難(Pass13-16)經驗一致。最高 CP=P0 computing 進場加 pulse+flash(目前只推 uPower 無爆點)。P1 法陣輪廓/啟動序列有價值但要防回到大 glow 泡泡。**待後續實作 P0/P1。**
+- 驗證：npm test 27/27；deploy hosting+smoke。App Check 真機驗證仍待使用者(Pass18 未驗環節)。
+
 ## PASS 18 開啟 App Check 強制（2026-06-14，已部署 functions）
 使用者令「確認 App Check 並開啟」。
 - 確認程式配置完整：前端 auth.js activateAppCheck(reCAPTCHA Enterprise + site key 6LedZP…)、analyze-api 帶 X-Firebase-AppCheck header、後端 verifyAppCheck/admin.appCheck().verifyToken。

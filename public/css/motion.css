@@ -94,3 +94,13 @@ body.just-linked .workspace { transform-origin: center 32%; animation: saoIn 0.6
   .sao-pop { animation-duration: 0.5s !important; }
   .sao-pop.is-closing { animation-duration: 0.34s !important; }
 }
+
+@media (prefers-reduced-motion: reduce) and (max-width: 640px) {
+  .spark-switch:not(.is-disabled) input:checked + .track .star {
+    opacity: 1 !important;
+    animation: spk-warp-mobile 1.45s linear infinite !important;
+  }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(2) { animation-delay: 0.16s !important; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(3) { animation-delay: 0.32s !important; }
+  .spark-switch:not(.is-disabled) input:checked + .track .star:nth-child(4) { animation-delay: 0.48s !important; }
+}

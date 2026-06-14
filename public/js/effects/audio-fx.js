@@ -105,10 +105,10 @@ export function initAudioFx() {
   window.addEventListener("pointerdown", unlock, { once: true, passive: true });
   window.addEventListener("keydown", unlock, { once: true });
   // 互動接線（事件代理；hover 僅指標裝置）
-  document.addEventListener("pointerdown", (e) => { if (e.target.closest("button, [role='option']")) sfx.click(); }, { passive: true });
+  document.addEventListener("pointerdown", (e) => { if (e.target.closest("button, .ms-opt")) sfx.click(); }, { passive: true });
   document.addEventListener("pointerover", (e) => {
     if (e.pointerType !== "mouse") return;
-    const t = e.target.closest("button, [role='option']");
+    const t = e.target.closest("button, .ms-opt");
     if (t && !t.contains(e.relatedTarget)) sfx.hover();
   }, { passive: true });
   // 站內事件
