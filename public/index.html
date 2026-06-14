@@ -73,7 +73,6 @@
   <!-- 背景層（z-canvas / z-atmos）：純 CSS 電影級氛圍；Stage 2 之 WebGL 會掛同層之下 -->
   <div class="bg-stage" id="bgStage" aria-hidden="true">
     <div class="bg-aura"></div>
-    <div class="bg-grid"></div>
     <canvas class="bg-canvas" id="sageCanvas"></canvas>
     <div class="bg-vignette"></div>
   </div>
@@ -81,7 +80,7 @@
   <!-- ════════ 登入畫面 ════════ -->
   <main class="auth-screen" id="authScreen" aria-labelledby="authTitle">
     <section class="auth-card sao-pop">
-      <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i><i class="fui-mist ma" aria-hidden="true"></i><i class="fui-mist mb" aria-hidden="true"></i>
+      <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
       <i class="card-lock lk-tl" aria-hidden="true"></i><i class="card-lock lk-tr" aria-hidden="true"></i>
       <i class="card-lock lk-bl" aria-hidden="true"></i><i class="card-lock lk-br" aria-hidden="true"></i>
       <p class="auth-eyebrow">GREAT SAGE · APPRAISAL ENGINE</p>
@@ -137,7 +136,7 @@
     <div class="workspace">
       <!-- 左：系統狀態 + 歷史紀錄（桌機側欄；手機 bottom sheet） -->
       <aside class="col-aside panel history-panel" id="historyPanel" aria-label="系統狀態與鑑定紀錄">
-        <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i><i class="fui-mist ma" aria-hidden="true"></i><i class="fui-mist mb" aria-hidden="true"></i>
+        <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
         <div class="panel-head">
           <span class="panel-eyebrow">ARCHIVE</span>
           <h2 class="panel-title">鑑定紀錄</h2>
@@ -157,7 +156,7 @@
       <!-- 中：草稿輸入 -->
       <section class="col-stack" aria-labelledby="draftHeading">
         <div class="panel">
-          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i><i class="fui-mist ma" aria-hidden="true"></i><i class="fui-mist mb" aria-hidden="true"></i>
+          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
           <div class="panel-head">
             <span class="panel-eyebrow">MANUSCRIPT CONSOLE</span>
             <h2 class="panel-title" id="draftHeading">手稿輸入</h2>
@@ -225,7 +224,7 @@
       <!-- 右：鑑定結果 -->
       <section class="col-stack" aria-labelledby="resultHeading">
         <div class="panel">
-          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i><i class="fui-mist ma" aria-hidden="true"></i><i class="fui-mist mb" aria-hidden="true"></i>
+          <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
           <div class="panel-head">
             <span class="panel-eyebrow">ARCANE DIAGNOSTIC DOSSIER</span>
             <h2 class="panel-title" id="resultHeading">鑑定卷宗</h2>
@@ -247,7 +246,7 @@
 
   <!-- 登出確認彈窗 -->
   <div class="modal" id="logoutModal" role="alertdialog" aria-modal="true" aria-labelledby="logoutTitle" aria-describedby="logoutCopy" hidden>
-    <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i><i class="fui-mist ma" aria-hidden="true"></i><i class="fui-mist mb" aria-hidden="true"></i>
+    <i class="fui-frame" aria-hidden="true"></i><i class="fui-fill" aria-hidden="true"></i>
     <h2 class="modal-title" id="logoutTitle">確認封存並登出</h2>
     <p class="modal-copy" id="logoutCopy">系統會保留目前草稿與歷史記憶。確認結束本次工作階段？</p>
     <div class="modal-actions">

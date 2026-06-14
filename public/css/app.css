@@ -53,9 +53,7 @@ button { font: inherit; color: inherit; }
   background: radial-gradient(circle, var(--glow-violet), rgba(184, 132, 52, 0.06) 42%, transparent 66%);
   opacity: 0.5; will-change: transform; animation: auraDrift 26s var(--ease-in-out) infinite;
 }
-/* Pass9：網格層移除（使用者令「一排排格子移掉」）——WebGL fallback 裝飾，與「手稿資料空間非格線」藝術方向衝突；
-   fallback 仍有 bg-stage 暗場漸層 + bg-aura 金光暈 + bg-vignette 暗角三層，不靠此格。 */
-.bg-grid { display: none; }
+/* Pass9 移除網格層（bg-grid）；fallback 仍有 bg-stage 暗場漸層 + bg-aura 金光暈 + bg-vignette 暗角。 */
 .bg-canvas {
   position: absolute; inset: 0; width: 100%; height: 100%; display: block;
   pointer-events: none; opacity: 0; transition: opacity 0.9s var(--ease-out);
@@ -391,7 +389,7 @@ button { font: inherit; color: inherit; }
 
 /* ═══ 登入畫面 ═══ */
 .auth-screen { position: relative; z-index: var(--z-shell); min-height: 100dvh; display: grid; place-items: center; padding: var(--s-5); }
-.auth-card { width: min(480px, 100%); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }  /* 輪廓/填充交給 .fui-frame/.fui-fill 切角層 */
+.auth-card { position: relative; width: min(480px, 100%); border-radius: var(--r-lg); box-shadow: var(--sh-lg); padding: clamp(var(--s-5), 5vw, var(--s-7)); text-align: center; }  /* 輪廓/填充交給 .fui-frame/.fui-fill 切角層；position:relative 供 ::before/card-lock 定位 */
 .auth-eyebrow { font-family: var(--font-mono); font-size: var(--fs-caption); letter-spacing: 0.28em; color: var(--c-cyan); }
 .auth-title { font-family: var(--font-display); font-size: var(--fs-h1); color: var(--c-gold-bright); margin: var(--s-3) 0; line-height: 1.15; }
 .auth-copy { color: var(--c-text-soft); margin-bottom: var(--s-6); }
@@ -593,14 +591,13 @@ body.vfx-ready .app-main,  body.vfx-full .app-main,  body.vfx-fallback .app-main
 body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-header { opacity: 1; }
 @keyframes ultraRevealFailsafe { to { opacity: 1; } }   /* 任何 JS 失敗 7s 後保底可見 */
 
-/* 登入卡＝鑑定核心控制台：四角鎖扣 + 內框刻度 + 柔背光 */
-.auth-card { position: relative; }
+/* 登入卡＝鑑定核心控制台：四角鎖扣 + 內框刻度 + 柔背光（.auth-card position:relative 已併入前段 base） */
 .auth-card::before {
   content: ""; position: absolute; inset: 9px; pointer-events: none; z-index: 1;
   border: 1px dashed rgba(214,178,90,0.18);
   clip-path: polygon(0 14px, 14px 0, calc(100% - 6px) 0, 100% 6px, 100% calc(100% - 14px), calc(100% - 14px) 100%, 6px 100%, 0 calc(100% - 6px));
 }
-.card-lock { position: absolute; width: 16px; height: 16px; pointer-events: none; opacity: 0.85; }
+.card-lock { position: absolute; width: 16px; height: 16px; pointer-events: none; opacity: 0.85; transition: opacity var(--t-mid) var(--ease-out); }
 .card-lock.lk-tl { top: 4px; left: 4px; border-top: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
 .card-lock.lk-tr { top: 2px; right: 2px; border-top: 2px solid #d6a64d; border-right: 2px solid #d6a64d; }
 .card-lock.lk-bl { bottom: 2px; left: 2px; border-bottom: 2px solid #d6a64d; border-left: 2px solid #d6a64d; }
@@ -609,7 +606,6 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
   background: #ffe6a6; box-shadow: 0 0 7px rgba(255,230,166,0.8); transition: box-shadow var(--t-mid), transform var(--t-mid); }
 .card-lock.lk-tl::after { top: 2px; left: 2px; } .card-lock.lk-tr::after { top: 2px; right: 2px; }
 .card-lock.lk-bl::after { bottom: 2px; left: 2px; } .card-lock.lk-br::after { bottom: 2px; right: 2px; }
-.card-lock { transition: opacity var(--t-mid) var(--ease-out); }
 .auth-card:hover .card-lock { opacity: 1; }
 /* Pass14 控制台連動：hover Google 鈕 → 四角節點燈微亮（:has 現代瀏覽器；不支援則僅一般 hover 態） */
 .auth-card:has(#googleLoginBtn:hover) .card-lock,
@@ -645,11 +641,7 @@ body.vfx-ready .app-header, body.vfx-full .app-header, body.vfx-fallback .app-he
 .panel > .panel-head::before { top: 5px; left: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-left: 1px solid rgba(214,166,77,0.6); }
 .panel > .panel-head::after { top: 5px; right: 5px; border-top: 1px solid rgba(214,166,77,0.6); border-right: 1px solid rgba(214,166,77,0.6); }
 
-/* ════════ Pass7：移除 Pass6 流體/體積雲（使用者令「先算了」）════════
-   fui-frame 回靜態金邊（前段 .fui-frame linear-gradient 定義即生效）；體積雲層隱藏；
-   主鈕流光掃過移除（btn-primary/analyze-star 的 animation 已拔，此處不再定義 btnSheen）。
-   卡片改半透明透出背景法陣（fui-fill alpha 0.70；彈窗類仍實，見前段加深規則）。 */
-.fui-mist { display: none; }
+/* 流體/體積雲(fui-mist)已棄並從 DOM 移除(Pass16)；fui-frame 靜態金邊由前段定義、卡片半透明 fui-fill alpha 0.70、主鈕無流光。 */
 
 /* 音效開關（header；金邊圓鈕、靜音畫斜線） */
 .sfx-btn {

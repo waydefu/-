@@ -1,5 +1,14 @@
 # S-Level Upgrade Tasks
 
+## PASS 17 死碼清理 + 重複 selector 合併（2026-06-13n，已部署）
+全專案純程式靜態掃描後清理（App Check ENFORCE=false 依使用者令保留不動）。
+- **fui-mist 死 DOM**：移除 index.html 5 卡片共 10 個 `<i class="fui-mist">`（Pass6 加 Pass7 display:none 棄用）+ app.css `.fui-mist{display:none}` 規則。
+- **bg-grid 死碼**：移除 index.html `<div class="bg-grid">` + app.css `.bg-grid{display:none}` 規則（Pass9 已停用）。
+- **重複 selector 合併**：`.auth-card`（position:relative 併入 base）、`.card-lock`（transition 併入 base）——原為漸進增補散落，非衝突 bug，合併提升可維護性。
+- 靜態掃描健康報告：git 乾淨、零 TODO/console.log、XSS 安全(escapeHtml+renderMarkdownLite 固定模板)、DOM id 契約 27/27 無懸空、worldforge 事件 7 種 dispatch/listen 全配對、後端 secret 用 Secret Manager 無外洩、跨 CSS 無重複 keyframes。Firebase Web apiKey 公開正常(App Check+rules 保護)。
+- 保留未動：App Check ENFORCE_APP_CHECK=false(使用者令)、ms-sync.is-fail(有 JS 引用非死碼)、toast 變體(基礎建設)。
+- 驗證：npm test 26/26、check:frontend 通過；grep 確認重複 selector 空、fui-mist/bg-grid DOM 0、中文編碼完好；deploy+smoke。
+
 ## PASS 16 泡泡終結：軌道節點大柔暈移除（2026-06-13m，已部署）
 使用者精準描述：「**這是在環上的光點的光暈，只要是在環上的光點都有**」——一句話定位真兇。
 - 真兇＝orbitSys 節點星體（line 137-138）每個節點疊三層：glow(nd,ns) 光球 + glow(nd,ns*3.2)*0.26 中暈 + **glow(nd,ns*4.5)*0.22 大柔暈**。ns≈0.02 → ns*4.5≈0.10 width＝每個環上節點都帶一圈大光暈泡泡。**Pass7 把節點「硬微環」改「柔外暈」時半徑給太大埋的雷**。五型軌道每環都有節點＝「只要環上光點都有」。
