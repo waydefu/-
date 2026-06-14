@@ -24,6 +24,7 @@ function activateAppCheck(firebase) {
     if (typeof firebase.appCheck.ReCaptchaEnterpriseProvider !== "function") return;
     const appCheck = firebase.appCheck();
     appCheck.activate(new firebase.appCheck.ReCaptchaEnterpriseProvider(siteKey), true);
+    AppState.set("appCheck", appCheck);
     AppState.set("appCheckStatus", "active");
   } catch (error) {
     console.warn("[FLG] App Check 略過：", error?.message || error);

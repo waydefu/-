@@ -13,6 +13,7 @@ const {
   parseSsePayload,
 } = await import("../public/js/services/analyze-api.js");
 const { AppState } = await import("../public/js/core/state.js");
+const { initAuth } = await import("../public/js/app/auth.js");
 
 describe("SSE helpers", () => {
   it("keeps partial data lines until the next chunk arrives", () => {
@@ -79,5 +80,41 @@ describe("SSE helpers", () => {
     assert.deepEqual(calls, [false, true]);
     assert.equal(AppState.get("appCheckReady"), true);
     assert.equal(AppState.get("appCheckStatus"), "token-ready-refresh");
+  });
+
+  it("stores the activated App Check instance for API token headers", async () => {
+    const appCheck = {
+      activate: () => {},
+      getToken: async () => ({ token: "app-check-token" }),
+    };
+    const auth = {
+      getRedirectResult: () => Promise.resolve(null),
+      onAuthStateChanged: () => {},
+    };
+    const appCheckFactory = () => appCheck;
+    appCheckFactory.ReCaptchaEnterpriseProvider = class {};
+
+    globalThis.window = {
+      dispatchEvent: () => {},
+      firebase: {
+        apps: [],
+        initializeApp: () => {},
+        auth: () => auth,
+        firestore: () => ({}),
+        appCheck: appCheckFactory,
+      },
+    };
+    globalThis.CustomEvent = class {
+      constructor(type, init) {
+        this.type = type;
+        this.detail = init?.detail;
+      }
+    };
+    AppState.set("appCheck", null);
+
+    await initAuth(() => {});
+
+    assert.equal(AppState.get("appCheck"), appCheck);
+    assert.equal(await getAppCheckToken(), "app-check-token");
   });
 });
