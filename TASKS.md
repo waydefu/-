@@ -6,7 +6,12 @@
 - **P0 進場爆點**：setPhase("computing") 加 PH.power=0.95(瞬提)+PH.pulse=1(觸發既有擴散波+粒子推動)+PH.flash=0.22(短亮)。分析開始 0.3s 內肉眼明確「核心開始運算」。
 - **P1 啟動掃描掠光**：computing gate 下加兩道 radar sweep（pow(cos(ang-RT*1.3),5/7) 寬柔亮帶繞主法陣 rad 0.28-1.10，金/白金，第二道 120° 後尾掃）。大柔帶非小粒子、不暴力 bloom（遵守報告與泡泡教訓）。符文亮度沿用既有 scan(computing 強化)。
 - 驗證：npm test 27/27；raw WebGL 渲染量化 ambient(P0.30)=16.48 vs computing(P0.78)=29.71 平均亮度(+80%，遠超報告目標差 4→6-8)；deploy hosting+smoke。實機手感待驗。
-- 未做：P2/P3 complete 收束強化（報告建議，下一步可選）。
+- P2/P3（本次「一次解決」補完）：完成收束儀式——
+  · 收束環：金環從外(rad 1.05)往核心(0.16)收，用 FL 單調衰減(0.8→0)做時序、C>0.3 限定 complete、收近核心漸暗。與 ignition 折射波「外擴」相反＝內收。
+  · 折射波外擴(line 246)加 ×(1.0-C)：complete 不放外擴，避免與內收衝突。
+  · 白金核短亮放大(smoothstep(0.06,0)*C*1.4，C 鐘形＝亮起回落)。
+  · 短放射：上下垂直雙束(pow(cos,600))隨 C 起落、不長駐。
+  · 驗證：npm test 27/27；raw WebGL 渲染 complete 中段(C0.9/FL0.4)=27.42 vs 無 complete 19.9(+38%)。
 
 ## PASS 19 調高整體解析度 + 納入 codex QA 改動 + 動效研究分析（2026-06-14）
 使用者令：①App Check 小地方 codex 已處理(commit 2bb7ecd token wiring) ②研究報告看完查資料分析參考 ③調高整體解析度。

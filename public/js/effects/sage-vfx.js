@@ -243,7 +243,7 @@ void main(){
     float cf2=(a2<0.0?a2+TAU:a2)/TAU*70.0; float cell2=floor(cf2);
     float bar=step(0.55,h11(cell2*1.7))*step(abs(fract(cf2)-0.5),0.12+0.2*h11(cell2+3.0));
     col+=mix(teal,gold,h11(cell2+5.0))*bar*smoothstep(0.012,0.004,abs(length(pr)-1.53))*0.16*tealAmp; }
-  if(FL>0.01) col+=plat*glow(abs(rad-(1.0-FL)*1.55),0.012)*FL*0.45;       // 點火折射波外擴
+  if(FL>0.01) col+=plat*glow(abs(rad-(1.0-FL)*1.55),0.012)*FL*0.45*(1.0-C); // 點火折射波外擴（complete 不放，改內收，見下）
 
   // ═ 三 資料軌道（最快層）
   { vec2 pr=rot(-RT*0.38-SPIN(outerGate))*uv; float rr=length(pr);        // 資料流（×2.4 加速＝演算主動態；出場整圈）
@@ -449,6 +449,15 @@ void main(){
         dC=min(dC,sdSeg(uv,pp,pn)); pp=pn; }
       col+=emberR*glow(dC,0.0025)*F*0.8; } }
   if(pulse>0.001) col+=plat*glow(abs(rad-(1.0-pulse)*1.5),0.010)*pulse*0.9;
+  // P2/P3 完成收束儀式：金環從外往核心收（用 FL 單調衰減做時序，C>0.3 限定 complete）+ 白金核短亮放大 + 短放射
+  if(C>0.3){
+    float conv=clamp(1.0-FL/0.8,0.0,1.0);                                  // FL 0.8→0 ⇒ conv 0→1 單調（收束進度）
+    float cr=mix(1.05,0.16,conv);                                          // 環從外(1.05)收到核心(0.16)
+    col+=mix(gold,plat,0.55)*glow(abs(rad-cr),0.011)*(1.0-0.5*conv)*0.7;   // 收束環（收近核心漸暗）
+    col+=plat*coreTint*smoothstep(0.06,0.0,rad)*C*1.4;                     // 核心白金短亮放大（C 鐘形＝亮起回落）
+    float beam=pow(abs(cos(ang+1.5708)),600.0)+pow(abs(cos(ang)),600.0);  // 短放射：上下垂直雙束（不長駐，隨 C 起落）
+    col+=plat*coreTint*beam*smoothstep(0.55,0.10,rad)*C*0.45;
+  }
   // P1 computing 啟動掃描掠光（radar sweep 繞主法陣；分析中主視覺訊號，大柔帶非小粒子、不暴力 bloom）
   if(computing>0.01){
     float sw=pow(max(0.0,cos(ang-RT*1.3)),5.0);                            // 一道寬柔亮帶繞圈（順時針掃描）
