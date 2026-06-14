@@ -1,5 +1,14 @@
 # S-Level Upgrade Tasks
 
+## PASS 18 開啟 App Check 強制（2026-06-14，已部署 functions）
+使用者令「確認 App Check 並開啟」。
+- 確認程式配置完整：前端 auth.js activateAppCheck(reCAPTCHA Enterprise + site key 6LedZP…)、analyze-api 帶 X-Firebase-AppCheck header、後端 verifyAppCheck/admin.appCheck().verifyToken。
+- **關鍵發現**：quotaPeek 本就無條件強制 App Check(index.ts:173)，但**前端從不呼叫 quotaPeek**(QUOTA_URL 只定義無 fetch)→ 無生產 token 流驗證數據；analyzeV2 原 ENFORCE=false 不強制。
+- 改：`ENFORCE_APP_CHECK = false → true`(index.ts:19)。build 通過 → deploy functions(首次失敗=沙箱網路 code-load 10s 超時，重試成功)。
+- 驗證強制**生效**：smoke analyzeV2 無 token → 由 unauthorized 變 **app-check-failed**(被擋在 Auth 前的 App Check 關卡)。更新 smoke 斷言反映新行為。smoke 7/7、npm test 26/26。
+- **未驗證單點風險**：真實用戶(有 Auth+App Check token)能否通過——沙箱 CDN 斷無法測 token 取得；取決於 Firebase Console 設定(reCAPTCHA Enterprise key 綁定 / .web.app 網域授權 / enforcement)。**待使用者真機登入測一次分析**。
+- **REVERT**：若真機分析回 401 app-check-failed → 改 index.ts:19 回 false → `firebase deploy --only functions`。
+
 ## PASS 17 死碼清理 + 重複 selector 合併（2026-06-13n，已部署）
 全專案純程式靜態掃描後清理（App Check ENFORCE=false 依使用者令保留不動）。
 - **fui-mist 死 DOM**：移除 index.html 5 卡片共 10 個 `<i class="fui-mist">`（Pass6 加 Pass7 display:none 棄用）+ app.css `.fui-mist{display:none}` 規則。

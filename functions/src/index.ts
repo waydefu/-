@@ -16,7 +16,7 @@ const NVIDIA_API_KEY = defineSecret("NVIDIA_API_KEY");
 
 admin.initializeApp();
 
-const ENFORCE_APP_CHECK = false;
+const ENFORCE_APP_CHECK = true;   // 2026-06-14 開啟：analyzeV2 與 quotaPeek 一致強制有效 App Check token（reCAPTCHA Enterprise）。若真機分析回 401 app-check-failed → 改回 false 重部署 functions。
 const LOG_MISSING_APP_CHECK = true;
 
 type AppCheckStatus = "missing" | "valid" | "invalid";

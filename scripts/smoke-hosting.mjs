@@ -106,10 +106,10 @@ const main = async () => {
     });
     assert.equal(unauth.res.status, 401, "Unauthenticated function request should return 401");
     assert.deepEqual(JSON.parse(unauth.text), {
-      code: "unauthorized",
-      message: "請先登入後再使用。",
+      code: "app-check-failed",
+      message: "App Check 驗證失敗，請重新整理後再試。",
     });
-    ok("function returns standard unauthorized error without touching Groq");
+    ok("analyzeV2 enforces App Check before Auth/Groq (no token → app-check-failed)");
 
     const quotaUnauth = await fetchText(QUOTA_URL);
     assert.equal(quotaUnauth.res.status, 401, "Unauthenticated quota request should return 401");
