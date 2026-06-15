@@ -1,5 +1,11 @@
 # S-Level Upgrade Tasks
 
+## PASS 24 後段停滯修復（ease-in 取代 smoothstep）（2026-06-14）
+使用者：後段特效太不明顯像停住。
+- 根因：Pass23 ignite 用 smoothstep `u*u*(3-2u)`，尾部斜率趨 0(u=1 導數=0)＝後段越來越慢＝視覺停住。
+- 改：ignite = `Math.pow(u,1.35)` ease-in(尾斜率>0 持續變化、頭不死)；rotMult 後段衝刺 0.8+1.5→0.8+1.8*ignite²(衝 2.6)。保留 u=1@5.0s 明確結束點(對齊不變)。
+- 驗證：npm test 27/27；deploy+smoke。
+
 ## PASS 23 動畫結束剛好對齊工作區（非單純加長）（2026-06-14）
 使用者：動畫結束剛好進工作區，而非單純加長。
 - 根因：ignite 用指數漸近 lerp(`+=(1-ignite)*dt*0.6`)＝永遠到不了 1.0、無明確結束點 → reveal 跟動畫結束對不準。

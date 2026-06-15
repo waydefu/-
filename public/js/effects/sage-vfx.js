@@ -673,8 +673,8 @@ export function buildSageVfx(deps) {
     PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.6);   // 非 ignition 相位用 lerp
     if (PH.name === "ignition") {                                   // Pass23 動畫結束剛好對齊工作區：固定 5s 出場序列(非指數漸近，有明確結束點)
       const u = Math.min(1, PH.timer / 5.0);
-      PH.ignite = u*u*(3.0-2.0*u);                                  // smoothstep 平滑；u=1(timer 5.0s)＝環全出+SPIN 自轉停＝動畫真正結束
-      PH.rotMultT = 0.8 + 1.5*PH.ignite*PH.ignite;                  // 轉速綁 ignite：慢起→沉穩衝 2.3
+      PH.ignite = Math.pow(u, 1.35);                                // Pass24 ease-in：尾斜率>0 持續變化＝後段不像停住(smoothstep 尾平是停滯主因)；u=1(5.0s)明確結束
+      PH.rotMultT = 0.8 + 1.8*PH.ignite*PH.ignite;                  // 後段轉速衝刺(衝 2.6)＝結束前有勁、不停滯
     }
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
