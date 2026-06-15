@@ -1,5 +1,12 @@
 # S-Level Upgrade Tasks
 
+## PASS 23 動畫結束剛好對齊工作區（非單純加長）（2026-06-14）
+使用者：動畫結束剛好進工作區，而非單純加長。
+- 根因：ignite 用指數漸近 lerp(`+=(1-ignite)*dt*0.6`)＝永遠到不了 1.0、無明確結束點 → reveal 跟動畫結束對不準。
+- 改：ignition 相位改**固定 5.0s 出場序列**——`u=timer/5.0; ignite=u*u*(3-2u)`(smoothstep 平滑、u=1@timer 5.0s＝環全出+SPIN 自轉停＝動畫真正結束)。非 ignition 相位仍用 lerp。
+- 時序對齊：director ignite t=300 → 出場固定 5000ms → 動畫結束 t=5300＝reveal 5300(工作區剛好此刻 saoIn 展開)；vfx ignition after 6.4→5.6s(展開後減速)；riser 自動算 (5300-300)/1000=5.0s 配動畫。
+- 驗證：npm test 27/27、raw WebGL compiled、時序對齊驗算 300+5000==5300；deploy+smoke。
+
 ## PASS 22 兩內圈光暈 + 手機核心放大/2K + 進場放慢 + 彈窗互斥（2026-06-14）
 - **兩內圈光暈**：核心能量膜(rad 0.105)+熱量邊(rad 0.150) Pass13 恢復當光點，但 bloom 暈成兩內圈光暈。降亮+縮 width：能量膜 0.55/0.0045→0.30/0.0030、熱量邊 0.32/0.0060→0.16/0.0040＝細線非暈。
 - **手機核心放大+2K**：uZoom 直式 2.2→1.5(核心放大、外環裁一點)；QUALITY medium dprCap 1.25→2.0(2K 清晰；texW 128 粒子不變、render scale floor 0.7 兜底)。

@@ -15,7 +15,7 @@ import { sfx } from "./audio-fx.js";
 export const TIMELINE = {
   cardOut: 0,
   ignite: 300,
-  reveal: 5800,   // Pass22 再加長：環出齊 ~5.5s（I lerp dt×0.6、轉更慢）；vfx after 6.4s ⇒ t≈6.7 減速
+  reveal: 5300,   // Pass23 對齊：ignite(300)+出場固定 5.0s＝動畫結束於 t=5300，工作區剛好此刻展開（非單純加長）；vfx after 5.6s ⇒ 展開後減速
   cleanup: 10500,
 };
 

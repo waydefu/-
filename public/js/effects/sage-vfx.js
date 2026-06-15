@@ -659,7 +659,7 @@ export function buildSageVfx(deps) {
     PH.name = p; PH.timer = 0; PH.after = null;
     // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
     if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.82; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（Pass6 基礎轉速再 +17%，含法陣環——全環吃 RT）
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[6.4, standing]; }  // Pass22 轉慢加長：6.4s＝撐過 reveal(5.8) 後才減速
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[5.6, standing]; }  // Pass23：出場 5.0s 結束→reveal 5.3 展開→5.6s 減速（展開後）
     if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.58; PH.fogT=0.90; }
     if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
     if (p === "computing")   { PH.power=0.95; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; PH.pulse=1; PH.flash=Math.max(PH.flash,0.22); }  // P0：進場爆點——pulse 擴散波+flash 短亮，肉眼明確「核心開始運算」
@@ -670,8 +670,12 @@ export function buildSageVfx(deps) {
     PH.t += dt; PH.timer += dt;
     if (PH.after && PH.timer >= PH.after[0]) { const nx = PH.after[1]; PH.after = null; setPhase(nx); }
     PH.power  += (PH.powerT  - PH.power)  * Math.min(1, dt*4.0);
-    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.6);   // Pass22 再加長：環逐一出場 ~5.5s、轉更慢更沉浸
-    if (PH.name === "ignition") PH.rotMultT = 0.8 + 1.5*PH.ignite*PH.ignite;  // Pass22 轉慢：出場轉速曲線 0.8→2.3（原 3.2）；第一環慢轉出、全齊較沉穩
+    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.6);   // 非 ignition 相位用 lerp
+    if (PH.name === "ignition") {                                   // Pass23 動畫結束剛好對齊工作區：固定 5s 出場序列(非指數漸近，有明確結束點)
+      const u = Math.min(1, PH.timer / 5.0);
+      PH.ignite = u*u*(3.0-2.0*u);                                  // smoothstep 平滑；u=1(timer 5.0s)＝環全出+SPIN 自轉停＝動畫真正結束
+      PH.rotMultT = 0.8 + 1.5*PH.ignite*PH.ignite;                  // 轉速綁 ignite：慢起→沉穩衝 2.3
+    }
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
     PH.complete += ((PH.name === "complete" ? 1 : 0) - PH.complete) * Math.min(1, dt*1.4);
