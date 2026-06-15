@@ -76,6 +76,7 @@ function hideScrim() {
 export function openLogoutModal() {
   const m = $("logoutModal");
   if (!m) return;
+  if ($("historyPanel")?.classList.contains("is-open")) closeHistory();   // 互斥：開登出 → 歷史自動關
   m._lastFocus = document.activeElement;          // 記住觸發元素，關閉時還焦點
   window.clearTimeout(m._closeTimer);
   m.classList.remove("is-closing");
@@ -109,6 +110,7 @@ export function closeLogoutModal() {
 export function openHistory() {
   const p = $("historyPanel");
   if (!p) return;
+  if ($("logoutModal")?.classList.contains("is-open")) closeLogoutModal();   // 互斥：開歷史 → 登出彈窗自動關
   p._lastFocus = document.activeElement;
   window.clearTimeout(p._closeTimer);
   p.classList.remove("is-closing");

@@ -1,5 +1,13 @@
 # S-Level Upgrade Tasks
 
+## PASS 22 兩內圈光暈 + 手機核心放大/2K + 進場放慢 + 彈窗互斥（2026-06-14）
+- **兩內圈光暈**：核心能量膜(rad 0.105)+熱量邊(rad 0.150) Pass13 恢復當光點，但 bloom 暈成兩內圈光暈。降亮+縮 width：能量膜 0.55/0.0045→0.30/0.0030、熱量邊 0.32/0.0060→0.16/0.0040＝細線非暈。
+- **手機核心放大+2K**：uZoom 直式 2.2→1.5(核心放大、外環裁一點)；QUALITY medium dprCap 1.25→2.0(2K 清晰；texW 128 粒子不變、render scale floor 0.7 兜底)。
+- **環進場轉慢+時長**：SPIN ×2.5→×1.8、rotMult 曲線衝 3.2→2.3、ignite lerp dt0.8→0.6(出齊~5.5s)、TIMELINE reveal 4800→5800、vfx after 5.4→6.4s。
+- **彈窗互斥**：ui.js openLogoutModal 開頭關 history、openHistory 開頭關 logoutModal＝開一個自動關另一個。
+- **音效現況**：audio-fx.js＝WebAudio 純程序合成(oscillator+noise buffer+ADSR+biquad)，零素材，C4 基頻族。電影級素材來源見回應(Sonniss/Krotos/Fusehive；引入需評估 CSP media-src+autoplay+bundle)。
+- 驗證：npm test 27/27、raw WebGL BG_FRAG compiled、9 項字串確認；deploy+smoke。實機手感待驗。
+
 ## PASS 21 光暈復發收斂 + 卡片去塑膠（2026-06-14）
 使用者：①超大光暈(環上光點、很多個)又出現 ②彈窗/卡片太塑膠[所有一起改]，參考 card(漸層底+旋轉流光邊+inset shadow)，保留半透明+原風格+按鈕特效。
 - **光暈復發根治**：分析＝orbitSys 節點(glow*1.3)雖小，但 bloom radius 0.28 把每個亮節點暈成大圈、五型×多節點=很多超大光暈。改：節點亮度 1.3→0.9、移 ns*1.8 暈層(只留 glow(nd,ns))；bloom threshold 0.82→0.86、radius 0.28→0.24(亮點不被暈大)。

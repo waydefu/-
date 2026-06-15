@@ -6,7 +6,7 @@
 export const QUALITY = {
   ultra:  { dprCap: 2.0, texW: 200, steps: 24 },
   high:   { dprCap: 1.5, texW: 160, steps: 18 },
-  medium: { dprCap: 1.25, texW: 128, steps: 12 },
+  medium: { dprCap: 2.0, texW: 128, steps: 12 },   // Pass22 手機解析度到 2K（dprCap 1.25→2.0；粒子數 texW 128 不變，靠 render scale floor 0.7 兜底）
   low:    { dprCap: 1.0, texW: 96,  steps: 8 },
   static: { dprCap: 1.0, texW: 64,  steps: 0 },
 };
@@ -17,7 +17,7 @@ uniform float uTime,uRT,uPower,uIgnite,uFail,uFlash,uComplete,uPulse,uSteps,uPx,
 uniform vec2 uRes;
 #define TAU 6.28318530718
 // 出場自轉（Pass7）：g=出場進度 0→1；初期多轉 2.5 圈、ease-out 落入正常轉速＝「邊轉邊出、單環多轉幾圈」
-#define SPIN(g) ((1.0-(g))*(1.0-(g))*TAU*2.5)
+#define SPIN(g) ((1.0-(g))*(1.0-(g))*TAU*1.8)
 mat2 rot(float a){ float c=cos(a),s=sin(a); return mat2(c,-s,s,c); }
 float h11(float n){ return fract(sin(n)*43758.5453); }
 float hash21(vec2 p){ vec3 p3=fract(vec3(p.xyx)*0.1031); p3+=dot(p3,p3.yzx+33.33); return fract((p3.x+p3.y)*p3.z); }
@@ -401,10 +401,10 @@ void main(){
   //   洗掉原本光點）。恢復核心結構光點：金黃能量膜(細金邊)+橘金熱量邊；核心＝raymarch 球+奇點+細金環+星芒，
   //   有層次不爆白。細環 width 小＝結構線非泡泡殼（泡泡是大柔圓，已移）。
   { float r0=0.105+0.010*fbm2(vec2(ang*2.5,t*0.7));                        // 金黃能量膜（核心金邊光點；idle 收斂）
-    col+=gold*coreTint*glow(abs(rad-r0),0.0045)*0.55*coreAmp*coreStruct; }
+    col+=gold*coreTint*glow(abs(rad-r0),0.0030)*0.30*coreAmp*coreStruct; }  // Pass22：細線降亮(0.55→0.30/width 縮)＝bloom 不暈成內圈光暈
   { float hp=smoothstep(0.55,0.9,P)+FL+F;                                  // 橘金熱量邊（高峰才顯）
     float r1=0.150+0.014*fbm2(vec2(ang*4.0+2.0,t*1.1));
-    col+=amber*coreTint*glow(abs(rad-r1),0.0060)*0.32*min(hp,1.2)*(0.5+0.5*cp); }
+    col+=amber*coreTint*glow(abs(rad-r1),0.0040)*0.16*min(hp,1.2)*(0.5+0.5*cp); }  // Pass22：降亮(0.32→0.16/width 縮)＝第二內圈不暈
   { float fl4=pow(abs(cos(ang+0.12)),1500.0)*1.1;                          // 星芒：4 主（平時收斂、點火/完成才放）
     float fl8=pow(abs(cos(ang*2.0+0.62)),350.0)*0.40;
     float fl20=pow(abs(cos(ang*5.0+0.21)),90.0)*0.16;
@@ -659,7 +659,7 @@ export function buildSageVfx(deps) {
     PH.name = p; PH.timer = 0; PH.after = null;
     // fogT＝煙霧濃度相位（Pass5b：夜燈濃霧 → 點火高速旋轉把煙轉散 → ambient 回穩較稀）
     if (p === "idle")        { PH.powerT=0.16; PH.igniteT=0.08; PH.rotMultT=0.82; PH.fogT=1.15; }  // 夜燈：霧中微亮核心（Pass6 基礎轉速再 +17%，含法陣環——全環吃 RT）
-    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[5.4, standing]; }  // 轉速由 frame 內曲線隨出場進度爬升 0.9→3.2；5.4s＝撐過 reveal(4.8) 後才減速
+    if (p === "ignition")    { PH.power=1.05; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=0.9; PH.flash=1; PH.fogT=0.42; PH.after=[6.4, standing]; }  // Pass22 轉慢加長：6.4s＝撐過 reveal(5.8) 後才減速
     if (p === "operational") { PH.powerT=0.48; PH.igniteT=1; PH.rotMultT=1.58; PH.fogT=0.90; }
     if (p === "ambient")     { PH.powerT=0.30; PH.igniteT=1; PH.rotMultT=1.35; PH.fogT=0.72; }  // 工作區：VFX 退 20-35%、煙已散
     if (p === "computing")   { PH.power=0.95; PH.powerT=0.78; PH.igniteT=1; PH.rotMultT=2.45; PH.fogT=0.60; PH.pulse=1; PH.flash=Math.max(PH.flash,0.22); }  // P0：進場爆點——pulse 擴散波+flash 短亮，肉眼明確「核心開始運算」
@@ -670,8 +670,8 @@ export function buildSageVfx(deps) {
     PH.t += dt; PH.timer += dt;
     if (PH.after && PH.timer >= PH.after[0]) { const nx = PH.after[1]; PH.after = null; setPhase(nx); }
     PH.power  += (PH.powerT  - PH.power)  * Math.min(1, dt*4.0);
-    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.8);   // Pass7 再加長：環逐一出場 ~4.5s、單環多轉（沉浸、不擠）
-    if (PH.name === "ignition") PH.rotMultT = 0.9 + 2.3*PH.ignite*PH.ignite;  // 轉速綁出場進度：第一環慢轉出 → 環越多整體越快 → 全齊衝 3.2
+    PH.ignite += (PH.igniteT - PH.ignite) * Math.min(1, dt*0.6);   // Pass22 再加長：環逐一出場 ~5.5s、轉更慢更沉浸
+    if (PH.name === "ignition") PH.rotMultT = 0.8 + 1.5*PH.ignite*PH.ignite;  // Pass22 轉慢：出場轉速曲線 0.8→2.3（原 3.2）；第一環慢轉出、全齊較沉穩
     PH.fail   *= Math.exp(-dt*3.0);
     PH.flash  *= Math.exp(-dt*2.6);
     PH.complete += ((PH.name === "complete" ? 1 : 0) - PH.complete) * Math.min(1, dt*1.4);
@@ -708,7 +708,7 @@ export function buildSageVfx(deps) {
     uRes.set(w * basePR * renderScale, h * basePR * renderScale);
     // Pass7 自適應拉遠：窄屏（手機直式）放大 uv 範圍 → 最外環不被左右裁掉
     const aspect = w / h;
-    U.uZoom.value = aspect < 0.65 ? 2.2 : aspect < 1.0 ? 1.7 : aspect < 1.3 ? 1.2 : 1.0;
+    U.uZoom.value = aspect < 0.65 ? 1.5 : aspect < 1.0 ? 1.35 : aspect < 1.3 ? 1.15 : 1.0;   // Pass22 手機核心放大（直式 2.2→1.5；外環裁一點換核心更大）
     composer.render();   // resize 清空 drawing buffer；同一 task 內立即重繪，否則合成器端出透明 canvas → 閃出 CSS 漸層底
   }
   function setRenderScale(s) { renderScale = Math.max(0.5, Math.min(1, s)); setSize(window.innerWidth, window.innerHeight); }
