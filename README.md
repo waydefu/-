@@ -315,6 +315,8 @@ firebase deploy --only functions --project project-7276420283723642146
 firebase functions:log --only analyzeV2 -n 80
 ```
 
+本儲存庫的 GitHub Pages 只由 `.github/workflows/deploy-pages.yml` 發布 `public/` 靜態前端，Pages 來源必須設為 **GitHub Actions**；不可改回從 `main` 根目錄發布，否則會把 `README.md` 當成網站入口。GitHub Pages 不部署 Functions，後端仍使用現行 Firebase Functions URL。
+
 部署 Functions 需設 `FUNCTIONS_DISCOVERY_TIMEOUT=120`，否則 discovery 10 秒超時。
 
 ---

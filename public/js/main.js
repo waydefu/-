@@ -170,7 +170,7 @@ function updateDiagnostics() {
   }
 }
 
-/* 禁詞掃描：偵測東方語彙並提示西幻替換（資料 = /forbidden-words.json） */
+/* 禁詞掃描：偵測東方語彙並提示西幻替換（資料相對於前端模組） */
 let FORBIDDEN = [];
 function scanForbidden() {
   const el = $("forbiddenWarn");
@@ -491,7 +491,7 @@ function bind() {
   initBootDirector();
 
   // 禁詞資料載入（一次）→ 載完即掃一次目前草稿
-  fetch("/forbidden-words.json").then((r) => (r.ok ? r.json() : [])).then((d) => { FORBIDDEN = Array.isArray(d) ? d : []; scanForbidden(); }).catch(() => {});
+  fetch(new URL("../forbidden-words.json", import.meta.url)).then((r) => (r.ok ? r.json() : [])).then((d) => { FORBIDDEN = Array.isArray(d) ? d : []; scanForbidden(); }).catch(() => {});
 
   $("googleLoginBtn")?.addEventListener("click", async (e) => {
     const btn = e.currentTarget;
